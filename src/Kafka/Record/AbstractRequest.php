@@ -26,7 +26,7 @@ abstract class AbstractRequest extends Record
      *
      * @var integer
      */
-    protected $apiVersion;
+    protected $apiVersion = Kafka::VERSION;
 
     /**
      * A user-supplied integer value that will be passed back with the response (INT32)
@@ -42,10 +42,9 @@ abstract class AbstractRequest extends Record
      */
     protected $clientId;
 
-    public function __construct($apiKey, $apiVersion = 0, $correlationId = 0, $clientId = '')
+    public function __construct($apiKey, $correlationId = 0, $clientId = '')
     {
         $this->apiKey        = $apiKey;
-        $this->apiVersion    = $apiVersion;
         $this->correlationId = $correlationId;
         $this->clientId      = $clientId;
 
