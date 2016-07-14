@@ -101,7 +101,7 @@ class Record
      *
      * NB: Default implementation will be always called
      *
-     * @param Record $self Instance of current frame
+     * @param Record|static $self Instance of current frame
      * @param string $data Binary data
      */
     protected static function unpackPayload(Record $self, $data)
