@@ -82,6 +82,40 @@ class Message
         return $message;
     }
 
+    /**
+     * Unpacks the DTO from the binary buffer
+     *
+     * @param string $binaryStreamBuffer Binary buffer
+     *
+     * @return static
+     */
+    public static function unpack(&$binaryStreamBuffer)
+    {
+        $message = new static();
+        list(
+            $message->crc,
+            $message->magicByte,
+            $message->attributes,
+            $keyLength
+        ) = array_values(unpack('Ncrc32/cmagicByte/cattributes/NkeyLength', $binaryStreamBuffer));
+        $binaryStreamBuffer = substr($binaryStreamBuffer, 10);
+
+        if ($keyLength === 0xFFFFFFFF) {
+            $keyLength = 0;
+        }
+
+        list($message->key, $valueLength) = array_values(unpack("a{$keyLength}/NvalueLength", $binaryStreamBuffer));
+        $binaryStreamBuffer = substr($binaryStreamBuffer, $keyLength + 4);
+
+        if ($keyLength === 0xFFFFFFFF) {
+            $valueLength = 0;
+        }
+        list($message->value) = array_values(unpack("a{$valueLength}", $binaryStreamBuffer));
+        $binaryStreamBuffer   = substr($binaryStreamBuffer, $valueLength);
+
+        return $message;
+    }
+
     public function __toString()
     {
         $keyLength   = isset($this->key) ? strlen($this->key) : -1;

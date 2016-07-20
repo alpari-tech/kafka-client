@@ -69,16 +69,10 @@ class OffsetFetchResponse extends AbstractResponse
         $partition = new OffsetFetchPartition();
         list(
             $partition->partition,
-        ) = array_values(unpack("Npartition", $binaryStreamBuffer));
-        $binaryStreamBuffer = substr($binaryStreamBuffer, 4);
-        if (PHP_INT_SIZE === 8) {
-            $partition->offset = reset(unpack('J', $binaryStreamBuffer));
-        } else {
-            list (, $partition->offset) = array_values(unpack('NlowWord/NhighWord', $binaryStreamBuffer));
-        }
-        $binaryStreamBuffer = substr($binaryStreamBuffer, 8);
-        list($metadataLength) = array_values(unpack('nmetadataLength', $binaryStreamBuffer));
-        $binaryStreamBuffer = substr($binaryStreamBuffer, 2);
+            $partition->offset,
+            $metadataLength
+        ) = array_values(unpack("Npartition/Joffset/nmetadataLength", $binaryStreamBuffer));
+        $binaryStreamBuffer = substr($binaryStreamBuffer, 14);
         $metadataLength     = $metadataLength < 0x8000 ? $metadataLength : 0;
         list(
             $partition->metadata,

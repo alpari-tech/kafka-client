@@ -53,12 +53,32 @@ class MessageSet
         return $messageSet;
     }
 
+    /**
+     * Unpacks the DTO from the binary buffer
+     *
+     * @param string $binaryStreamBuffer Binary buffer
+     *
+     * @return static
+     */
+    public static function unpack(&$binaryStreamBuffer)
+    {
+        $messageSet = new static();
+        list(
+            $messageSet->offset,
+            $messageSet->messageSize
+        ) = array_values(unpack('Joffset/NmessageSize', $binaryStreamBuffer));
+        $binaryStreamBuffer  = substr($binaryStreamBuffer, 12);
+        $messageSet->message = Message::unpack($binaryStreamBuffer);
+
+        return $messageSet;
+    }
+
     public function __toString()
     {
         $message = (string)$this->message;
-        $payload = (PHP_INT_SIZE === 8) ? pack('J', $this->offset) : pack('NN', 0, $this->offset);
-        $payload .= pack(
-            "Na{$this->messageSize}",
+        $payload = pack(
+            "JNa{$this->messageSize}",
+            $this->offset,
             $this->messageSize,
             $message
         );

@@ -69,14 +69,9 @@ class ProduceResponse extends AbstractResponse
         list(
             $partition->partition,
             $partition->errorCode,
-        ) = array_values(unpack("Npartition/nerrorCode", $binaryStreamBuffer));
-        $binaryStreamBuffer = substr($binaryStreamBuffer, 6);
-        if (PHP_INT_SIZE === 8) {
-            $partition->offset = reset(unpack('J', $binaryStreamBuffer));
-        } else {
-            list (,$partition->offset) = array_values(unpack('NlowWord/NhighWord', $binaryStreamBuffer));
-        }
-        $binaryStreamBuffer = substr($binaryStreamBuffer, 8);
+            $partition->offset
+        ) = array_values(unpack("Npartition/nerrorCode/Joffset", $binaryStreamBuffer));
+        $binaryStreamBuffer = substr($binaryStreamBuffer, 14);
 
         return $partition;
     }
