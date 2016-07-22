@@ -54,15 +54,17 @@ class ProduceRequest extends AbstractRequest
 
         $totalTopics = count($this->topicMessages);
         $payload .= pack('nNN', $this->requiredAcks, $this->timeout, $totalTopics);
-        foreach ($this->topicMessages as $topic => $topicMessageData) {
+        foreach ($this->topicMessages as $topic => $partitions) {
             $topicLength = strlen($topic);
-            $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($topicMessageData));
-            foreach ($topicMessageData as $partition => $messages) {
-                $payload .= pack('NN', $partition, count($messages));
+            $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
+            foreach ($partitions as $partition => $messages) {
+                $messageSetPayload = '';
                 foreach ($messages as $message) {
                     $messageSet = MessageSet::fromMessage($message);
-                    $payload .= $messageSet;
+                    $messageSetPayload .= $messageSet;
                 }
+                $payload .= pack('NN', $partition, strlen($messageSetPayload));
+                $payload .= $messageSetPayload;
             }
         }
 
