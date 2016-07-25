@@ -64,6 +64,13 @@ class FetchRequest extends AbstractRequest
     private $minBytes;
 
     /**
+     * The maximum bytes to include in the message set for this partition. This helps bound the size of the response.
+     *
+     * @var integer
+     */
+    private $maxBytes;
+
+    /**
      * The replica id indicates the node id of the replica initiating this request. Normal client consumers should
      * always specify this as -1 as they have no node id. Other brokers set this to be their own node id. The value -2
      * is accepted to allow a non-broker to issue fetch requests as if it were a replica broker for debugging purposes.
@@ -76,6 +83,7 @@ class FetchRequest extends AbstractRequest
         array $topicPartitions,
         $maxWaitTime,
         $minBytes,
+        $maxBytes,
         $replicaId = -1,
         $correlationId = 0,
         $clientId = ''
@@ -83,6 +91,7 @@ class FetchRequest extends AbstractRequest
         $this->topicPartitions = $topicPartitions;
         $this->maxWaitTime     = $maxWaitTime;
         $this->minBytes        = $minBytes;
+        $this->maxBytes        = $maxBytes;
         $this->replicaId       = $replicaId;
 
         parent::__construct(Kafka::FETCH, $correlationId, $clientId);
@@ -100,8 +109,8 @@ class FetchRequest extends AbstractRequest
         foreach ($this->topicPartitions as $topic => $partitions) {
             $topicLength = strlen($topic);
             $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
-            foreach ($partitions as $partitionId => $partitionData) {
-                $payload .= pack('NJN', $partitionId, $partitionData[0], $partitionData[1]);
+            foreach ($partitions as $partitionId => $offset) {
+                $payload .= pack('NJN', $partitionId, $offset, $this->maxBytes);
             }
         }
 
