@@ -107,7 +107,7 @@ class Message
         list($message->key, $valueLength) = array_values(unpack("a{$keyLength}/NvalueLength", $binaryStreamBuffer));
         $binaryStreamBuffer = substr($binaryStreamBuffer, $keyLength + 4);
 
-        if ($keyLength === 0xFFFFFFFF) {
+        if ($valueLength === 0xFFFFFFFF) {
             $valueLength = 0;
         }
         list($message->value) = array_values(unpack("a{$valueLength}", $binaryStreamBuffer));
