@@ -34,19 +34,16 @@ class Record
     /**
      * Unpacks the message from the binary data buffer
      *
-     * @param string $data Binary buffer with raw data
+     * @param Stream $stream Binary stream buffer
      *
      * @return static
      */
-    final public static function unpack($data)
+    final public static function unpack(Stream $stream)
     {
         $self = new static();
-        list($self->messageSize) = array_values(unpack(Kafka::HEADER_FORMAT, $data));
-
-        $payload = substr($data, Kafka::HEADER_LEN);
-        self::unpackPayload($self, $payload);
-        if (static::class !== self::class && $self->messageSize > 0) {
-            static::unpackPayload($self, $self->messageData);
+        $self->messageSize = $stream->read(Kafka::HEADER_FORMAT)['size'];
+        if ($self->messageSize > 0) {
+            static::unpackPayload($self, $stream);
         }
 
         return $self;
@@ -99,21 +96,11 @@ class Record
      *
      * NB: Default implementation will be always called
      *
-     * @param Record|static $self Instance of current frame
-     * @param string $data Binary data
+     * @param Record|static $self   Instance of current frame
+     * @param Stream $stream Binary data
      */
-    protected static function unpackPayload(Record $self, $data)
+    protected static function unpackPayload(Record $self, Stream $stream)
     {
-        list($self->messageData) = array_values(unpack("a{$self->messageSize}contentData", $data));
-    }
-
-    /**
-     * Implementation of packing the payload
-     *
-     * @return string
-     */
-    protected function packPayload()
-    {
-        return pack("a{$this->messageSize}", $this->messageData);
+        // nothing here
     }
 }

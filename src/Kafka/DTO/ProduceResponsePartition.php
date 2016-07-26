@@ -7,6 +7,7 @@
 namespace Protocol\Kafka\DTO;
 
 use Protocol\Kafka;
+use Protocol\Kafka\Stream;
 
 /**
  * Produce response DTO
@@ -36,4 +37,23 @@ class ProduceResponsePartition
      * @var integer
      */
     public $offset;
+
+    /**
+     * Unpacks the DTO from the binary buffer
+     *
+     * @param Stream $stream Binary buffer
+     *
+     * @return static
+     */
+    public static function unpack(Stream $stream)
+    {
+        $partition = new static();
+        list(
+            $partition->partition,
+            $partition->errorCode,
+            $partition->offset
+        ) = array_values($stream->read('Npartition/nerrorCode/Joffset'));
+
+        return $partition;
+    }
 }

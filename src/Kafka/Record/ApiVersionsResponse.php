@@ -9,6 +9,7 @@ namespace Protocol\Kafka\Record;
 use Protocol\Kafka;
 use Protocol\Kafka\DTO\ApiVersionsResponseMetadata;
 use Protocol\Kafka\Record;
+use Protocol\Kafka\Stream;
 
 /**
  * Api versions response
@@ -33,32 +34,25 @@ class ApiVersionsResponse extends AbstractResponse
     /**
      * Method to unpack the payload for the record
      *
-     * @param Record|static $self Instance of current frame
-     * @param string $data Binary data
+     * @param Record|static $self   Instance of current frame
+     * @param Stream $stream Binary data
      *
      * @return Record
      */
-    protected static function unpackPayload(Record $self, $data)
+    protected static function unpackPayload(Record $self, Stream $stream)
     {
         list(
             $self->correlationId,
             $self->errorCode,
             $versionsNumber
-        ) = array_values(unpack("NcorrelationId/nerrorCode/NapiVersionsNumber", $data));
-        $data = substr($data, 10);
+        ) = array_values($stream->read('NcorrelationId/nerrorCode/NapiVersionsNumber'));
 
         for ($i=0; $i<$versionsNumber; $i++) {
-            $apiVersionMetadata = new ApiVersionsResponseMetadata();
-            list (
-                $apiKey,
-                $apiVersionMetadata->minVersion,
-                $apiVersionMetadata->maxVersion
-            ) = array_values(unpack("napiKey/nminVersion/nmaxVersion", $data));
-            $data = substr($data, 6);
-            
-            $self->apiVersions[$apiKey] = $apiVersionMetadata;
+            $apiVersionMetadata = ApiVersionsResponseMetadata::unpack($stream);
+
+            $self->apiVersions[$apiVersionMetadata->apiKey] = $apiVersionMetadata;
         }
-        
+
         return $self;
     }
 }

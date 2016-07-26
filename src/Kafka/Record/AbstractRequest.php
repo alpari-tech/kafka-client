@@ -24,9 +24,10 @@ abstract class AbstractRequest extends Record
     /**
      * The version of the API. (INT16)
      *
+     * @see Kafka::VERSION constant value
      * @var integer
      */
-    protected $apiVersion = Kafka::VERSION;
+    protected $apiVersion;
 
     /**
      * A user-supplied integer value that will be passed back with the response (INT32)
@@ -42,33 +43,14 @@ abstract class AbstractRequest extends Record
      */
     protected $clientId;
 
-    public function __construct($apiKey, $correlationId = 0, $clientId = '')
+    public function __construct($apiKey, $correlationId = 0, $clientId = '', $apiVersion = Kafka::VERSION)
     {
         $this->apiKey        = $apiKey;
         $this->correlationId = $correlationId;
         $this->clientId      = $clientId;
+        $this->apiVersion    = $apiVersion;
 
         $this->setMessageData($this->packPayload());
-    }
-
-    /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|self $self Instance of current frame
-     * @param string $data Binary data
-     *
-     * @return Record
-     */
-    protected static function unpackPayload(Record $self, $data)
-    {
-        list(
-            $self->apiKey,
-            $self->apiVersion,
-            $self->correlationId,
-            $self->clientId
-        ) = array_values(unpack(Kafka::REQUEST_HEADER_FORMAT, $data));
-
-        return $self;
     }
 
     /**
