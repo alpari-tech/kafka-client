@@ -16,6 +16,16 @@ use Protocol\Kafka\Record;
  */
 class FetchResponse extends AbstractResponse
 {
+
+    /**
+     * Duration in milliseconds for which the request was throttled due to quota violation.
+     * (Zero if the request did not violate any quota.)
+     *
+     * @var integer
+     * @since Version 1 of protocol
+     */
+    public $throttleTimeMs;
+
     /**
      * List of fetch responses
      *
@@ -35,9 +45,10 @@ class FetchResponse extends AbstractResponse
     {
         list(
             $self->correlationId,
+            $self->throttleTimeMs,
             $numberOfTopics,
-        ) = array_values(unpack("NcorrelationId/NnumberOfTopics", $data));
-        $data = substr($data, 8);
+        ) = array_values(unpack("NcorrelationId/NthrottleTimeMs/NnumberOfTopics", $data));
+        $data = substr($data, 12);
 
         for ($topic=0; $topic<$numberOfTopics; $topic++) {
             list($topicLength) = array_values(unpack('ntopicLength', $data));
