@@ -8,7 +8,6 @@ namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
 use Protocol\Kafka\DTO\FetchResponsePartition;
-use Protocol\Kafka\DTO\MessageSet;
 use Protocol\Kafka\Record;
 use Protocol\Kafka\Stream;
 

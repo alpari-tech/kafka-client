@@ -8,7 +8,6 @@ namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
 use Protocol\Kafka\DTO\BrokerMetadata;
-use Protocol\Kafka\DTO\PartitionMetadata;
 use Protocol\Kafka\DTO\TopicMetadata;
 use Protocol\Kafka\Record;
 use Protocol\Kafka\Stream;
