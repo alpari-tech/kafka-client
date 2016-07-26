@@ -23,7 +23,7 @@ class Kafka
      * RequestOrResponse => Size (RequestMessage | ResponseMessage)
      * Size => int32
      */
-    const HEADER_FORMAT = "NSize";
+    const HEADER_FORMAT = 'Nsize';
 
     /**
      * Format of kafka request header for unpacking in PHP
@@ -34,7 +34,7 @@ class Kafka
      *   correlation_id => INT32
      *   client_id      => NULLABLE_STRING
      */
-    const REQUEST_HEADER_FORMAT = "napiKey/napiVersion/NcorrelationId/ZclientId";
+    const REQUEST_HEADER_FORMAT = 'napiKey/napiVersion/NcorrelationId/ZclientId';
 
     /**
      * The following are the numeric codes that the ApiKey in the request can take for each of the below request types.

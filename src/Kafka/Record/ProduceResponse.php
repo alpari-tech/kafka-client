@@ -9,6 +9,7 @@ namespace Protocol\Kafka\Record;
 use Protocol\Kafka;
 use Protocol\Kafka\DTO\ProduceResponsePartition;
 use Protocol\Kafka\Record;
+use Protocol\Kafka\Stream;
 
 /**
  * Produce response object
@@ -25,54 +26,31 @@ class ProduceResponse extends AbstractResponse
     /**
      * Method to unpack the payload for the record
      *
-     * @param Record|static $self Instance of current frame
-     * @param string $data Binary data
+     * @param Record|static $self   Instance of current frame
+     * @param Stream $stream Binary data
      *
      * @return Record
      */
-    protected static function unpackPayload(Record $self, $data)
+    protected static function unpackPayload(Record $self, Stream $stream)
     {
         list(
             $self->correlationId,
             $numberOfTopics,
-        ) = array_values(unpack("NcorrelationId/NnumberOfTopics", $data));
-        $data = substr($data, 8);
+        ) = array_values($stream->read('NcorrelationId/NnumberOfTopics'));
 
         for ($topic=0; $topic<$numberOfTopics; $topic++) {
-            list($topicLength) = array_values(unpack('ntopicLength', $data));
-            $data = substr($data, 2);
+            $topicLength = $stream->read('ntopicLength')['topicLength'];
             list(
                 $topicName,
                 $numberOfPartitions
-            ) = array_values(unpack("a{$topicLength}/NnumberOfPartitions", $data));
-            $data = substr($data, $topicLength + 4);
+            ) = array_values($stream->read("a{$topicLength}/NnumberOfPartitions"));
 
             for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
-                $topicMetadata = self::unpackTopicPartitionInfo($data);
+                $topicMetadata = ProduceResponsePartition::unpack($stream);
                 $self->topics[$topicName][$topicMetadata->partition] = $topicMetadata;
             }
 
         }
         return $self;
-    }
-
-    /**
-     * Unpacks the information about topic partition
-     *
-     * @param string $binaryStreamBuffer Binary buffer
-     *
-     * @return ProduceResponsePartition
-     */
-    private static function unpackTopicPartitionInfo(&$binaryStreamBuffer)
-    {
-        $partition = new ProduceResponsePartition();
-        list(
-            $partition->partition,
-            $partition->errorCode,
-            $partition->offset
-        ) = array_values(unpack("Npartition/nerrorCode/Joffset", $binaryStreamBuffer));
-        $binaryStreamBuffer = substr($binaryStreamBuffer, 14);
-
-        return $partition;
     }
 }

@@ -8,6 +8,7 @@ namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
 use Protocol\Kafka\Record;
+use Protocol\Kafka\Stream;
 
 /**
  * SASL handshake response
@@ -32,25 +33,22 @@ class SaslHandshakeResponse extends AbstractResponse
     /**
      * Method to unpack the payload for the record
      *
-     * @param Record|static $self Instance of current frame
-     * @param string $data Binary data
+     * @param Record|static $self   Instance of current frame
+     * @param Stream $stream Binary data
      *
      * @return Record
      */
-    protected static function unpackPayload(Record $self, $data)
+    protected static function unpackPayload(Record $self, Stream $stream)
     {
         list(
             $self->correlationId,
             $self->errorCode,
             $mechanismsNumber
-        ) = array_values(unpack("NcorrelationId/nerrorCode/NmechanismsNumber", $data));
-        $data = substr($data, 10);
+        ) = array_values($stream->read('NcorrelationId/nerrorCode/NmechanismsNumber'));
 
         for ($i=0; $i<$mechanismsNumber; $i++) {
-            list($mechanismLength) = array_values(unpack("nmechanismLength", $data));
-            $data = substr($data, 2);
-            list($mechanism) = array_values(unpack("a{$mechanismLength}mechanism", $data));
-            $data = substr($data, $mechanismLength);
+            $mechanismLength = $stream->read('nmechanismLength')['mechanismLength'];
+            $mechanism       = $stream->read("a{$mechanismLength}mechanism")['mechanism'];
 
             $self->enabledMechanisms[] = $mechanism;
         }

@@ -7,6 +7,7 @@
 namespace Protocol\Kafka\DTO;
 
 use Protocol\Kafka;
+use Protocol\Kafka\Stream;
 
 /**
  * Broker metadata DTO
@@ -33,4 +34,23 @@ class BrokerMetadata
      * @var integer
      */
     public $port;
+
+    /**
+     * Unpacks the DTO from the binary buffer
+     *
+     * @param Stream $stream Binary buffer
+     *
+     * @return static
+     */
+    public static function unpack(Stream $stream)
+    {
+        $brokerMetadata = new static();
+        list($brokerMetadata->nodeId, $hostLength) = array_values($stream->read('NnodeId/nhostLength'));
+        list(
+            $brokerMetadata->host,
+            $brokerMetadata->port
+        ) = array_values($stream->read("a{$hostLength}host/Nport"));
+
+        return $brokerMetadata;
+    }
 }

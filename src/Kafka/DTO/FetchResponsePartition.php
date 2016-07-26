@@ -7,6 +7,7 @@
 namespace Protocol\Kafka\DTO;
 
 use Protocol\Kafka;
+use Protocol\Kafka\Stream;
 
 /**
  * Fetch response DTO
@@ -42,4 +43,29 @@ class FetchResponsePartition
      * @var array|MessageSet[]
      */
     public $messageSet = [];
+
+    /**
+     * Unpacks the DTO from the binary buffer
+     *
+     * @param Stream $stream Binary buffer
+     *
+     * @return static
+     */
+    public static function unpack(Stream $stream)
+    {
+        $partition = new static();
+        list(
+            $partition->partition,
+            $partition->errorCode,
+            $partition->highwaterMarkOffset,
+            $messageSetSize
+        ) = array_values($stream->read('Npartition/nerrorCode/JhighwaterMarkOffset/NmessageSetSize'));
+
+        for ($received = 0; $received < $messageSetSize; $received += ($messageSet->messageSize + 12)) {
+            $messageSet = MessageSet::unpack($stream);
+            $partition->messageSet[] = $messageSet;
+        }
+
+        return $partition;
+    }
 }

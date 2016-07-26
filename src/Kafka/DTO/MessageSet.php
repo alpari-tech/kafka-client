@@ -7,6 +7,7 @@
 namespace Protocol\Kafka\DTO;
 
 use Protocol\Kafka;
+use Protocol\Kafka\Stream;
 
 /**
  * The message set structure is common to both the produce and fetch requests.
@@ -56,19 +57,19 @@ class MessageSet
     /**
      * Unpacks the DTO from the binary buffer
      *
-     * @param string $binaryStreamBuffer Binary buffer
+     * @param Stream $stream Binary buffer
      *
      * @return static
      */
-    public static function unpack(&$binaryStreamBuffer)
+    public static function unpack(Stream $stream)
     {
         $messageSet = new static();
         list(
             $messageSet->offset,
             $messageSet->messageSize
-        ) = array_values(unpack('Joffset/NmessageSize', $binaryStreamBuffer));
-        $binaryStreamBuffer  = substr($binaryStreamBuffer, 12);
-        $messageSet->message = Message::unpack($binaryStreamBuffer);
+        ) = array_values($stream->read('Joffset/NmessageSize'));
+
+        $messageSet->message = Message::unpack($stream);
 
         return $messageSet;
     }

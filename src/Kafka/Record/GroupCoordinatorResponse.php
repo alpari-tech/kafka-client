@@ -9,6 +9,7 @@ namespace Protocol\Kafka\Record;
 use Protocol\Kafka;
 use Protocol\Kafka\DTO\GroupCoordinatorResponseMetadata;
 use Protocol\Kafka\Record;
+use Protocol\Kafka\Stream;
 
 /**
  * Group coordinator response
@@ -32,26 +33,19 @@ class GroupCoordinatorResponse extends AbstractResponse
     /**
      * Method to unpack the payload for the record
      *
-     * @param Record|static $self Instance of current frame
-     * @param string $data Binary data
+     * @param Record|static $self   Instance of current frame
+     * @param Stream $stream Binary data
      *
      * @return Record
      */
-    protected static function unpackPayload(Record $self, $data)
+    protected static function unpackPayload(Record $self, Stream $stream)
     {
-        $coordinatorMetadata = new GroupCoordinatorResponseMetadata();
         list(
             $self->correlationId,
             $self->errorCode,
-            $coordinatorMetadata->nodeId,
-            $hostLength
-        ) = array_values(unpack("NcorrelationId/nerrorCode/NnodeId/nhostLength", $data));
-        $data = substr($data, 12);
-        list(
-            $coordinatorMetadata->host,
-            $coordinatorMetadata->port
-        ) = array_values(unpack("a{$hostLength}host/Nport", $data));
-        $self->coordinator = $coordinatorMetadata;
+        ) = array_values($stream->read("NcorrelationId/nerrorCode"));
+
+        $self->coordinator = GroupCoordinatorResponseMetadata::unpack($stream);
 
         return $self;
     }
