@@ -41,7 +41,7 @@ class Kafka
      */
     const PRODUCE             = 0;
     const FETCH               = 1;
-    const OFFSETS             = 1;
+    const OFFSETS             = 2;
     const METADATA            = 3;
     const LEADER_AND_ISR      = 4;
     const STOP_REPLICA        = 5;
