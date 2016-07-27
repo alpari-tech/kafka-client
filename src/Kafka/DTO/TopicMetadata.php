@@ -29,6 +29,14 @@ class TopicMetadata
     public $topic;
 
     /**
+     * Indicates if the topic is considered a Kafka internal topic
+     *
+     * @var boolean
+     * @since Version 1 of protocol
+     */
+    public $isInternal;
+
+    /**
      * Metadata for each partition of the topic.
      *
      * @var PartitionMetadata[]|array
@@ -48,8 +56,9 @@ class TopicMetadata
         list($topic->topicErrorCode, $topicLength) = array_values($stream->read('ntopicErrorCode/ntopicLength'));
         list(
             $topic->topic,
+            $topic->isInternal,
             $numberOfPartitions
-        ) = array_values($stream->read("a{$topicLength}topic/NnumberOfPartition"));
+        ) = array_values($stream->read("a{$topicLength}topic/cisInternal/NnumberOfPartition"));
 
         for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
             $partitionMetadata = PartitionMetadata::unpack($stream);

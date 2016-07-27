@@ -25,6 +25,13 @@ class MetadataResponse extends AbstractResponse
     public $brokers = [];
 
     /**
+     * The broker id of the controller broker.
+     *
+     * @var integer
+     */
+    public $controllerId;
+
+    /**
      * List of topics
      *
      * @var array|TopicMetadata[]
@@ -51,7 +58,8 @@ class MetadataResponse extends AbstractResponse
 
             $self->brokers[$brokerMetadata->nodeId] = $brokerMetadata;
         }
-        $numberOfTopics = $stream->read('NnumberOfTopics')['numberOfTopics'];
+        $self->controllerId = $stream->read('NcontrollerId')['controllerId'];
+        $numberOfTopics     = $stream->read('NnumberOfTopics')['numberOfTopics'];
 
         for ($topic=0; $topic<$numberOfTopics; $topic++) {
             $topicMetadata = TopicMetadata::unpack($stream);
