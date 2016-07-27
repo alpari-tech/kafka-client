@@ -30,7 +30,7 @@ class Message
      *
      * @var integer
      */
-    public $magicByte = 0;
+    public $magicByte = 1;
 
     /**
      * This byte holds metadata attributes about the message.
@@ -45,6 +45,15 @@ class Message
      * @var integer
      */
     public $attributes;
+
+    /**
+     * This is the timestamp of the message. The timestamp type is indicated in the attributes. Unit is milliseconds
+     * since beginning of the epoch (midnight Jan 1, 1970 (UTC)).
+     *
+     * @var integer
+     * @since Version 1 of Message structure
+     */
+    public $timestamp;
 
     /**
      * The key is an optional message key that was used for partition assignment. The key can be null.
@@ -67,6 +76,7 @@ class Message
         $message = new static();
 
         $message->value      = $value;
+        $message->timestamp  = microtime(true) * 1000;
         $message->attributes = $attributes;
 
         return $message;
@@ -78,6 +88,7 @@ class Message
 
         $message->key        = $key;
         $message->value      = $value;
+        $message->timestamp  = microtime(true) * 1000;
         $message->attributes = $attributes;
 
         return $message;
@@ -96,10 +107,15 @@ class Message
         list(
             $message->crc,
             $message->magicByte,
-            $message->attributes,
-            $keyLength
-        ) = array_values($stream->read('Ncrc32/cmagicByte/cattributes/NkeyLength'));
+            $message->attributes
+        ) = array_values($stream->read('Ncrc32/cmagicByte/cattributes'));
 
+        // Support for new message types
+        if ($message->magicByte === 1) {
+            $message->timestamp = $stream->read('Jtimestamp')['timestamp'];
+        }
+
+        $keyLength = $stream->read('NkeyLength')['keyLength'];
         if ($keyLength === 0xFFFFFFFF) {
             $keyLength = 0;
         }
@@ -122,10 +138,12 @@ class Message
         $keyLengthFormat   = $keyLength > 0 ? "a{$keyLength}" : 'a0';
         $valueLengthFormat = $valueLength > 0 ? "a{$valueLength}" : 'a0';
 
-        $payload = pack(
-            "ccN{$keyLengthFormat}N{$valueLengthFormat}",
-            $this->magicByte,
-            $this->attributes,
+        $payload = pack("cc", $this->magicByte, $this->attributes);
+        if ($this->magicByte === 1) {
+            $payload .= pack('J', $this->timestamp);
+        }
+        $payload .= pack(
+            "N{$keyLengthFormat}N{$valueLengthFormat}",
             $keyLength,
             $this->key,
             $valueLength,

@@ -39,6 +39,20 @@ class ProduceResponsePartition
     public $offset;
 
     /**
+     * If LogAppendTime is used for the topic, this is the timestamp assigned by the broker to the message set.
+     * All the messages in the message set have the same timestamp.
+     *
+     * If CreateTime is used, this field is always -1. The producer can assume the timestamp of the messages in the
+     * produce request has been accepted by the broker if there is no error code returned.
+     *
+     * Unit is milliseconds since beginning of the epoch (midnight Jan 1, 1970 (UTC)).
+     *
+     * @var integer
+     * @since Version 2 of protocol
+     */
+    public $timestamp;
+
+    /**
      * Unpacks the DTO from the binary buffer
      *
      * @param Stream $stream Binary buffer
@@ -51,8 +65,9 @@ class ProduceResponsePartition
         list(
             $partition->partition,
             $partition->errorCode,
-            $partition->offset
-        ) = array_values($stream->read('Npartition/nerrorCode/Joffset'));
+            $partition->offset,
+            $partition->timestamp
+        ) = array_values($stream->read('Npartition/nerrorCode/Joffset/Jtimestamp'));
 
         return $partition;
     }
