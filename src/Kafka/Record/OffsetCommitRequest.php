@@ -7,7 +7,7 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\DTO\OffsetPartition;
+use Protocol\Kafka\DTO\OffsetFetchPartition;
 use Protocol\Kafka\Record;
 
 /**
@@ -52,7 +52,7 @@ class OffsetCommitRequest extends AbstractRequest
         foreach ($this->topicPartitions as $topic => $partitions) {
             $topicLength = strlen($topic);
             $payload    .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
-            /** @var OffsetPartition $partition */
+            /** @var OffsetFetchPartition $partition */
             foreach ($partitions as $partition) {
                 $payload .= (string) $partition;
             }

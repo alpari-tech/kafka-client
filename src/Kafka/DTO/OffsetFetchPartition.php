@@ -12,7 +12,7 @@ use Protocol\Kafka\Stream;
 /**
  * OffsetFetch/OffsetCommit DTO
  */
-class OffsetPartition
+class OffsetFetchPartition
 {
     /**
      * The partition this response entry corresponds to.
@@ -89,7 +89,7 @@ class OffsetPartition
         $instance->partition = $partition;
         $instance->offset    = $offset;
         $instance->metadata  = $metadata;
-        
+
         return $instance;
     }
 }
