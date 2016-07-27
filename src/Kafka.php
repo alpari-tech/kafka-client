@@ -13,6 +13,11 @@ class Kafka
     const VERSION_0 = 0;
 
     /**
+     * Protocol version 1 implementation
+     */
+    const VERSION_1 = 1;
+
+    /**
      * Protocol version implementation
      */
     const VERSION = 2;

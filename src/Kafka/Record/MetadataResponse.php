@@ -28,6 +28,7 @@ class MetadataResponse extends AbstractResponse
      * The broker id of the controller broker.
      *
      * @var integer
+     * @since Version 1 of protocol
      */
     public $controllerId;
 

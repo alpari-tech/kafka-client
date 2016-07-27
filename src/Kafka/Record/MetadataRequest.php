@@ -41,7 +41,7 @@ class MetadataRequest extends AbstractRequest
     {
         $this->topics = $topics;
 
-        parent::__construct(Kafka::METADATA, $correlationId, $clientId);
+        parent::__construct(Kafka::METADATA, $correlationId, $clientId, Kafka::VERSION_1);
     }
 
     /**
