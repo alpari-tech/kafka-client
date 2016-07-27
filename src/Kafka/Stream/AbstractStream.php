@@ -20,6 +20,9 @@ abstract class AbstractStream implements Stream
     public function readString()
     {
         $stringLength = $this->read('nlength')['length'];
+        if ($stringLength === 0xFFFF) {
+            return null;
+        }
 
         return $this->read("a{$stringLength}string")['string'];
     }
