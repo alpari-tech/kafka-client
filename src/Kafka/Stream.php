@@ -25,14 +25,14 @@ interface Stream
      *
      * @param string $format Format for unpacking arguments
      * @see unpack() manual for format
-     *partitionMetadata
+     *
      * @return array List of unpacked arguments
      */
     public function read($format);
 
     /**
      * Reads a string from the stream
-     *partitionMetadata
+     *
      * @return string
      */
     public function readString();
