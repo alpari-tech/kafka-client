@@ -17,6 +17,6 @@ class ApiVersionsRequest extends AbstractRequest
 
     public function __construct($correlationId = 0, $clientId = '')
     {
-        parent::__construct(Kafka::API_VERSIONS, $correlationId, $clientId);
+        parent::__construct(Kafka::API_VERSIONS, $correlationId, $clientId, Kafka::VERSION_0);
     }
 }

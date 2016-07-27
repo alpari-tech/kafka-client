@@ -25,7 +25,7 @@ class SaslHandshakeRequest extends AbstractRequest
     {
         $this->mechanism = $mechanism;
 
-        parent::__construct(Kafka::SASL_HANDSHAKE, $correlationId, $clientId);
+        parent::__construct(Kafka::SASL_HANDSHAKE, $correlationId, $clientId, Kafka::VERSION_0);
     }
 
     /**
