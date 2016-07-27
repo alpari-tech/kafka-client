@@ -10,7 +10,7 @@ class Kafka
     /**
      * Protocol version implementation
      */
-    const VERSION = 1;
+    const VERSION = 2;
 
     /**
      * Number of bytes in a kafka header
