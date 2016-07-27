@@ -30,6 +30,7 @@ class OffsetCommitRequest extends AbstractRequest
      * The generation of the group.
      *
      * @var int
+     * @since Version 1 of protocol
      */
     private $generationId;
 
@@ -37,6 +38,7 @@ class OffsetCommitRequest extends AbstractRequest
      * The member id assigned by the group coordinator.
      *
      * @var string
+     * @since Version 1 of protocol
      */
     private $memberName;
 
