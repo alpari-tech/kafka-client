@@ -7,19 +7,18 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\DTO\OffsetPartition;
 use Protocol\Kafka\Record;
 use Protocol\Kafka\Stream;
 
 /**
- * Produce response object
+ * Offset commit response object
  */
-class OffsetFetchResponse extends AbstractResponse
+class OffsetCommitResponse extends AbstractResponse
 {
     /**
-     * List of broker metadata info
+     * List of topics with partition result
      *
-     * @var array|OffsetPartition[]
+     * @var array
      */
     public $topics = [];
 
@@ -46,8 +45,8 @@ class OffsetFetchResponse extends AbstractResponse
             ) = array_values($stream->read("a{$topicLength}/NnumberOfPartitions"));
 
             for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
-                $topicMetadata = OffsetPartition::unpack($stream);
-                $self->topics[$topicName][$topicMetadata->partition] = $topicMetadata;
+                list ($partitionId, $partitionErrorCode) = array_values($stream->read('Npartition/nErrorCode'));
+                $self->topics[$topicName][$partitionId] = $partitionErrorCode;
             }
         }
 
