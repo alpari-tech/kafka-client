@@ -10,9 +10,9 @@ use Protocol\Kafka;
 use Protocol\Kafka\Stream;
 
 /**
- * OffsetFetch response DTO
+ * OffsetFetch/OffsetCommit DTO
  */
-class OffsetFetchPartition
+class OffsetPartition
 {
     /**
      * The partition this response entry corresponds to.
@@ -67,5 +67,29 @@ class OffsetFetchPartition
         ) = array_values($stream->read("a{$metadataLength}metadata/nerrorCode"));
 
         return $partition;
+    }
+
+    public function __toString()
+    {
+        $metadataLength = strlen($this->metadata);
+        $payload        = pack(
+            "NJna{$metadataLength}",
+            $this->partition,
+            $this->offset,
+            $metadataLength ? $metadataLength : -1,
+            $this->metadata
+        );
+
+        return $payload;
+    }
+
+    public static function fromPartitionOffset($partition, $offset, $metadata = null)
+    {
+        $instance = new static;
+        $instance->partition = $partition;
+        $instance->offset    = $offset;
+        $instance->metadata  = $metadata;
+        
+        return $instance;
     }
 }
