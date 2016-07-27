@@ -64,7 +64,7 @@ class OffsetsRequest extends AbstractRequest
         $this->maxOffsets      = $maxOffsets;
         $this->replicaId       = $replicaId;
 
-        parent::__construct(Kafka::OFFSETS, $correlationId, $clientId);
+        parent::__construct(Kafka::OFFSETS, $correlationId, $clientId, Kafka::VERSION_0);
     }
 
     /**

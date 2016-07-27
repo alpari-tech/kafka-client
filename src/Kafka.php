@@ -8,6 +8,11 @@ namespace Protocol;
 class Kafka
 {
     /**
+     * Protocol version 0 implementation
+     */
+    const VERSION_0 = 0;
+
+    /**
      * Protocol version implementation
      */
     const VERSION = 2;

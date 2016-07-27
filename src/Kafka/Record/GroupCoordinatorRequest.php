@@ -28,7 +28,7 @@ class GroupCoordinatorRequest extends AbstractRequest
     {
         $this->consumerGroup   = $consumerGroup;
 
-        parent::__construct(Kafka::GROUP_COORDINATOR, $correlationId, $clientId);
+        parent::__construct(Kafka::GROUP_COORDINATOR, $correlationId, $clientId, Kafka::VERSION_0);
     }
 
     /**
