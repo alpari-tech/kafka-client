@@ -43,6 +43,14 @@ class OffsetCommitRequest extends AbstractRequest
     private $memberName;
 
     /**
+     * Time period in ms to retain the offset.
+     *
+     * @var int
+     * @since Version 2 of protocol
+     */
+    private $retentionTime;
+
+    /**
      * @var array
      */
     private $topicPartitions;
@@ -51,6 +59,7 @@ class OffsetCommitRequest extends AbstractRequest
         $consumerGroup,
         $generationId,
         $memberName,
+        $retentionTime,
         array $topicPartitions,
         $correlationId = 0,
         $clientId = ''
@@ -58,10 +67,10 @@ class OffsetCommitRequest extends AbstractRequest
         $this->consumerGroup   = $consumerGroup;
         $this->generationId    = $generationId;
         $this->memberName      = $memberName;
+        $this->retentionTime   = $retentionTime;
         $this->topicPartitions = $topicPartitions;
 
         parent::__construct(Kafka::OFFSET_COMMIT, $correlationId, $clientId);
-
     }
 
     /**
@@ -75,12 +84,13 @@ class OffsetCommitRequest extends AbstractRequest
         $totalTopics  = count($this->topicPartitions);
 
         $payload .= pack(
-            "na{$groupLength}Nna{$memberLength}N",
+            "na{$groupLength}Nna{$memberLength}JN",
             $groupLength,
             $this->consumerGroup,
             $this->generationId,
             $memberLength,
             $this->memberName,
+            $this->retentionTime,
             $totalTopics
         );
 

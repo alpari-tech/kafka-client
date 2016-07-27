@@ -29,13 +29,6 @@ class OffsetCommitPartition
     public $offset;
 
     /**
-     * Timestamp of the commit
-     *
-     * @var integer
-     */
-    public $timestamp;
-
-    /**
      * Any associated metadata the client wants to keep.
      *
      * @var string
@@ -65,9 +58,8 @@ class OffsetCommitPartition
         list(
             $partition->partition,
             $partition->offset,
-            $partition->timestamp,
             $metadataLength
-        ) = array_values($stream->read('Npartition/Joffset/Jtimestamp/nmetadataLength'));
+        ) = array_values($stream->read('Npartition/Joffset/nmetadataLength'));
         $metadataLength = $metadataLength < 0x8000 ? $metadataLength : 0;
         list(
             $partition->metadata,
@@ -81,10 +73,9 @@ class OffsetCommitPartition
     {
         $metadataLength = strlen($this->metadata);
         $payload        = pack(
-            "NJJna{$metadataLength}",
+            "NJna{$metadataLength}",
             $this->partition,
             $this->offset,
-            $this->timestamp,
             $metadataLength ? $metadataLength : -1,
             $this->metadata
         );
