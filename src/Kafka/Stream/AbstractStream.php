@@ -41,6 +41,34 @@ abstract class AbstractStream implements Stream
     }
 
     /**
+     * Reads a byte array from the stream
+     *
+     * @return string
+     */
+    public function readByteArray()
+    {
+        $dataLength = $this->read('Nlength')['length'];
+        if ($dataLength === 0xFFFFFFFF) {
+            return null;
+        }
+
+        return $this->read("a{$dataLength}data")['data'];
+    }
+
+    /**
+     * Writes the string to the stream
+     *
+     * @param string $data Binary data
+     *
+     * @return mixed
+     */
+    public function writeByteArray($data)
+    {
+        $dataLength = strlen($data);
+        $this->write("Na{$dataLength}", $dataLength, $data);
+     }
+
+    /**
      * Calculates the format size for unpack() operation
      *
      * @param string $format
