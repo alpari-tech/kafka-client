@@ -25,7 +25,7 @@ class ControlledShutdownRequest extends AbstractRequest
     {
         $this->brokerId = $brokerId;
 
-        parent::__construct(Kafka::CONTROLLED_SHUTDOWN, $correlationId, $clientId);
+        parent::__construct(Kafka::CONTROLLED_SHUTDOWN, $correlationId, $clientId, Kafka::VERSION_1);
     }
 
     /**
