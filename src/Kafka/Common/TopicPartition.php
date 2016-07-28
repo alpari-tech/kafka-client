@@ -4,7 +4,7 @@
  * @date 14.07.2014
  */
 
-namespace Protocol\Kafka\DTO;
+namespace Protocol\Kafka\Common;
 
 use Protocol\Kafka;
 use Protocol\Kafka\Stream;
@@ -12,7 +12,7 @@ use Protocol\Kafka\Stream;
 /**
  * Topic metadata DTO
  */
-class TopicMetadata
+class TopicPartition
 {
     /**
      * The error code for the given topic.
@@ -31,7 +31,7 @@ class TopicMetadata
     /**
      * Metadata for each partition of the topic.
      *
-     * @var PartitionMetadata[]|array
+     * @var PartitionInfo[]|array
      */
     public $partitions = [];
 
@@ -52,7 +52,7 @@ class TopicMetadata
         ) = array_values($stream->read("a{$topicLength}topic/NnumberOfPartition"));
 
         for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
-            $partitionMetadata = PartitionMetadata::unpack($stream);
+            $partitionMetadata = PartitionInfo::unpack($stream);
 
             $topic->partitions[$partitionMetadata->partitionId] = $partitionMetadata;
         }

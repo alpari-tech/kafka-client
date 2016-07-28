@@ -7,8 +7,8 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\DTO\BrokerMetadata;
-use Protocol\Kafka\DTO\TopicMetadata;
+use Protocol\Kafka\Common\Node;
+use Protocol\Kafka\Common\TopicPartition;
 use Protocol\Kafka\Record;
 use Protocol\Kafka\Stream;
 
@@ -20,14 +20,14 @@ class MetadataResponse extends AbstractResponse
     /**
      * List of broker metadata info
      *
-     * @var array|BrokerMetadata[]
+     * @var array|Node[]
      */
     public $brokers = [];
 
     /**
      * List of topics
      *
-     * @var array|TopicMetadata[]
+     * @var array|TopicPartition[]
      */
     public $topics = [];
 
@@ -47,14 +47,14 @@ class MetadataResponse extends AbstractResponse
         ) = array_values($stream->read('NcorrelationId/NnumberOfBrokers'));
 
         for ($broker=0; $broker<$numberOfBrokers; $broker++) {
-            $brokerMetadata = BrokerMetadata::unpack($stream);
+            $brokerNode = Node::unpack($stream);
 
-            $self->brokers[$brokerMetadata->nodeId] = $brokerMetadata;
+            $self->brokers[$brokerNode->nodeId] = $brokerNode;
         }
         $numberOfTopics = $stream->read('NnumberOfTopics')['numberOfTopics'];
 
         for ($topic=0; $topic<$numberOfTopics; $topic++) {
-            $topicMetadata = TopicMetadata::unpack($stream);
+            $topicMetadata = TopicPartition::unpack($stream);
 
             $self->topics[$topicMetadata->topic] = $topicMetadata;
         }

@@ -4,15 +4,15 @@
  * @date 14.07.2014
  */
 
-namespace Protocol\Kafka\DTO;
+namespace Protocol\Kafka\Common;
 
 use Protocol\Kafka;
 use Protocol\Kafka\Stream;
 
 /**
- * Broker metadata DTO
+ * Information about a Kafka node
  */
-class BrokerMetadata
+class Node
 {
     /**
      * The broker id.
