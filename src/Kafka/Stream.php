@@ -38,11 +38,27 @@ interface Stream
     public function readString();
 
     /**
+     * Reads a byte array from the stream
+     *
+     * @return string
+     */
+    public function readByteArray();
+
+    /**
      * Writes the string to the stream
      *
-     * @param $string
+     * @param string $string
      *
      * @return mixed
      */
     public function writeString($string);
+
+    /**
+     * Writes the string to the stream
+     *
+     * @param string $data Binary data
+     *
+     * @return mixed
+     */
+    public function writeByteArray($data);
 }
