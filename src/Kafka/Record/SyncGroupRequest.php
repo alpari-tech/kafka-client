@@ -60,7 +60,7 @@ class SyncGroupRequest extends AbstractRequest
         $this->memberId         = $memberId;
         $this->groupAssignments = $groupAssignments;
 
-        parent::__construct(Kafka::SYNC_GROUP, $correlationId, $clientId);
+        parent::__construct(Kafka::SYNC_GROUP, $correlationId, $clientId, Kafka::VERSION_0);
     }
 
     /**

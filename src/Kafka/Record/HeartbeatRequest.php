@@ -46,7 +46,7 @@ class HeartbeatRequest extends AbstractRequest
         $this->generationId  = $generationId;
         $this->memberId      = $memberId;
 
-        parent::__construct(Kafka::HEARTBEAT, $correlationId, $clientId);
+        parent::__construct(Kafka::HEARTBEAT, $correlationId, $clientId, Kafka::VERSION_0);
     }
 
     /**
