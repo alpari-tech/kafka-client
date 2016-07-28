@@ -4,15 +4,15 @@
  * @date 14.07.2014
  */
 
-namespace Protocol\Kafka\DTO;
+namespace Protocol\Kafka\Common;
 
 use Protocol\Kafka;
 use Protocol\Kafka\Stream;
 
 /**
- * Partition metadata DTO
+ * Information about a topic-partition.
  */
-class PartitionMetadata
+class PartitionInfo
 {
     /**
      * The error code for the partition, if any.
