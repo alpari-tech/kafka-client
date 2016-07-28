@@ -22,6 +22,6 @@ class ListGroupsRequest extends AbstractRequest
      */
     public function __construct($correlationId = 0, $clientId = '')
     {
-        parent::__construct(Kafka::LIST_GROUPS, $correlationId, $clientId);
+        parent::__construct(Kafka::LIST_GROUPS, $correlationId, $clientId, Kafka::VERSION_0);
     }
 }
