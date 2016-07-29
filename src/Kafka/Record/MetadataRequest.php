@@ -60,6 +60,9 @@ class MetadataRequest extends AbstractRequest
         $payload = parent::packPayload();
 
         $totalTopics = count($this->topics);
+        if ($totalTopics === 0) {
+            $totalTopics = -1; // Since v1 we should use null for special value
+        }
         $payload .= pack('N', $totalTopics);
         foreach ($this->topics as $topic) {
             $length = strlen($topic);
