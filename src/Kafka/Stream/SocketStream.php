@@ -10,24 +10,56 @@ use Protocol\Kafka;
 use Protocol\Kafka\Error\NetworkException;
 use Protocol\Kafka\Stream;
 
+/**
+ * Implementation of simple socket stream
+ */
 class SocketStream extends AbstractStream
 {
-
     /**
      * Internal socket
      *
      * @var resource
      */
-    private $streamSocket;
+    protected $streamSocket;
 
     /**
-     * Socket stream constructor.
+     * Host name
      *
-     * @param string $streamSocket Socket resource
+     * @var string
      */
-    public function __construct($streamSocket)
+    protected $host;
+
+    /**
+     * Port number
+     *
+     * @var integer
+     */
+    protected $port;
+
+    /**
+     * Timeout for connection
+     *
+     * @var integer
+     */
+    protected $timeout;
+
+    /**
+     * Socket stream constructor
+     *
+     * @param string $tcpAddress Tcp address for connection
+     * @param integer|null $connectionTimeout Connection timeout in seconds or null for using the default value
+     */
+    public function __construct($tcpAddress, $connectionTimeout = 1)
     {
-        $this->streamSocket = $streamSocket;
+        $tcpInfo = parse_url($tcpAddress);
+        if ($tcpInfo === false || !isset($tcpInfo['host'])) {
+            throw new NetworkException("Malformed tcp address: {$tcpAddress}, please check your configuration");
+        }
+        $this->host    = $tcpInfo['host'];
+        $this->port    = isset($tcpInfo['port']) ? $tcpInfo['port'] : 9092;
+        $this->timeout = isset($connectionTimeout) ? $connectionTimeout : ini_get("default_socket_timeout");
+
+        $this->connect();
     }
 
     /**
@@ -76,5 +108,36 @@ class SocketStream extends AbstractStream
         $arguments = unpack($format, $streamBuffer);
 
         return $arguments;
+    }
+
+    /**
+     * Automatic resource clean up
+     */
+    final public function __destruct()
+    {
+        $this->disconnect();
+    }
+
+    /**
+     * Performs connection to the specified socket address
+     */
+    protected function connect()
+    {
+        $streamSocket = @fsockopen($this->host, $this->port, $errorNumber, $errorString, $this->timeout);
+        if (!$streamSocket) {
+            throw new NetworkException("Socket error {$errorNumber}: {$errorString}");
+        }
+
+        $this->streamSocket = $streamSocket;
+    }
+
+    /**
+     * Performs the disconnect operation
+     */
+    protected function disconnect()
+    {
+        if (is_resource($this->streamSocket)) {
+            fclose($this->streamSocket);
+        }
     }
 }

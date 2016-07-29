@@ -50,6 +50,16 @@ class Record
     }
 
     /**
+     * Writes the message to the stream
+     *
+     * @param Stream $stream Binary stream buffer
+     */
+    final public function writeTo(Stream $stream)
+    {
+        $stream->writeByteArray($this->messageData);
+    }
+
+    /**
      * Returns the binary message representation of record
      *
      * @return string
