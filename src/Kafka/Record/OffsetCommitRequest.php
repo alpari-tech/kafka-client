@@ -52,16 +52,16 @@ class OffsetCommitRequest extends AbstractRequest
         $generationId,
         $memberName,
         array $topicPartitions,
-        $correlationId = 0,
-        $clientId = ''
+        $clientId = '',
+        $correlationId = 0
     ) {
+
         $this->consumerGroup   = $consumerGroup;
         $this->generationId    = $generationId;
         $this->memberName      = $memberName;
         $this->topicPartitions = $topicPartitions;
 
-        parent::__construct(Kafka::OFFSET_COMMIT, $correlationId, $clientId);
-
+        parent::__construct(Kafka::OFFSET_COMMIT, $clientId, $correlationId);
     }
 
     /**

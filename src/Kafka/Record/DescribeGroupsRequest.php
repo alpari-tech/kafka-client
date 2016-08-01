@@ -27,10 +27,10 @@ class DescribeGroupsRequest extends AbstractRequest
     /**
      * {@inheritdoc}
      */
-    public function __construct(array $groups, $correlationId = 0, $clientId = '')
+    public function __construct(array $groups, $clientId = '', $correlationId = 0)
     {
         $this->groups = $groups;
-        parent::__construct(Kafka::DESCRIBE_GROUPS, $correlationId, $clientId, Kafka::VERSION_0);
+        parent::__construct(Kafka::DESCRIBE_GROUPS, $clientId, $correlationId, Kafka::VERSION_0);
     }
 
     /**

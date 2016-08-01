@@ -85,8 +85,8 @@ class FetchRequest extends AbstractRequest
         $minBytes,
         $maxBytes,
         $replicaId = -1,
-        $correlationId = 0,
-        $clientId = ''
+        $clientId = '',
+        $correlationId = 0
     ) {
         $this->topicPartitions = $topicPartitions;
         $this->maxWaitTime     = $maxWaitTime;
@@ -94,7 +94,7 @@ class FetchRequest extends AbstractRequest
         $this->maxBytes        = $maxBytes;
         $this->replicaId       = $replicaId;
 
-        parent::__construct(Kafka::FETCH, $correlationId, $clientId);
+        parent::__construct(Kafka::FETCH, $clientId, $correlationId);
     }
 
     /**

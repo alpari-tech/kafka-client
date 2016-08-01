@@ -60,8 +60,8 @@ class JoinGroupRequest extends AbstractRequest
         $memberId,
         $protocolType,
         array $groupProtocols,
-        $correlationId = 0,
-        $clientId = ''
+        $clientId = '',
+        $correlationId = 0
     ) {
         $this->consumerGroup  = $consumerGroup;
         $this->sessionTimeout = $sessionTimeout;
@@ -69,8 +69,7 @@ class JoinGroupRequest extends AbstractRequest
         $this->protocolType   = $protocolType;
         $this->groupProtocols = $groupProtocols;
 
-        parent::__construct(Kafka::JOIN_GROUP, $correlationId, $clientId, Kafka::VERSION_0);
-
+        parent::__construct(Kafka::JOIN_GROUP, $clientId, $correlationId, Kafka::VERSION_0);
     }
 
     /**
