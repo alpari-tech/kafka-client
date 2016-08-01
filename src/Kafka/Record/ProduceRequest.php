@@ -36,13 +36,13 @@ class ProduceRequest extends AbstractRequest
      */
     private $topicMessages;
 
-    public function __construct(array $topicMessages, $requiredAcks = 1, $timeout = 0, $correlationId = 0, $clientId = '')
+    public function __construct(array $topicMessages, $requiredAcks = 1, $timeout = 0, $clientId = '', $correlationId = 0)
     {
         $this->requiredAcks  = $requiredAcks;
         $this->timeout       = $timeout;
         $this->topicMessages = $topicMessages;
 
-        parent::__construct(Kafka::PRODUCE, $correlationId, $clientId);
+        parent::__construct(Kafka::PRODUCE, $clientId, $correlationId);
     }
 
     /**

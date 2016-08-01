@@ -32,12 +32,12 @@ class OffsetFetchRequest extends AbstractRequest
      */
     private $topicPartitions;
 
-    public function __construct($consumerGroup, array $topicPartitions, $correlationId = 0, $clientId = '')
+    public function __construct($consumerGroup, array $topicPartitions, $clientId = '', $correlationId = 0)
     {
         $this->consumerGroup   = $consumerGroup;
         $this->topicPartitions = $topicPartitions;
 
-        parent::__construct(Kafka::OFFSET_FETCH, $correlationId, $clientId);
+        parent::__construct(Kafka::OFFSET_FETCH, $clientId, $correlationId);
     }
 
     /**

@@ -32,12 +32,12 @@ class LeaveGroupRequest extends AbstractRequest
      */
     private $memberId;
 
-    public function __construct($consumerGroup, $memberId, $correlationId = 0, $clientId = '')
+    public function __construct($consumerGroup, $memberId, $clientId = '', $correlationId = 0)
     {
         $this->consumerGroup = $consumerGroup;
         $this->memberId      = $memberId;
 
-        parent::__construct(Kafka::LEAVE_GROUP, $correlationId, $clientId);
+        parent::__construct(Kafka::LEAVE_GROUP, $clientId, $correlationId);
     }
 
     /**

@@ -15,8 +15,8 @@ use Protocol\Kafka\Record;
 class ApiVersionsRequest extends AbstractRequest
 {
 
-    public function __construct($correlationId = 0, $clientId = '')
+    public function __construct($clientId = '', $correlationId = 0)
     {
-        parent::__construct(Kafka::API_VERSIONS, $correlationId, $clientId);
+        parent::__construct(Kafka::API_VERSIONS, $clientId, $correlationId);
     }
 }

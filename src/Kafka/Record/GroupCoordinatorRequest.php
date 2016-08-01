@@ -24,11 +24,11 @@ class GroupCoordinatorRequest extends AbstractRequest
      */
     private $consumerGroup;
 
-    public function __construct($consumerGroup, $correlationId = 0, $clientId = '')
+    public function __construct($consumerGroup, $clientId = '', $correlationId = 0)
     {
         $this->consumerGroup   = $consumerGroup;
 
-        parent::__construct(Kafka::GROUP_COORDINATOR, $correlationId, $clientId);
+        parent::__construct(Kafka::GROUP_COORDINATOR, $clientId, $correlationId);
     }
 
     /**

@@ -57,14 +57,14 @@ class OffsetsRequest extends AbstractRequest
         array $topicPartitions,
         $maxOffsets = 1,
         $replicaId = -1,
-        $correlationId = 0,
-        $clientId = ''
+        $clientId = '',
+        $correlationId = 0
     ) {
         $this->topicPartitions = $topicPartitions;
         $this->maxOffsets      = $maxOffsets;
         $this->replicaId       = $replicaId;
 
-        parent::__construct(Kafka::OFFSETS, $correlationId, $clientId);
+        parent::__construct(Kafka::OFFSETS, $clientId, $correlationId);
     }
 
     /**
