@@ -40,13 +40,13 @@ class HeartbeatRequest extends AbstractRequest
     private $memberId;
 
 
-    public function __construct($consumerGroup, $generationId, $memberId, $correlationId = 0, $clientId = '')
+    public function __construct($consumerGroup, $generationId, $memberId, $clientId = '', $correlationId = 0)
     {
         $this->consumerGroup = $consumerGroup;
         $this->generationId  = $generationId;
         $this->memberId      = $memberId;
 
-        parent::__construct(Kafka::HEARTBEAT, $correlationId, $clientId, Kafka::VERSION_0);
+        parent::__construct(Kafka::HEARTBEAT, $clientId, $correlationId, Kafka::VERSION_0);
     }
 
     /**

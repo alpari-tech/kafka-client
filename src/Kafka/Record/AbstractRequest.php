@@ -43,11 +43,18 @@ abstract class AbstractRequest extends Record
      */
     protected $clientId;
 
-    public function __construct($apiKey, $correlationId = 0, $clientId = '', $apiVersion = Kafka::VERSION)
+    /**
+     * Global request counter, ideally this should be stored somewhere in the shared config to survive between requests
+     *
+     * @var int
+     */
+    private static $counter = 0;
+
+    public function __construct($apiKey, $clientId = '', $correlationId = 0, $apiVersion = Kafka::VERSION)
     {
         $this->apiKey        = $apiKey;
-        $this->correlationId = $correlationId;
         $this->clientId      = $clientId;
+        $this->correlationId = $correlationId ?: self::$counter++;
         $this->apiVersion    = $apiVersion;
 
         $this->setMessageData($this->packPayload());

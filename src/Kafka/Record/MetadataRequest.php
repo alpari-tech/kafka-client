@@ -37,11 +37,11 @@ class MetadataRequest extends AbstractRequest
      */
     protected $topics;
 
-    public function __construct(array $topics = [], $correlationId = 0, $clientId = '')
+    public function __construct(array $topics = [], $clientId = '', $correlationId = 0)
     {
         $this->topics = $topics;
 
-        parent::__construct(Kafka::METADATA, $correlationId, $clientId, Kafka::VERSION_1);
+        parent::__construct(Kafka::METADATA, $clientId, $correlationId, Kafka::VERSION_1);
     }
 
     /**

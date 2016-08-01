@@ -52,20 +52,20 @@ class SyncGroupRequest extends AbstractRequest
         $generationId,
         $memberId,
         array $groupAssignments = [],
-        $correlationId = 0,
-        $clientId = ''
+        $clientId = '',
+        $correlationId = 0
     ) {
         $this->consumerGroup    = $consumerGroup;
         $this->generationId     = $generationId;
         $this->memberId         = $memberId;
         $this->groupAssignments = $groupAssignments;
 
-        parent::__construct(Kafka::SYNC_GROUP, $correlationId, $clientId, Kafka::VERSION_0);
+        parent::__construct(Kafka::SYNC_GROUP, $clientId, $correlationId, Kafka::VERSION_0);
     }
 
     /**
      * @inheritDoc
-     * 
+     *
      * SyncGroupRequest => GroupId GenerationId MemberId GroupAssignment
      *   GroupId => string
      *   GenerationId => int32
