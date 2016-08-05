@@ -7,7 +7,7 @@ use Exception;
 /**
  * The group is rebalancing, so a rejoin is needed.
  */
-class RebalanceInProgress extends \RuntimeException implements KafkaException
+class RebalanceInProgress extends KafkaException
 {
     public function __construct($message, Exception $previous = null)
     {

@@ -7,7 +7,7 @@ use Exception;
 /**
  * Specified group generation id is not valid.
  */
-class IllegalGeneration extends \RuntimeException implements KafkaException
+class IllegalGeneration extends KafkaException
 {
     public function __construct($message, Exception $previous = null)
     {
