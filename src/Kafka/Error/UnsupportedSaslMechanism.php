@@ -7,7 +7,7 @@ use Exception;
 /**
  * The broker does not support the requested SASL mechanism.
  */
-class UnsupportedSaslMechanism extends \RuntimeException implements KafkaException
+class UnsupportedSaslMechanism extends KafkaException
 {
     public function __construct($message, Exception $previous = null)
     {

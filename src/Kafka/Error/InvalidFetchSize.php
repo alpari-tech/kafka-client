@@ -7,7 +7,7 @@ use Exception;
 /**
  * The requested fetch size is invalid.
  */
-class InvalidFetchSize extends \RuntimeException implements KafkaException
+class InvalidFetchSize extends KafkaException
 {
     public function __construct($message, Exception $previous = null)
     {

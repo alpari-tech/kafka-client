@@ -7,7 +7,7 @@ use Exception;
 /**
  * Cluster authorization failed.
  */
-class ClusterAuthorizationFailed extends \RuntimeException implements KafkaException
+class ClusterAuthorizationFailed extends KafkaException
 {
     public function __construct($message, Exception $previous = null)
     {

@@ -77,7 +77,7 @@ class ConsumerProtocolMetadata
 
     /**
      * @return string
-     * 
+     *
      * ProtocolMetadata => Version Subscription UserData
      *   Version => int16
      *   Subscription => [Topic]
@@ -95,6 +95,6 @@ class ConsumerProtocolMetadata
         $payload .= pack('N', $userDataLength);
         $payload .= $this->userData;
 
-        return pack('N', crc32($payload)) . $payload;
+        return $payload;
     }
 }

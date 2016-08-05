@@ -7,7 +7,7 @@ use Exception;
 /**
  * The server disconnected before a response was received.
  */
-class NetworkException extends \RuntimeException implements KafkaException, RetriableException
+class NetworkException extends KafkaException implements RetriableException
 {
     public function __construct($message, Exception $previous = null)
     {

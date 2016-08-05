@@ -29,7 +29,7 @@ class OffsetsRequest extends AbstractRequest
     /**
      * Special value for receiving the earliest available offset
      */
-    const EARLIEST = -1;
+    const EARLIEST = -2;
 
     /**
      * @var array

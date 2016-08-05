@@ -7,7 +7,7 @@ use Exception;
 /**
  * The replica is not available for the requested topic-partition
  */
-class ReplicaNotAvailable extends \RuntimeException implements KafkaException
+class ReplicaNotAvailable extends KafkaException
 {
     public function __construct($message, Exception $previous = null)
     {
