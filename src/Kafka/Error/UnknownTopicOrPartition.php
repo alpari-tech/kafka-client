@@ -7,7 +7,7 @@ use Exception;
 /**
  * This server does not host this topic-partition.
  */
-class UnknownTopicOrPartition extends \InvalidArgumentException implements KafkaException implements RetriableException
+class UnknownTopicOrPartition extends KafkaException implements RetriableException
 {
     public function __construct($message, Exception $previous = null)
     {
