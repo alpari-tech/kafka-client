@@ -4,7 +4,7 @@
  * @date 14.07.2014
  */
 
-namespace Protocol\Kafka\DTO;
+namespace Protocol\Kafka\Consumer;
 
 use Protocol\Kafka;
 use Protocol\Kafka\Stream;
@@ -12,7 +12,7 @@ use Protocol\Kafka\Stream;
 /**
  * Consumer Groups: The format of the MemberAssignment field for consumer groups
  */
-class MemberAssignmentMetadata
+class MemberAssignment
 {
 
     /**

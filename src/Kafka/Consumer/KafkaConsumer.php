@@ -10,8 +10,6 @@ use Protocol\Kafka\Client;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\Node;
 use Protocol\Kafka\Common\PartitionInfo;
-use Protocol\Kafka\DTO\ConsumerProtocolMetadata;
-use Protocol\Kafka\DTO\MemberAssignmentMetadata;
 use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\OffsetOutOfRange;
 use Protocol\Kafka\Error\UnknownTopicOrPartition;
@@ -68,7 +66,7 @@ class KafkaConsumer
     /**
      * Metadata for subscribed topics
      *
-     * @var ConsumerProtocolMetadata
+     * @var Subscription
      */
     private $subscription;
 
@@ -330,7 +328,7 @@ class KafkaConsumer
         $groupId           = $this->configuration[Config::GROUP_ID];
         $this->coordinator = $this->client->getGroupCoordinator($groupId);
 
-        $subscription = ConsumerProtocolMetadata::fromSubscription($topics);
+        $subscription = Subscription::fromSubscription($topics);
         $joinResult   = $this->client->joinGroup(
             $this->coordinator,
             $this->configuration[Config::GROUP_ID],
@@ -362,7 +360,7 @@ class KafkaConsumer
                 $this->generationId
             );
 
-            $assignments = MemberAssignmentMetadata::unpack(new Stream\StringStream($syncResult->memberAssignment));
+            $assignments = MemberAssignment::unpack(new Stream\StringStream($syncResult->memberAssignment));
 
             // TODO: Use $assignments->userData; $assignments->version;
             $topicPartitions = $assignments->topicPartitions;
@@ -374,7 +372,7 @@ class KafkaConsumer
     /**
      * Get the current subscription
      *
-     * @return ConsumerProtocolMetadata
+     * @return Subscription
      */
     public function subscription()
     {

@@ -7,7 +7,6 @@
 namespace Protocol\Kafka\Consumer;
 
 use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\DTO\MemberAssignmentMetadata;
 
 /**
  * This interface is used to define custom partition assignment for use in KafkaConsumer.
@@ -26,11 +25,12 @@ interface PartitionAssignorInterface
 {
     /**
      * Perform the group assignment given the member subscriptions and current cluster metadata.
+     *
      * @param Cluster $metadata Current topic/broker metadata known by consumer
      * @param array $subscriptions Subscriptions from all members
      *
-     * @return array|MemberAssignmentMetadata[] A map from the members to their respective assignment. This should have one entry
-     *         for all members who in the input subscription map.
+     * @return array|MemberAssignment[] A map from the members to their respective assignment.
+     *                                  This should have one entry for all members who in the input subscription map.
      */
     public function assign(Cluster $metadata, array $subscriptions);
 }
