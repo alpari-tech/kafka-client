@@ -7,7 +7,7 @@ use Exception;
 /**
  * The request attempted to perform an operation on an invalid topic.
  */
-class InvalidTopicException extends \RuntimeException implements KafkaException
+class InvalidTopicException extends KafkaException
 {
     public function __construct($message, Exception $previous = null)
     {

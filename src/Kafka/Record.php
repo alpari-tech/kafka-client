@@ -75,7 +75,7 @@ class Record
      *
      * @param $data
      */
-    public function setMessageData($data)
+    final protected function setMessageData($data)
     {
         $this->messageData = $data;
         $this->messageSize = strlen($this->messageData);
@@ -86,7 +86,7 @@ class Record
      *
      * @return string
      */
-    public function getMessageData()
+    final protected function getMessageData()
     {
         return $this->messageData;
     }
@@ -96,7 +96,7 @@ class Record
      *
      * @return int
      */
-    final public function getMessageSize()
+    final protected function getMessageSize()
     {
         return $this->messageSize;
     }

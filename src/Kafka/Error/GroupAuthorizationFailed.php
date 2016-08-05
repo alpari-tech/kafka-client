@@ -7,7 +7,7 @@ use Exception;
 /**
  * Not authorized to access group: Group authorization failed.
  */
-class GroupAuthorizationFailed extends \RuntimeException implements KafkaException
+class GroupAuthorizationFailed extends KafkaException
 {
     public function __construct($message, Exception $previous = null)
     {

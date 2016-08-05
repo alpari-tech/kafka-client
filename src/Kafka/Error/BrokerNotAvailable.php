@@ -7,7 +7,7 @@ use Exception;
 /**
  * The broker is not available.
  */
-class BrokerNotAvailable extends \RuntimeException implements KafkaException
+class BrokerNotAvailable extends KafkaException
 {
     public function __construct($message, Exception $previous = null)
     {

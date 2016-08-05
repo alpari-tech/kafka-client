@@ -7,7 +7,7 @@ use Exception;
 /**
  * Not authorized to access topics: [Topic authorization failed.]
  */
-class TopicAuthorizationFailed extends \RuntimeException implements KafkaException
+class TopicAuthorizationFailed extends KafkaException
 {
     public function __construct($message, Exception $previous = null)
     {
