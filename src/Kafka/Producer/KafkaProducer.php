@@ -6,12 +6,11 @@
 
 namespace Protocol\Kafka\Producer;
 
+use Protocol\Kafka\Client;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\PartitionInfo;
 use Protocol\Kafka\DTO\Message;
-use Protocol\Kafka\Record\ProduceRequest;
 use Protocol\Kafka\Record\ProduceResponse;
-use Protocol\Kafka\Stream\PersistentSocketStream;
 
 /**
  * A Kafka client that publishes records to the Kafka cluster.
@@ -31,6 +30,13 @@ class KafkaProducer
      * @var Cluster
      */
     private $cluster;
+
+    /**
+     * Low-level kafka client
+     *
+     * @var Client
+     */
+    private $client;
 
     /**
      * Instance of partitioner
@@ -85,6 +91,7 @@ class KafkaProducer
             throw new \InvalidArgumentException("Partitioner class should implement PartitionInterface");
         }
         $this->partitioner = new $partitioner;
+        $this->client      = new Client($this->cluster, $this->configuration);
     }
 
     /**
@@ -103,12 +110,12 @@ class KafkaProducer
      * Sends a message to the topic
      *
      * @param string  $topic   Name of the topic
-     * @param Message $message Message to send
+     * @param Message|Message[] $message Message or array of messages to send
      * @param integer|null    $concretePartition Optional partition for sending message
      *
      * @return ProduceResponse
      */
-    public function send($topic, Message $message, $concretePartition = null)
+    public function send($topic, $message, $concretePartition = null)
     {
         if (isset($concretePartition)) {
             $partition = $concretePartition;
@@ -116,22 +123,8 @@ class KafkaProducer
             $partition = $this->partitioner->partition($topic, $message->key, $message->value, $this->cluster);
         }
 
-        $node = $this->cluster->leaderFor($topic, $partition);
-
-        // TODO use manger for retrying, configuring connection settings, message buffering, etc
-        $stream  = new PersistentSocketStream("tcp://{$node->host}:{$node->port}");
-        $request = new ProduceRequest(
-            [
-                $topic => [
-                    $partition => [$message]
-                ]
-            ],
-            $this->configuration[Config::ACKS],
-            $this->configuration[Config::TIMEOUT_MS],
-            $this->configuration[Config::CLIENT_ID]
-        );
-        $request->writeTo($stream);
-        $response = ProduceResponse::unpack($stream);
+        $topicMessages = ($message instanceof Message) ? [$message] : (array) $message;
+        $response      = $this->client->produce($topic, $partition, $topicMessages);
 
         return $response;
     }
