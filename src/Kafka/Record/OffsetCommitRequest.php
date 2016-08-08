@@ -53,7 +53,11 @@ class OffsetCommitRequest extends AbstractRequest
             $topicLength = strlen($topic);
             $payload    .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
             /** @var OffsetFetchPartition $partition */
-            foreach ($partitions as $partition) {
+            foreach ($partitions as $partitionId => $partition) {
+                if (!is_object($partition)) {
+                    // short-cut to store only offsetst, in this case $partition is offset
+                    $partition = OffsetFetchPartition::fromPartitionOffset($partitionId, $partition);
+                }
                 $payload .= (string) $partition;
             }
         }

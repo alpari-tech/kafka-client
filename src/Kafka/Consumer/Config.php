@@ -107,6 +107,11 @@ final class Config
      */
     const HEARTBEAT_INTERVAL_MS = 'heartbeat.interval.ms';
 
+    /**
+     * If true the consumer's offset will be periodically committed in the background.
+     */
+    const ENABLE_AUTO_COMMIT = 'enable.auto.commit';
+
 
     const KEY_DESERIALIZER              = 'key.deserializer';
     const VALUE_DESERIALIZER            = 'value.deserializer';
@@ -114,7 +119,6 @@ final class Config
     const SSL_KEYSTORE_LOCATION         = 'ssl.keystore.location';
     const SSL_KEYSTORE_PASSWORD         = 'ssl.keystore.password';
     const CONNECTIONS_MAX_IDLE_MS       = 'connections.max.idle.ms';
-    const ENABLE_AUTO_COMMIT            = 'enable.auto.commit';
     const EXCLUDE_INTERNAL_TOPICS       = 'exclude.internal.topics';
     const MAX_POLL_RECORDS              = 'max.poll.records';
     const RECEIVE_BUFFER_BYTES          = 'receive.buffer.bytes';
