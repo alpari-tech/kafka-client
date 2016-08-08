@@ -108,9 +108,15 @@ final class Config
     const HEARTBEAT_INTERVAL_MS = 'heartbeat.interval.ms';
 
     /**
-     * If true the consumer's offset will be periodically committed in the background.
+     * If true the consumer's offset will be periodically committed after poll() operation.
      */
     const ENABLE_AUTO_COMMIT = 'enable.auto.commit';
+
+    /**
+     * The frequency in milliseconds that the consumer offsets are auto-committed to Kafka if enable.auto.commit is set
+     * to true.
+     */
+    const AUTO_COMMIT_INTERVAL_MS = 'auto.commit.interval.ms';
 
 
     const KEY_DESERIALIZER              = 'key.deserializer';
@@ -127,7 +133,6 @@ final class Config
     const SEND_BUFFER_BYTES             = 'send.buffer.bytes';
     const SSL_ENABLED_PROTOCOLS         = 'ssl.enabled.protocols';
     const SSL_PROTOCOL                  = 'ssl.protocol';
-    const AUTO_COMMIT_INTERVAL_MS       = 'auto.commit.interval.ms';
     const CHECK_CRCS                    = 'check.crcs';
     const METADATA_MAX_AGE_MS           = 'metadata.max.age.ms';
     const RECONNECT_BACKOFF_MS          = 'reconnect.backoff.ms';
