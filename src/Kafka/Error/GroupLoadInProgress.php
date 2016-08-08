@@ -9,8 +9,8 @@ use Exception;
  */
 class GroupLoadInProgress extends KafkaException implements RetriableException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::GROUP_LOAD_IN_PROGRESS, $previous);
+        parent::__construct($context, self::GROUP_LOAD_IN_PROGRESS, $previous);
     }
 }

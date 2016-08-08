@@ -11,8 +11,8 @@ use Exception;
  */
 class InvalidSessionTimeout extends KafkaException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::INVALID_SESSION_TIMEOUT, $previous);
+        parent::__construct($context, self::INVALID_SESSION_TIMEOUT, $previous);
     }
 }

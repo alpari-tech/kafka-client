@@ -97,7 +97,7 @@ class Client
         foreach ($response->topics as $topic => $partitions) {
             foreach ($partitions as $partitionId => $partitionInfo) {
                 if ($partitionInfo->errorCode !== 0) {
-                    throw KafkaException::fromCode($partitionInfo->errorCode, "Topic: {$topic}:{$partitionId}");
+                    throw KafkaException::fromCode($partitionInfo->errorCode, compact('topic', 'partitionId'));
                 }
             }
         }
@@ -136,7 +136,7 @@ class Client
         foreach ($response->topics as $topic => $partitions) {
             foreach ($partitions as $partitionId => $errorCode) {
                 if ($errorCode !== 0) {
-                    throw KafkaException::fromCode($errorCode, "Topic: {$topic}:{$partitionId}");
+                    throw KafkaException::fromCode($errorCode, compact('topic', 'partitionId'));
                 }
             }
         }
@@ -178,7 +178,7 @@ class Client
             foreach ($partitions as $partitionId => $partition) {
                 $isUnknownTopicPartition = $partition->errorCode === KafkaException::UNKNOWN_TOPIC_OR_PARTITION;
                 if ($partition->errorCode !== 0 && !$isUnknownTopicPartition) {
-                    throw KafkaException::fromCode($partition->errorCode, "Topic: {$topic}:{$partitionId}");
+                    throw KafkaException::fromCode($partition->errorCode, compact('topic', 'partitionId'));
                 }
                 $result[$topic][$partitionId] = $partition->offset;
             }
@@ -221,7 +221,8 @@ class Client
         $request->writeTo($stream);
         $response = JoinGroupResponse::unpack($stream);
         if ($response->errorCode !== 0) {
-            throw KafkaException::fromCode($response->errorCode);
+            $context = compact('coordinatorNode', 'groupId', 'memberId', 'protocolType');
+            throw KafkaException::fromCode($response->errorCode, $context);
         }
 
         return $response;
@@ -252,7 +253,8 @@ class Client
         $request->writeTo($stream);
         $response = LeaveGroupResponse::unpack($stream);
         if ($response->errorCode !== 0) {
-            throw KafkaException::fromCode($response->errorCode);
+            $context = compact('coordinatorNode', 'groupId', 'memberId');
+            throw KafkaException::fromCode($response->errorCode, $context);
         }
     }
 
@@ -288,7 +290,8 @@ class Client
         $request->writeTo($stream);
         $response = SyncGroupResponse::unpack($stream);
         if ($response->errorCode !== 0) {
-            throw KafkaException::fromCode($response->errorCode);
+            $context = compact('coordinatorNode', 'groupId', 'memberId', 'generationId', 'groupAssignments');
+            throw KafkaException::fromCode($response->errorCode, $context);
         }
 
         return $response;
@@ -322,7 +325,8 @@ class Client
         $request->writeTo($stream);
         $response = HeartbeatResponse::unpack($stream);
         if ($response->errorCode !== 0) {
-            throw KafkaException::fromCode($response->errorCode);
+            $context = compact('coordinatorNode', 'groupId', 'memberId', 'generationId');
+            throw KafkaException::fromCode($response->errorCode, $context);
         }
     }
 
@@ -348,7 +352,7 @@ class Client
         $request->writeTo($stream);
         $response = GroupCoordinatorResponse::unpack($stream);
         if ($response->errorCode !== 0) {
-            throw KafkaException::fromCode($response->errorCode);
+            throw KafkaException::fromCode($response->errorCode, compact('groupId'));
         }
 
         return $this->cluster->nodeById($response->coordinator->nodeId);
@@ -388,7 +392,7 @@ class Client
                 foreach ($partitions as $partitionId => $responsePartition) {
                     /** @var Kafka\DTO\FetchResponsePartition $responsePartition */
                     if ($responsePartition->errorCode !== 0) {
-                        throw KafkaException::fromCode($responsePartition->errorCode, "Topic: {$topic}:{$partitionId}");
+                        throw KafkaException::fromCode($responsePartition->errorCode, compact('topic', 'partitionId'));
                     }
                     $result[$topic][$partitionId] = $responsePartition->messageSet;
                 }
@@ -428,7 +432,7 @@ class Client
                 /** @var Kafka\DTO\OffsetsPartition[] $partitions */
                 foreach ($partitions as $partitionId => $partitionMetadata) {
                     if ($partitionMetadata->errorCode !== 0) {
-                        throw KafkaException::fromCode($partitionMetadata->errorCode, "Topic: {$topic}:{$partitionId}");
+                        throw KafkaException::fromCode($partitionMetadata->errorCode, compact('topic', 'partitionId'));
                     }
                     $result[$topic][$partitionId] = reset($partitionMetadata->offsets);
                 }

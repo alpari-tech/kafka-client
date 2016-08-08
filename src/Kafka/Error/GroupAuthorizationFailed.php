@@ -5,12 +5,12 @@ namespace Protocol\Kafka\Error;
 use Exception;
 
 /**
- * Not authorized to access group: Group authorization failed.
+ * Not authorized to access group.
  */
 class GroupAuthorizationFailed extends KafkaException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::GROUP_AUTHORIZATION_FAILED, $previous);
+        parent::__construct($context, self::GROUP_AUTHORIZATION_FAILED, $previous);
     }
 }

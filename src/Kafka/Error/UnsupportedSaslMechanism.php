@@ -9,8 +9,8 @@ use Exception;
  */
 class UnsupportedSaslMechanism extends KafkaException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::UNSUPPORTED_SASL_MECHANISM, $previous);
+        parent::__construct($context, self::UNSUPPORTED_SASL_MECHANISM, $previous);
     }
 }

@@ -9,8 +9,8 @@ use Exception;
  */
 class NetworkException extends KafkaException implements RetriableException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::NETWORK_EXCEPTION, $previous);
+        parent::__construct($context, self::NETWORK_EXCEPTION, $previous);
     }
 }

@@ -9,8 +9,8 @@ use Exception;
  */
 class NotCoordinatorForGroup extends KafkaException implements RetriableException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::NOT_COORDINATOR_FOR_GROUP, $previous);
+        parent::__construct($context, self::NOT_COORDINATOR_FOR_GROUP, $previous);
     }
 }

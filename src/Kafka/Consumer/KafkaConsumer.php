@@ -161,8 +161,7 @@ class KafkaConsumer
     {
         $unknownTopics = array_diff($this->subscription->topics, array_keys($topicPartitions));
         if (!empty($unknownTopics)) {
-            $unknownTopics = join(', ', $unknownTopics);
-            throw new UnknownTopicOrPartition("Can not set partitions for non-subscribed topics: {$unknownTopics}");
+            throw new UnknownTopicOrPartition(compact('unknownTopics'));
         }
         $this->assignedTopicPartitions = $topicPartitions;
 
@@ -263,7 +262,7 @@ class KafkaConsumer
     public function position($topic, $partition)
     {
         if (!isset($this->assignedTopicPartitions[$topic][$partition])) {
-            throw new UnknownTopicOrPartition("Consumer was not assigned to the {$topic}:{$partition}");
+            throw new UnknownTopicOrPartition(compact('topic', 'partition'));
         }
 
         return $this->topicPartitionOffsets[$topic][$partition] + 1;
@@ -293,7 +292,7 @@ class KafkaConsumer
     public function seek($topic, $partition, $offset)
     {
         if (!isset($this->assignedTopicPartitions[$topic][$partition])) {
-            throw new UnknownTopicOrPartition("Consumer was not assigned to the {$topic}:{$partition}");
+            throw new UnknownTopicOrPartition(compact('topic', 'partition'));
         }
         $this->topicPartitionOffsets[$topic][$partition] = $offset;
     }
@@ -453,7 +452,7 @@ class KafkaConsumer
             case 'earliest':
                 return $this->fetchOffsetAndSeek($unknownTopicPartitions, OffsetsRequest::EARLIEST);
             default:
-                throw new OffsetOutOfRange("Can not reliable determine consumer partition offsets");
+                throw new OffsetOutOfRange(compact('unknownTopicPartitions'));
         }
     }
 

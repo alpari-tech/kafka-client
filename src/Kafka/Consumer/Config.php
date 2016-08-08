@@ -99,7 +99,7 @@ final class Config
 
     /**
      * The expected time between heartbeats to the consumer coordinator when using Kafka's group management facilities.
-     * 
+     *
      * Heartbeats are used to ensure that the consumer's session stays active and to facilitate rebalancing when new
      * consumers join or leave the group. The value must be set lower than session.timeout.ms, but typically should be
      * set no higher than 1/3 of that value. It can be adjusted even lower to control the expected time for normal

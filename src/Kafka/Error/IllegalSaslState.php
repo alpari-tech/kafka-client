@@ -9,8 +9,8 @@ use Exception;
  */
 class IllegalSaslState extends KafkaException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::ILLEGAL_SASL_STATE, $previous);
+        parent::__construct($context, self::ILLEGAL_SASL_STATE, $previous);
     }
 }
