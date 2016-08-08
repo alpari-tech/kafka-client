@@ -166,7 +166,7 @@ class KafkaConsumer
         }
         $this->assignedTopicPartitions = $topicPartitions;
 
-        $topicPartitionOffsets = $this->client->fetchOffsets(
+        $topicPartitionOffsets = $this->client->fetchGroupOffsets(
             $this->coordinator,
             $this->configuration[Config::GROUP_ID],
             $topicPartitions
@@ -193,7 +193,7 @@ class KafkaConsumer
     {
         $topicPartitionOffsets = isset($topicPartitionOffsets) ? $topicPartitionOffsets : $this->topicPartitionOffsets;
 
-        $this->client->commitOffsets(
+        $this->client->commitGroupOffsets(
             $this->coordinator,
             $this->configuration[Config::GROUP_ID],
             $topicPartitionOffsets
@@ -386,14 +386,25 @@ class KafkaConsumer
      */
     public function unsubscribe()
     {
-        $result = $this->client->leaveGroup(
-            $this->coordinator,
-            $this->configuration[Config::GROUP_ID],
-            $this->memberId
-        );
-        unset($this->subscription);
+        if (!empty($this->subscription)) {
+            $this->client->leaveGroup(
+                $this->coordinator,
+                $this->configuration[Config::GROUP_ID],
+                $this->memberId
+            );
+            unset($this->subscription);
+        }
+
         $this->assignedTopicPartitions = [];
         $this->topicPartitionOffsets   = [];
+    }
+
+    /**
+     * Automatic consumer destruction should invoke unsubscription process
+     */
+    public function __destruct()
+    {
+        $this->unsubscribe();
     }
 
     /**
@@ -471,7 +482,7 @@ class KafkaConsumer
             }
             $topicPartitionOffsetsRequest[$topic] = array_fill_keys($partitions, $requestType);
         }
-        $topicPartitionOffsets = $this->client->offsets($topicPartitionOffsetsRequest);
+        $topicPartitionOffsets = $this->client->fetchTopicPartitionOffsets($topicPartitionOffsetsRequest);
 
         return array_replace_recursive($this->topicPartitionOffsets, $topicPartitionOffsets);
     }

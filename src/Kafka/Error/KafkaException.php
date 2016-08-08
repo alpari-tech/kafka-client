@@ -54,6 +54,7 @@ class KafkaException extends \RuntimeException
      * @var array
      */
     private static $codeToClassMap = [
+        self::UNKNOWN                          => UnknownError::class,
         self::OFFSET_OUT_OF_RANGE              => OffsetOutOfRange::class,
         self::CORRUPT_MESSAGE                  => CorruptMessage::class,
         self::UNKNOWN_TOPIC_OR_PARTITION       => UnknownTopicOrPartition::class,
