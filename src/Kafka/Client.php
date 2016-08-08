@@ -86,7 +86,7 @@ class Client
         $stream = $this->connections[$leader->nodeId];
 
         $request = new ProduceRequest(
-            $topicMessages,
+            [$topic => [$partition => $topicMessages]],
             $this->configuration[ProducerConfig::ACKS],
             $this->configuration[ProducerConfig::TIMEOUT_MS],
             $this->configuration[ProducerConfig::CLIENT_ID]
