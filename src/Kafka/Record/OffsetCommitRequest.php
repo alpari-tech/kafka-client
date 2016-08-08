@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Alexander.Lisachenko
- * @date 14.07.2014
+ * @date 14.07.2016
  */
 
 namespace Protocol\Kafka\Record;
@@ -86,10 +86,14 @@ class OffsetCommitRequest extends AbstractRequest
 
         foreach ($this->topicPartitions as $topic => $partitions) {
             $topicLength = strlen($topic);
-            $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
+            $payload    .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
             /** @var OffsetCommitPartition $partition */
-            foreach ($partitions as $partition) {
-                $payload .= (string)$partition;
+            foreach ($partitions as $partitionId => $partition) {
+                if (!is_object($partition)) {
+                    // short-cut to store only offsetst, in this case $partition is offset
+                    $partition = OffsetCommitPartition::fromPartitionOffset($partitionId, $partition);
+                }
+                $payload .= (string) $partition;
             }
         }
 

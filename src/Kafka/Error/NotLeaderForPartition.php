@@ -9,8 +9,8 @@ use Exception;
  */
 class NotLeaderForPartition extends KafkaException implements RetriableException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::NOT_LEADER_FOR_PARTITION, $previous);
+        parent::__construct($context, self::NOT_LEADER_FOR_PARTITION, $previous);
     }
 }

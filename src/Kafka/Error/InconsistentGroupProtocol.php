@@ -9,8 +9,8 @@ use Exception;
  */
 class InconsistentGroupProtocol extends KafkaException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::INCONSISTENT_GROUP_PROTOCOL, $previous);
+        parent::__construct($context, self::INCONSISTENT_GROUP_PROTOCOL, $previous);
     }
 }

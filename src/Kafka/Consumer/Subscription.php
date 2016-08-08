@@ -1,18 +1,18 @@
 <?php
 /**
  * @author Alexander.Lisachenko
- * @date 14.07.2014
+ * @date 14.07.2016
  */
 
-namespace Protocol\Kafka\DTO;
+namespace Protocol\Kafka\Consumer;
 
 use Protocol\Kafka;
 use Protocol\Kafka\Stream;
 
 /**
- * A message in kafka is a key-value pair with a small amount of associated metadata.
+ * Subscription information that is used for the synchronization between consumers
  */
-class ConsumerProtocolMetadata
+class Subscription
 {
 
     /**

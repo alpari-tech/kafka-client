@@ -9,8 +9,8 @@ use Exception;
  */
 class LeaderNotAvailable extends KafkaException implements RetriableException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::LEADER_NOT_AVAILABLE, $previous);
+        parent::__construct($context, self::LEADER_NOT_AVAILABLE, $previous);
     }
 }

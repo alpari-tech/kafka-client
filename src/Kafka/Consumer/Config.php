@@ -99,13 +99,24 @@ final class Config
 
     /**
      * The expected time between heartbeats to the consumer coordinator when using Kafka's group management facilities.
-     * 
+     *
      * Heartbeats are used to ensure that the consumer's session stays active and to facilitate rebalancing when new
      * consumers join or leave the group. The value must be set lower than session.timeout.ms, but typically should be
      * set no higher than 1/3 of that value. It can be adjusted even lower to control the expected time for normal
      * rebalances.
      */
     const HEARTBEAT_INTERVAL_MS = 'heartbeat.interval.ms';
+
+    /**
+     * If true the consumer's offset will be periodically committed after poll() operation.
+     */
+    const ENABLE_AUTO_COMMIT = 'enable.auto.commit';
+
+    /**
+     * The frequency in milliseconds that the consumer offsets are auto-committed to Kafka if enable.auto.commit is set
+     * to true.
+     */
+    const AUTO_COMMIT_INTERVAL_MS = 'auto.commit.interval.ms';
 
 
     const KEY_DESERIALIZER              = 'key.deserializer';
@@ -114,7 +125,6 @@ final class Config
     const SSL_KEYSTORE_LOCATION         = 'ssl.keystore.location';
     const SSL_KEYSTORE_PASSWORD         = 'ssl.keystore.password';
     const CONNECTIONS_MAX_IDLE_MS       = 'connections.max.idle.ms';
-    const ENABLE_AUTO_COMMIT            = 'enable.auto.commit';
     const EXCLUDE_INTERNAL_TOPICS       = 'exclude.internal.topics';
     const MAX_POLL_RECORDS              = 'max.poll.records';
     const RECEIVE_BUFFER_BYTES          = 'receive.buffer.bytes';
@@ -123,7 +133,6 @@ final class Config
     const SEND_BUFFER_BYTES             = 'send.buffer.bytes';
     const SSL_ENABLED_PROTOCOLS         = 'ssl.enabled.protocols';
     const SSL_PROTOCOL                  = 'ssl.protocol';
-    const AUTO_COMMIT_INTERVAL_MS       = 'auto.commit.interval.ms';
     const CHECK_CRCS                    = 'check.crcs';
     const METADATA_MAX_AGE_MS           = 'metadata.max.age.ms';
     const RECONNECT_BACKOFF_MS          = 'reconnect.backoff.ms';

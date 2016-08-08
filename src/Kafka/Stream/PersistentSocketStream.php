@@ -23,7 +23,7 @@ class PersistentSocketStream extends SocketStream
     {
         $streamSocket = @pfsockopen($this->host, $this->port, $errorNumber, $errorString, $this->timeout);
         if (!$streamSocket) {
-            throw new NetworkException("Socket error {$errorNumber}: {$errorString}");
+            throw new NetworkException(compact('errorNumber', 'errorString'));
         }
 
         $this->streamSocket = $streamSocket;

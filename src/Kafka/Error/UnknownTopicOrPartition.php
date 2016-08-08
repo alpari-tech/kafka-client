@@ -9,8 +9,8 @@ use Exception;
  */
 class UnknownTopicOrPartition extends KafkaException implements RetriableException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::UNKNOWN_TOPIC_OR_PARTITION, $previous);
+        parent::__construct($context, self::UNKNOWN_TOPIC_OR_PARTITION, $previous);
     }
 }
