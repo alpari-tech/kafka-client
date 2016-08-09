@@ -169,7 +169,7 @@ class KafkaConsumer
      */
     public function assign(array $topicPartitions)
     {
-        $unknownTopics = array_diff($this->subscription->topics, array_keys($topicPartitions));
+        $unknownTopics = array_diff(array_keys($topicPartitions), $this->subscription->topics);
         if (!empty($unknownTopics)) {
             throw new UnknownTopicOrPartition(compact('unknownTopics'));
         }

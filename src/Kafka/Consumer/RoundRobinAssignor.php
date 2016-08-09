@@ -62,6 +62,10 @@ class RoundRobinAssignor implements PartitionAssignorInterface
         foreach ($partitionAssignments as $memberId => $partitionAssignment) {
             $result[$memberId] = MemberAssignment::fromTopicPartitions($partitionAssignment);
         }
+        $unassignedMembers = array_diff_key($subscriptions, $result);
+        foreach (array_keys($unassignedMembers) as $unassignedMemberId) {
+            $result[$unassignedMemberId] = MemberAssignment::fromTopicPartitions([]);
+        }
 
         return $result;
     }
