@@ -8,10 +8,9 @@ namespace Protocol\Kafka\Common;
 
 use Protocol\Kafka;
 use Protocol\Kafka\Error\InvalidTopicException;
-use Protocol\Kafka\Error\OffsetOutOfRange;
+use Protocol\Kafka\Error\NetworkException;
 use Protocol\Kafka\Error\UnknownTopicOrPartition;
 use Protocol\Kafka\Record;
-use Protocol\Kafka\Error\NetworkException;
 use Protocol\Kafka\Stream;
 
 /**
@@ -61,17 +60,20 @@ final class Cluster
     /**
      * Creates a "bootstrap" cluster using the given list of host/ports
      *
-     * @param array $brokerAddresses List of broker addresses for bootstraping
-     * @param bool  $usePersistent Flag to enable the usage of persistent sockets for connections
+     * @param array $configuration Broker client configuration
      *
      * @return Cluster
      */
-    public static function bootstrap(array $brokerAddresses, $usePersistent = true)
+    public static function bootstrap(array $configuration)
     {
-        $streamClass = $usePersistent ? Stream\PersistentSocketStream::class : Stream\SocketStream::class;
+        $brokerAddresses = [];
+        if (isset($configuration[Config::BOOTSTRAP_SERVERS])) {
+            $brokerAddresses = $configuration[Config::BOOTSTRAP_SERVERS];
+        };
+
         foreach ($brokerAddresses as $address) {
             try {
-                $stream = new $streamClass($address);
+                $stream = new Stream\SocketStream($address, $configuration);
                 break;
             } catch (NetworkException $e) {
                 // we ignore all network errors and just try the next one address

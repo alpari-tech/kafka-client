@@ -32,7 +32,6 @@ use Protocol\Kafka\Record\ProduceRequest;
 use Protocol\Kafka\Record\ProduceResponse;
 use Protocol\Kafka\Record\SyncGroupRequest;
 use Protocol\Kafka\Record\SyncGroupResponse;
-use Protocol\Kafka\Stream\PersistentSocketStream;
 use Protocol\Kafka\Stream\SocketStream;
 
 /**
@@ -66,8 +65,7 @@ class Client
         $this->cluster       = $cluster;
         $this->configuration = $configuration;
         foreach ($this->cluster->nodes() as $node) {
-            // TODO: connection settings should be used as well, make async connect
-            $this->connections[$node->nodeId] = new PersistentSocketStream("tcp://{$node->host}:{$node->port}");
+            $this->connections[$node->nodeId] = new SocketStream("tcp://{$node->host}:{$node->port}", $configuration);
         }
     }
 

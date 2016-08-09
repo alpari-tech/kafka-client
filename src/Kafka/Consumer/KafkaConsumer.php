@@ -133,6 +133,8 @@ class KafkaConsumer
         Config::HEARTBEAT_INTERVAL_MS         => 2000,
         Config::ENABLE_AUTO_COMMIT            => true,
         Config::AUTO_COMMIT_INTERVAL_MS       => 0, // Commit always after each poll()
+        Config::STREAM_PERSISTENT_CONNECTION  => false,
+        Config::STREAM_ASYNC_CONNECT          => false,
 
         Config::SSL_KEY_PASSWORD          => null,
         Config::SSL_KEYSTORE_LOCATION     => null,
@@ -151,7 +153,7 @@ class KafkaConsumer
     public function __construct(array $configuration = [])
     {
         $this->configuration = $configuration + self::$defaultConfiguration;
-        $this->cluster       = Cluster::bootstrap($this->configuration[Config::BOOTSTRAP_SERVERS]);
+        $this->cluster       = Cluster::bootstrap($this->configuration);
         $this->client        = new Client($this->cluster, $this->configuration);
         $assignorStrategy    = $this->configuration[Config::PARTITION_ASSIGNMENT_STRATEGY];
 
@@ -261,7 +263,9 @@ class KafkaConsumer
         $result = $this->client->fetch($activeTopicPartitionOffsets, $timeout);
 
         $resultOffsets = $this->fetchResultOffsets($result);
-        $this->topicPartitionOffsets = array_replace_recursive($this->topicPartitionOffsets, $resultOffsets);
+        if ($resultOffsets) {
+            $this->topicPartitionOffsets = array_replace_recursive($this->topicPartitionOffsets, $resultOffsets);
+        }
 
         if ($this->configuration[Config::ENABLE_AUTO_COMMIT]) {
             if (($milliSeconds - $this->lastAutoCommitMs) > $this->configuration[Config::AUTO_COMMIT_INTERVAL_MS]) {
