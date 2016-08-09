@@ -108,9 +108,11 @@ class Client
     /**
      * Commits the offsets for topic partitions for the concrete consumer group
      *
-     * @param Node   $coordinatorNode       Current group coordinator for $groupId
-     * @param string $groupId               Name of the group
-     * @param array  $topicPartitionOffsets List of topic => partitions for fetching information
+     * @param Node    $coordinatorNode       Current group coordinator for $groupId
+     * @param string  $groupId               Name of the group
+     * @param string  $memberId              Name of the group member
+     * @param integer $generationId          Current generation of consumer
+     * @param array   $topicPartitionOffsets List of topic => partitions for fetching information
      *
      * @throws Kafka\Error\OffsetMetadataTooLarge
      * @throws Kafka\Error\GroupLoadInProgress
@@ -123,11 +125,19 @@ class Client
      * @throws Kafka\Error\TopicAuthorizationFailed
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function commitGroupOffsets(Node $coordinatorNode, $groupId, array $topicPartitionOffsets)
+    public function commitGroupOffsets(
+        Node $coordinatorNode,
+        $groupId,
+        $memberId,
+        $generationId,
+        array $topicPartitionOffsets
+    )
     {
         $stream  = $this->connections[$coordinatorNode->nodeId];
         $request = new OffsetCommitRequest(
             $groupId,
+            $generationId,
+            $memberId,
             $topicPartitionOffsets,
             $this->configuration[ConsumerConfig::CLIENT_ID]
         );
