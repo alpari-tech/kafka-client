@@ -118,6 +118,11 @@ final class Config
      */
     const AUTO_COMMIT_INTERVAL_MS = 'auto.commit.interval.ms';
 
+    /**
+     * This option controls the retention time for topic offset storage, set to -1 to use broker retention time setting
+     */
+    const OFFSET_RETENTION_MS = 'offset.retention.ms';
+
 
     const KEY_DESERIALIZER              = 'key.deserializer';
     const VALUE_DESERIALIZER            = 'value.deserializer';
