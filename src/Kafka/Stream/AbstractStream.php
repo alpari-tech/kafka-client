@@ -96,6 +96,11 @@ abstract class AbstractStream implements Stream
             'J' => 8,
             'P' => 8,
         ];
+        static $cache = [];
+        if (isset($cache[$format])) {
+            return $cache[$format];
+        }
+
         $numMatches = preg_match_all('/(?:\/|^)(\w)(\d*)/', $format, $matches);
         if(empty($numMatches)) {
             throw new \InvalidArgumentException("Unknown format specified: {$format}");
@@ -108,6 +113,8 @@ abstract class AbstractStream implements Stream
             }
             $size += $tableSize[$modifier] * ($repitition !== '' ? $repitition : 1);
         }
+
+        $cache[$format] = $size;
 
         return $size;
     }
