@@ -9,8 +9,8 @@ use Exception;
  */
 class InvalidRequiredAcks extends KafkaException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::INVALID_REQUIRED_ACKS, $previous);
+        parent::__construct($context, self::INVALID_REQUIRED_ACKS, $previous);
     }
 }

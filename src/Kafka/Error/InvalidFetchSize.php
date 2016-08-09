@@ -9,8 +9,8 @@ use Exception;
  */
 class InvalidFetchSize extends KafkaException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::INVALID_FETCH_SIZE, $previous);
+        parent::__construct($context, self::INVALID_FETCH_SIZE, $previous);
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Alexander.Lisachenko
- * @date 14.07.2014
+ * @date 14.07.2016
  */
 
 namespace Protocol\Kafka\Record;

@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Alexander.Lisachenko
- * @date   29.07.2014
+ * @date   29.07.2016
  */
 
 namespace Protocol\Kafka\Common;
@@ -9,6 +9,7 @@ namespace Protocol\Kafka\Common;
 use Protocol\Kafka;
 use Protocol\Kafka\Error\InvalidTopicException;
 use Protocol\Kafka\Error\OffsetOutOfRange;
+use Protocol\Kafka\Error\UnknownTopicOrPartition;
 use Protocol\Kafka\Record;
 use Protocol\Kafka\Error\NetworkException;
 use Protocol\Kafka\Stream;
@@ -51,7 +52,7 @@ final class Cluster
     public function availablePartitionsForTopic($topic)
     {
         if (!isset($this->topicPartitions[$topic])) {
-            throw new InvalidTopicException("Topic {$topic} was not found");
+            throw new InvalidTopicException(compact('topic'));
         }
 
         return $this->topicPartitions[$topic]->partitions;
@@ -78,7 +79,7 @@ final class Cluster
             }
         }
         if (!isset($stream)) {
-            throw new NetworkException("There are no available brokers for bootstraping");
+            throw new NetworkException(compact('brokerAddresses'));
         }
         $metadata = self::fetchMetadata($stream);
         $cluster  = new Cluster($metadata->brokers, $metadata->topics);
@@ -98,7 +99,7 @@ final class Cluster
     {
         $partitions = $this->partitionsForTopic($topic);
         if (!isset($partitions[$partition])) {
-            throw new OffsetOutOfRange("Partition {$partition} is out of range for topic {$topic}");
+            throw new UnknownTopicOrPartition(compact('topic', 'partition'));
         }
 
         $leaderId = $partitions[$partition]->leader;
@@ -144,7 +145,7 @@ final class Cluster
     {
         $partitions = $this->partitionsForTopic($topic);
         if (!isset($partitions[$partition])) {
-            throw new OffsetOutOfRange("Partition {$partition} is out of range for topic {$topic}");
+            throw new UnknownTopicOrPartition(compact('topic', 'partition'));
         }
 
         return $partitions[$partition];
@@ -160,7 +161,7 @@ final class Cluster
     public function partitionsForTopic($topic)
     {
         if (!isset($this->topicPartitions[$topic])) {
-            throw new InvalidTopicException("Topic {$topic} was not found");
+            throw new InvalidTopicException(compact('topic'));
         }
 
         return $this->topicPartitions[$topic]->partitions;

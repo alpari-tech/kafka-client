@@ -53,7 +53,7 @@ class SocketStream extends AbstractStream
     {
         $tcpInfo = parse_url($tcpAddress);
         if ($tcpInfo === false || !isset($tcpInfo['host'])) {
-            throw new NetworkException("Malformed tcp address: {$tcpAddress}, please check your configuration");
+            throw new NetworkException(['error' => "Malformed tcp address: {$tcpAddress}"]);
         }
         $this->host    = $tcpInfo['host'];
         $this->port    = isset($tcpInfo['port']) ? $tcpInfo['port'] : 9092;
@@ -79,7 +79,7 @@ class SocketStream extends AbstractStream
         for ($written = 0; $written < strlen($packedData); $written += $result) {
             $result = fwrite($this->streamSocket, substr($packedData, $written));
             if ($result === false) {
-                throw new NetworkException("Can not write to the stream");
+                throw new NetworkException(['error' => 'Can not write to the stream']);
             }
         }
     }
@@ -100,7 +100,7 @@ class SocketStream extends AbstractStream
         for ($received = 0; $received < $packetSize; $received += strlen($result)) {
             $result = fread($this->streamSocket, $packetSize);
             if ($result === false) {
-                throw new NetworkException("Can not read from the stream");
+                throw new NetworkException(['error' => 'Can not read from the stream']);
             }
             $streamBuffer .= $result;
         }
@@ -125,7 +125,7 @@ class SocketStream extends AbstractStream
     {
         $streamSocket = @fsockopen($this->host, $this->port, $errorNumber, $errorString, $this->timeout);
         if (!$streamSocket) {
-            throw new NetworkException("Socket error {$errorNumber}: {$errorString}");
+            throw new NetworkException(compact('errorNumber', 'errorString'));
         }
 
         $this->streamSocket = $streamSocket;

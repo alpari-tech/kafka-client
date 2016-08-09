@@ -9,8 +9,8 @@ use Exception;
  */
 class IllegalGeneration extends KafkaException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::ILLEGAL_GENERATION, $previous);
+        parent::__construct($context, self::ILLEGAL_GENERATION, $previous);
     }
 }

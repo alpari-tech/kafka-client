@@ -2,13 +2,15 @@
 
 namespace Protocol\Kafka\Error;
 
+use Exception;
+
 /**
  * Kafka uses numeric codes to indicate what problem occurred on the server.
  *
  * These can be translated by the client into exceptions or whatever the appropriate error handling mechanism in the
  * client language.
  */
-class KafkaException extends \RuntimeException
+abstract class KafkaException extends \RuntimeException
 {
     const UNKNOWN = -1;
 
@@ -54,6 +56,7 @@ class KafkaException extends \RuntimeException
      * @var array
      */
     private static $codeToClassMap = [
+        self::UNKNOWN                          => UnknownError::class,
         self::OFFSET_OUT_OF_RANGE              => OffsetOutOfRange::class,
         self::CORRUPT_MESSAGE                  => CorruptMessage::class,
         self::UNKNOWN_TOPIC_OR_PARTITION       => UnknownTopicOrPartition::class,
@@ -92,22 +95,54 @@ class KafkaException extends \RuntimeException
     ];
 
     /**
+     * Additional context for the exception
+     *
+     * @var array
+     */
+    private $context = [];
+
+    /**
      * Creates an instance of exception by error code
      *
-     * @param integer $errorCode Error code from the Kafka
-     * @param string $message Exception message
-     * @param \Exception|null $previous
+     * @param integer         $errorCode Error code from the Kafka
+     * @param array           $context   Additional context
+     * @param Exception|null $previous
      *
      * @return KafkaException
      */
-    final public static function fromCode($errorCode, $message = '', \Exception $previous = null)
+    final public static function fromCode($errorCode, array $context, Exception $previous = null)
     {
         if (!isset(self::$codeToClassMap[$errorCode])) {
-            return new self("Unknown error code type: {$errorCode}. Information: {$message}", $errorCode, $previous);
+            $exception = new UnknownError(['errorCode' => $errorCode] + $context, $previous);
+        } else {
+            $exceptionClass = self::$codeToClassMap[$errorCode];
+            $exception      = new $exceptionClass($context, $previous);
         }
-        
-        $exceptionClass = self::$codeToClassMap[$errorCode];
 
-        return new $exceptionClass($message, $previous);
+        return $exception;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __construct(array $context = [], $code, Exception $previous = null)
+    {
+        $this->context = $context;
+        $docBlock = (new \ReflectionObject($this))->getDocComment();
+        $docBlock = preg_replace('/^\s*\/?\*+\/?/m', '', $docBlock);
+        $docBlock = preg_replace('/\s{2,}/', '', $docBlock);
+
+        $message = $docBlock . PHP_EOL . "Context: " . json_encode($context);
+        parent::__construct($message, $code, $previous);
+    }
+
+    /**
+     * Returns the context for this exception
+     *
+     * @return array
+     */
+    public function getContext()
+    {
+        return $this->context;
     }
 }

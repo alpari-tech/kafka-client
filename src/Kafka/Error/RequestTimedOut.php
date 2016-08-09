@@ -9,8 +9,8 @@ use Exception;
  */
 class RequestTimedOut extends KafkaException implements RetriableException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::REQUEST_TIMED_OUT, $previous);
+        parent::__construct($context, self::REQUEST_TIMED_OUT, $previous);
     }
 }

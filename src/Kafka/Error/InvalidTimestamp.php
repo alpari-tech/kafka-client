@@ -9,8 +9,8 @@ use Exception;
  */
 class InvalidTimestamp extends KafkaException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::INVALID_TIMESTAMP, $previous);
+        parent::__construct($context, self::INVALID_TIMESTAMP, $previous);
     }
 }

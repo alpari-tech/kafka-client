@@ -7,8 +7,6 @@
 namespace Protocol\Kafka\Consumer;
 
 use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\DTO\ConsumerProtocolMetadata;
-use Protocol\Kafka\DTO\MemberAssignmentMetadata;
 use Protocol\Kafka\Stream\StringStream;
 
 /**
@@ -30,10 +28,11 @@ class RoundRobinAssignor implements PartitionAssignorInterface
 {
     /**
      * Perform the group assignment given the member subscriptions and current cluster metadata.
+     *
      * @param Cluster $metadata Current topic/broker metadata known by consumer
      * @param array $subscriptions Subscriptions from all members
      *
-     * @return array|MemberAssignmentMetadata[] A map from the members to their respective assignment. This should have one entry
+     * @return array|MemberAssignment[] A map from the members to their respective assignment. This should have one entry
      *         for all members who in the input subscription map.
      */
     public function assign(Cluster $metadata, array $subscriptions)
@@ -42,7 +41,7 @@ class RoundRobinAssignor implements PartitionAssignorInterface
         $partitionAssignments = [];
 
         foreach ($subscriptions as $memberId => $subscriptionData) {
-            $subscriptionMetadata = ConsumerProtocolMetadata::unpack(new StringStream($subscriptionData));
+            $subscriptionMetadata = Subscription::unpack(new StringStream($subscriptionData));
             foreach ($subscriptionMetadata->topics as $topic) {
                 $topicMembers[$topic][] = $memberId;
             }
@@ -61,7 +60,7 @@ class RoundRobinAssignor implements PartitionAssignorInterface
 
         $result = [];
         foreach ($partitionAssignments as $memberId => $partitionAssignment) {
-            $result[$memberId] = MemberAssignmentMetadata::fromTopicPartitions($partitionAssignment);
+            $result[$memberId] = MemberAssignment::fromTopicPartitions($partitionAssignment);
         }
 
         return $result;

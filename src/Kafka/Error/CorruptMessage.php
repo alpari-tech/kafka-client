@@ -9,8 +9,8 @@ use Exception;
  */
 class CorruptMessage extends KafkaException implements RetriableException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::OFFSET_OUT_OF_RANGE, $previous);
+        parent::__construct($context, self::OFFSET_OUT_OF_RANGE, $previous);
     }
 }

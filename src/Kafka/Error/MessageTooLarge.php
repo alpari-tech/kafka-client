@@ -9,8 +9,8 @@ use Exception;
  */
 class MessageTooLarge extends KafkaException
 {
-    public function __construct($message, Exception $previous = null)
+    public function __construct(array $context, Exception $previous = null)
     {
-        parent::__construct($message, self::MESSAGE_TOO_LARGE, $previous);
+        parent::__construct($context, self::MESSAGE_TOO_LARGE, $previous);
     }
 }
