@@ -158,7 +158,7 @@ class KafkaConsumer
         $assignorStrategy    = $this->configuration[Config::PARTITION_ASSIGNMENT_STRATEGY];
 
         if (!is_subclass_of($assignorStrategy, PartitionAssignorInterface::class)) {
-            throw new \InvalidArgumentException("Partition strategy class should implement PartitionAssignorInterface");
+            throw new \InvalidArgumentException('Partition strategy class should implement PartitionAssignorInterface');
         }
         $this->assignorStrategy = new $assignorStrategy;
     }
@@ -170,6 +170,12 @@ class KafkaConsumer
      */
     public function assign(array $topicPartitions)
     {
+        if (empty($topicPartitions)) {
+            throw new \InvalidArgumentException(
+                'Can not assign empty list of topic partitions to the consumer.'.
+                'Probably, not enough partitions for this topic.'
+            );
+        }
         $unknownTopics = array_diff(array_keys($topicPartitions), $this->subscription->topics);
         if (!empty($unknownTopics)) {
             throw new UnknownTopicOrPartition(compact('unknownTopics'));
