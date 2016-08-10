@@ -53,6 +53,14 @@ class Config
      */
     const METADATA_CACHE_FILE = 'metadata.cache.file';
 
+    /**
+     * The period of time in milliseconds after which we force a refresh of metadata even if we haven't seen any
+     * partition leadership changes to proactively discover any new brokers or partitions.
+     *
+     * Applied only if the metadata.cache.file is configured
+     */
+    const METADATA_MAX_AGE_MS = 'metadata.max.age.ms';
+
     const SSL_KEY_PASSWORD              = 'ssl.key.password';
     const SSL_KEYSTORE_LOCATION         = 'ssl.keystore.location';
     const SSL_KEYSTORE_PASSWORD         = 'ssl.keystore.password';
@@ -62,7 +70,6 @@ class Config
     const SEND_BUFFER_BYTES             = 'send.buffer.bytes';
     const SSL_ENABLED_PROTOCOLS         = 'ssl.enabled.protocols';
     const SSL_PROTOCOL                  = 'ssl.protocol';
-    const METADATA_MAX_AGE_MS           = 'metadata.max.age.ms';
     const RECONNECT_BACKOFF_MS          = 'reconnect.backoff.ms';
     const RETRY_BACKOFF_MS              = 'retry.backoff.ms';
 }
