@@ -85,7 +85,6 @@ class KafkaProducer
         Config::SECURITY_PROTOCOL         => 'plaintext',
         Config::SEND_BUFFER_BYTES         => 131072,
         Config::METADATA_FETCH_TIMEOUT_MS => 60000,
-        Config::METADATA_MAX_AGE_MS       => 300000,
         Config::RECONNECT_BACKOFF_MS      => 50,
         Config::RETRY_BACKOFF_MS          => 100,
     ];
