@@ -34,17 +34,32 @@ class Config
 
     /**
      * Should client use persistent connection to the cluster or not
-     * 
+     *
      * (PHP Only option)
      */
     const STREAM_PERSISTENT_CONNECTION = 'stream.persistent.connection';
 
     /**
      * Should client use asynchronous connection to the broker
-     * 
+     *
      * (PHP Only option)
      */
     const STREAM_ASYNC_CONNECT = 'stream.async.connect';
+
+    /**
+     * File name that stores the metadata, this file will be effectively cached by the Opcode cache in production
+     *
+     * (PHP Only option)
+     */
+    const METADATA_CACHE_FILE = 'metadata.cache.file';
+
+    /**
+     * The period of time in milliseconds after which we force a refresh of metadata even if we haven't seen any
+     * partition leadership changes to proactively discover any new brokers or partitions.
+     *
+     * Applied only if the metadata.cache.file is configured
+     */
+    const METADATA_MAX_AGE_MS = 'metadata.max.age.ms';
 
     const SSL_KEY_PASSWORD              = 'ssl.key.password';
     const SSL_KEYSTORE_LOCATION         = 'ssl.keystore.location';
@@ -55,7 +70,6 @@ class Config
     const SEND_BUFFER_BYTES             = 'send.buffer.bytes';
     const SSL_ENABLED_PROTOCOLS         = 'ssl.enabled.protocols';
     const SSL_PROTOCOL                  = 'ssl.protocol';
-    const METADATA_MAX_AGE_MS           = 'metadata.max.age.ms';
     const RECONNECT_BACKOFF_MS          = 'reconnect.backoff.ms';
     const RETRY_BACKOFF_MS              = 'retry.backoff.ms';
 }

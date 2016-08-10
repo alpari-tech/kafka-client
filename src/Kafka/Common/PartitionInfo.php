@@ -14,6 +14,8 @@ use Protocol\Kafka\Stream;
  */
 class PartitionInfo
 {
+    use RestorableTrait;
+
     /**
      * The error code for the partition, if any.
      *
