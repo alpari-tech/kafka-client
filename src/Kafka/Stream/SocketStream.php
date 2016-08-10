@@ -52,6 +52,13 @@ class SocketStream extends AbstractStream
     protected $configuration = [];
 
     /**
+     * Flag that determines if connection was established
+     *
+     * @var boolean
+     */
+    protected $isConnected;
+
+    /**
      * Socket stream constructor
      *
      * @param string  $tcpAddress        Tcp address for connection
@@ -68,8 +75,6 @@ class SocketStream extends AbstractStream
         $this->port          = isset($tcpInfo['port']) ? $tcpInfo['port'] : 9092;
         $this->timeout       = isset($connectionTimeout) ? $connectionTimeout : ini_get("default_socket_timeout");
         $this->configuration = $configuration;
-
-        $this->connect();
     }
 
     /**
@@ -84,6 +89,10 @@ class SocketStream extends AbstractStream
      */
     public function write($format, ...$arguments)
     {
+        if (!$this->isConnected) {
+            $this->connect();
+        }
+
         $packedData = pack($format, ...$arguments);
 
         for ($written = 0; $written < strlen($packedData); $written += $result) {
@@ -104,12 +113,16 @@ class SocketStream extends AbstractStream
      */
     public function read($format)
     {
+        if (!$this->isConnected) {
+            $this->connect();
+        }
+
         $packetSize   = self::packetSize($format);
         $streamBuffer = '';
 
         for ($received = 0; $received < $packetSize; $received += strlen($result)) {
             $result = fread($this->streamSocket, $packetSize);
-            if ($result === false) {
+            if ($result === false || feof($this->streamSocket)) {
                 throw new NetworkException(['error' => 'Can not read from the stream']);
             }
             $streamBuffer .= $result;
@@ -152,6 +165,7 @@ class SocketStream extends AbstractStream
         }
 
         $this->streamSocket = $streamSocket;
+        $this->isConnected  = true;
     }
 
     /**
@@ -162,5 +176,6 @@ class SocketStream extends AbstractStream
         if (is_resource($this->streamSocket) && empty($this->configuration[Config::STREAM_PERSISTENT_CONNECTION])) {
             fclose($this->streamSocket);
         }
+        $this->isConnected = false;
     }
 }

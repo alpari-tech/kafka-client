@@ -135,17 +135,16 @@ class KafkaConsumer
         Config::AUTO_COMMIT_INTERVAL_MS       => 0, // Commit always after each poll()
         Config::STREAM_PERSISTENT_CONNECTION  => false,
         Config::STREAM_ASYNC_CONNECT          => false,
+        Config::METADATA_MAX_AGE_MS           => 300000,
 
         Config::SSL_KEY_PASSWORD          => null,
         Config::SSL_KEYSTORE_LOCATION     => null,
         Config::SSL_KEYSTORE_PASSWORD     => null,
         Config::CONNECTIONS_MAX_IDLE_MS   => 540000,
         Config::RECEIVE_BUFFER_BYTES      => 32768,
-        Config::REQUEST_TIMEOUT_MS        => 30000,
         Config::SASL_MECHANISM            => 'GSSAPI',
         Config::SECURITY_PROTOCOL         => 'plaintext',
         Config::SEND_BUFFER_BYTES         => 131072,
-        Config::METADATA_MAX_AGE_MS       => 300000,
         Config::RECONNECT_BACKOFF_MS      => 50,
         Config::RETRY_BACKOFF_MS          => 100,
     ];
@@ -158,7 +157,7 @@ class KafkaConsumer
         $assignorStrategy    = $this->configuration[Config::PARTITION_ASSIGNMENT_STRATEGY];
 
         if (!is_subclass_of($assignorStrategy, PartitionAssignorInterface::class)) {
-            throw new \InvalidArgumentException("Partition strategy class should implement PartitionAssignorInterface");
+            throw new \InvalidArgumentException('Partition strategy class should implement PartitionAssignorInterface');
         }
         $this->assignorStrategy = new $assignorStrategy;
     }
@@ -170,6 +169,12 @@ class KafkaConsumer
      */
     public function assign(array $topicPartitions)
     {
+        if (empty($topicPartitions)) {
+            throw new \InvalidArgumentException(
+                'Can not assign empty list of topic partitions to the consumer.'.
+                'Probably, not enough partitions for this topic.'
+            );
+        }
         $unknownTopics = array_diff(array_keys($topicPartitions), $this->subscription->topics);
         if (!empty($unknownTopics)) {
             throw new UnknownTopicOrPartition(compact('unknownTopics'));

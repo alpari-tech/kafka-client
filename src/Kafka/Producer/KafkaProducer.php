@@ -10,6 +10,10 @@ use Protocol\Kafka\Client;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\PartitionInfo;
 use Protocol\Kafka\DTO\Message;
+use Protocol\Kafka\Error\NetworkException;
+use Protocol\Kafka\Error\NotLeaderForPartition;
+use Protocol\Kafka\Error\RetriableException;
+use Protocol\Kafka\Error\UnknownTopicOrPartition;
 use Protocol\Kafka\Record\ProduceResponse;
 
 /**
@@ -45,6 +49,8 @@ class KafkaProducer
      */
     private $partitioner = null;
 
+    private $currentTry = 0;
+
     /**
      * Default configuration for producer
      *
@@ -59,6 +65,7 @@ class KafkaProducer
         Config::CLIENT_ID                    => 'PHP/Kafka',
         Config::STREAM_PERSISTENT_CONNECTION => false,
         Config::STREAM_ASYNC_CONNECT         => false,
+        Config::METADATA_MAX_AGE_MS          => 300000,
 
         Config::KEY_SERIALIZER            => null,
         Config::VALUE_SERIALIZER          => null,
@@ -78,7 +85,6 @@ class KafkaProducer
         Config::SECURITY_PROTOCOL         => 'plaintext',
         Config::SEND_BUFFER_BYTES         => 131072,
         Config::METADATA_FETCH_TIMEOUT_MS => 60000,
-        Config::METADATA_MAX_AGE_MS       => 300000,
         Config::RECONNECT_BACKOFF_MS      => 50,
         Config::RETRY_BACKOFF_MS          => 100,
     ];
@@ -119,6 +125,7 @@ class KafkaProducer
      */
     public function send($topic, $message, $concretePartition = null)
     {
+        $this->currentTry = 0;
         if (isset($concretePartition)) {
             $partition = $concretePartition;
         } else {
@@ -126,7 +133,22 @@ class KafkaProducer
         }
 
         $topicMessages = ($message instanceof Message) ? [$message] : (array) $message;
-        $response      = $this->client->produce($topic, $partition, $topicMessages);
+        while ($this->currentTry <= $this->configuration[Config::RETRIES]) {
+            try {
+                $response = $this->client->produce($topic, $partition, $topicMessages);
+                break;
+            } catch (NotLeaderForPartition $exception) {
+                // We just need to reconfigure the cluster, possible current leader is changed
+                $this->cluster->reload();
+            } catch (RetriableException $exception) {
+                $this->cluster->reload();
+                $this->currentTry++;
+            }
+        }
+
+        if ($this->currentTry > $this->configuration[Config::RETRIES]) {
+            throw new \RuntimeException("Can not deliver the message");
+        }
 
         return $response;
     }

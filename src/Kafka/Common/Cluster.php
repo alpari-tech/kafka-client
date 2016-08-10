@@ -33,12 +33,20 @@ final class Cluster
     private $topicPartitions = [];
 
     /**
-     * Creates a new cluster with the given nodes and partitions
+     * Client configuration
+     *
+     * @var array
      */
-    private function __construct(array $nodes, array $topicPartitions)
+    private $configuration;
+
+    /**
+     * Creates a new cluster with the given nodes and partitions
+     *
+     * @param array $configuration Client configuration
+     */
+    private function __construct(array $configuration)
     {
-        $this->nodes           = $nodes;
-        $this->topicPartitions = $topicPartitions;
+        $this->configuration = $configuration;
     }
 
     /**
@@ -66,25 +74,16 @@ final class Cluster
      */
     public static function bootstrap(array $configuration)
     {
-        $brokerAddresses = [];
-        if (isset($configuration[Config::BOOTSTRAP_SERVERS])) {
-            $brokerAddresses = $configuration[Config::BOOTSTRAP_SERVERS];
-        };
+        $cluster        = new Cluster($configuration);
+        $isCacheEnabled = !empty($configuration[Config::METADATA_CACHE_FILE]);
+        $isLoaded       = false;
 
-        foreach ($brokerAddresses as $address) {
-            try {
-                $stream = new Stream\SocketStream($address, $configuration);
-                break;
-            } catch (NetworkException $e) {
-                // we ignore all network errors and just try the next one address
-                continue;
-            }
+        if ($isCacheEnabled) {
+            $isLoaded = $cluster->loadFromCache($configuration, $cluster);
         }
-        if (!isset($stream)) {
-            throw new NetworkException(compact('brokerAddresses'));
+        if (!$isLoaded) {
+            $cluster->reload();
         }
-        $metadata = self::fetchMetadata($stream);
-        $cluster  = new Cluster($metadata->brokers, $metadata->topics);
 
         return $cluster;
     }
@@ -170,6 +169,50 @@ final class Cluster
     }
 
     /**
+     * Reloads the metadata from the broker and optionally save it in the cache
+     *
+     * @throws Kafka\Error\UnknownError If information can not be reloaded
+     */
+    public function reload()
+    {
+        $brokerAddresses = [];
+        if (isset($this->configuration[Config::BOOTSTRAP_SERVERS])) {
+            $brokerAddresses = $this->configuration[Config::BOOTSTRAP_SERVERS];
+        };
+
+        foreach ($brokerAddresses as $address) {
+            try {
+                $stream  = new Stream\SocketStream($address, $this->configuration);
+                $request = new Record\MetadataRequest();
+                $request->writeTo($stream);
+
+                $metadata = Record\MetadataResponse::unpack($stream);
+                break;
+            }  catch (NetworkException $e) {
+                // we ignore all network errors and just try the next one address
+                continue;
+            }
+        }
+        if (empty($metadata)) {
+            throw new Kafka\Error\UnknownError(['error' => 'Can not fetch information about cluster metadata']);
+        }
+
+        $isCacheEnabled = !empty($this->configuration[Config::METADATA_CACHE_FILE]);
+        if ($isCacheEnabled) {
+            $milliSeconds = (int)(microtime(true) * 1e3);
+            $content      = '<?php return ' . var_export([$milliSeconds, $metadata], true) . ';';
+            $cacheFile    = $this->configuration[Config::METADATA_CACHE_FILE];
+            file_put_contents($cacheFile, $content);
+            if (function_exists('opcache_invalidate')) {
+                opcache_invalidate($cacheFile, true);
+            }
+        }
+
+        $this->nodes           = $metadata->brokers;
+        $this->topicPartitions = $metadata->topics;
+    }
+
+    /**
      * Get all topics
      *
      * @return string[]
@@ -180,17 +223,25 @@ final class Cluster
     }
 
     /**
-     * Queries metadata from the broker
+     * Loads cluster configuration from the cache
      *
-     * @param Stream $stream
-     *
-     * @return Record\MetadataResponse
+     * @return boolean True if metadata was successfully loaded from the cache
      */
-    private static function fetchMetadata(Stream $stream)
+    private function loadFromCache()
     {
-        $request = new Record\MetadataRequest();
-        $request->writeTo($stream);
+        $milliSeconds = (int)(microtime(true) * 1e3);
+        $cacheFile    = $this->configuration[Config::METADATA_CACHE_FILE];
+        if (is_readable($cacheFile)) {
+            /** @var Record\MetadataResponse $metadata */
+            list($cachePutTimeMs, $metadata) = include $cacheFile;
+            if (($milliSeconds - $cachePutTimeMs) < $this->configuration[Config::METADATA_MAX_AGE_MS]) {
+                $this->nodes           = $metadata->brokers;
+                $this->topicPartitions = $metadata->topics;
 
-        return Record\MetadataResponse::unpack($stream);
+                return true;
+            }
+        }
+
+        return false;
     }
 }

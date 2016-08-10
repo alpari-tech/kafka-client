@@ -17,6 +17,8 @@ use Protocol\Kafka\Stream;
  */
 class MetadataResponse extends AbstractResponse
 {
+    use Kafka\Common\RestorableTrait;
+
     /**
      * List of broker metadata info
      *
