@@ -14,6 +14,8 @@ use Protocol\Kafka\Stream;
  */
 class Node
 {
+    use RestorableTrait;
+
     /**
      * The broker id.
      *

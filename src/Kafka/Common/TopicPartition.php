@@ -14,6 +14,8 @@ use Protocol\Kafka\Stream;
  */
 class TopicPartition
 {
+    use RestorableTrait;
+
     /**
      * The error code for the given topic.
      *

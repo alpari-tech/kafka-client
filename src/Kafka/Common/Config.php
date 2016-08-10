@@ -34,17 +34,24 @@ class Config
 
     /**
      * Should client use persistent connection to the cluster or not
-     * 
+     *
      * (PHP Only option)
      */
     const STREAM_PERSISTENT_CONNECTION = 'stream.persistent.connection';
 
     /**
      * Should client use asynchronous connection to the broker
-     * 
+     *
      * (PHP Only option)
      */
     const STREAM_ASYNC_CONNECT = 'stream.async.connect';
+
+    /**
+     * File name that stores the metadata, this file will be effectively cached by the Opcode cache in production
+     *
+     * (PHP Only option)
+     */
+    const METADATA_CACHE_FILE = 'metadata.cache.file';
 
     const SSL_KEY_PASSWORD              = 'ssl.key.password';
     const SSL_KEYSTORE_LOCATION         = 'ssl.keystore.location';

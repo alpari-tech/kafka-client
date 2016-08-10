@@ -73,20 +73,17 @@ final class Cluster
 
         foreach ($brokerAddresses as $address) {
             try {
-                $stream = new Stream\SocketStream($address, $configuration);
-                break;
+                $metadata = self::loadOrFetchMetadata($address, $configuration);
+                $cluster  = new Cluster($metadata->brokers, $metadata->topics);
+
+                return $cluster;
             } catch (NetworkException $e) {
                 // we ignore all network errors and just try the next one address
                 continue;
             }
         }
-        if (!isset($stream)) {
-            throw new NetworkException(compact('brokerAddresses'));
-        }
-        $metadata = self::fetchMetadata($stream);
-        $cluster  = new Cluster($metadata->brokers, $metadata->topics);
-
-        return $cluster;
+        // If we here, we can't access any broker node, terminate
+        throw new NetworkException(compact('brokerAddresses'));
     }
 
     /**
@@ -180,17 +177,48 @@ final class Cluster
     }
 
     /**
-     * Queries metadata from the broker
+     * Queries metadata from the broker or loads this information from the cache file
      *
-     * @param Stream $stream
+     * @param string $address Concrete broker address
+     * @param array $configuration
      *
      * @return Record\MetadataResponse
      */
-    private static function fetchMetadata(Stream $stream)
+    private static function loadOrFetchMetadata($address, array $configuration)
     {
-        $request = new Record\MetadataRequest();
-        $request->writeTo($stream);
+        $milliSeconds   = (int)(microtime(true) * 1e3);
+        $isCacheEnabled = !empty($configuration[Config::METADATA_CACHE_FILE]);
+        $metadata       = null;
 
-        return Record\MetadataResponse::unpack($stream);
+        if ($isCacheEnabled) {
+            $cacheFile = $configuration[Config::METADATA_CACHE_FILE];
+            if (is_readable($cacheFile)) {
+                list($cachePutTimeMs, $metadata) = include $cacheFile;
+            } else {
+                $cachePutTimeMs = $milliSeconds;
+            }
+            if (($milliSeconds - $cachePutTimeMs) > $configuration[Config::METADATA_MAX_AGE_MS]) {
+                $metadata = null;
+            }
+        }
+
+        if (empty($metadata)) {
+            $stream  = new Stream\SocketStream($address, $configuration);
+            $request = new Record\MetadataRequest();
+            $request->writeTo($stream);
+
+            $metadata = Record\MetadataResponse::unpack($stream);
+        }
+
+        if ($isCacheEnabled && isset($stream)) {
+            $content   = '<?php return ' . var_export([$milliSeconds, $metadata], true) . ';';
+            $cacheFile = $configuration[Config::METADATA_CACHE_FILE];
+            file_put_contents($cacheFile, $content);
+            if (function_exists('opcache_invalidate')) {
+                opcache_invalidate($cacheFile, true);
+            }
+        }
+
+        return $metadata;
     }
 }
