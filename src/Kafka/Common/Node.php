@@ -38,6 +38,13 @@ class Node
     public $port;
 
     /**
+     * Cached list of connections
+     *
+     * @var array
+     */
+    private static $nodeConnections = [];
+
+    /**
      * Unpacks the DTO from the binary buffer
      *
      * @param Stream $stream Binary buffer
@@ -54,5 +61,23 @@ class Node
         ) = array_values($stream->read("a{$hostLength}host/Nport"));
 
         return $brokerMetadata;
+    }
+
+    /**
+     * Returns a connection to this node.
+     *
+     * @param array $configuration Client configuration
+     *
+     * @return Stream
+     */
+    public function getConnection(array $configuration)
+    {
+        if (!isset(self::$nodeConnections[$this->host][$this->port])) {
+            $connection = new Stream\SocketStream("tcp://{$this->host}:{$this->port}", $configuration);
+
+            self::$nodeConnections[$this->host][$this->port] = $connection;
+        }
+
+        return self::$nodeConnections[$this->host][$this->port];
     }
 }

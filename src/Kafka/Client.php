@@ -53,20 +53,10 @@ class Client
      */
     private $configuration;
 
-    /**
-     * List of streams for each node
-     *
-     * @var Stream[]
-     */
-    private $connections;
-
     public function __construct(Cluster $cluster, array $configuration = [])
     {
         $this->cluster       = $cluster;
         $this->configuration = $configuration;
-        foreach ($this->cluster->nodes() as $node) {
-            $this->connections[$node->nodeId] = new SocketStream("tcp://{$node->host}:{$node->port}", $configuration);
-        }
     }
 
     /**
@@ -80,9 +70,7 @@ class Client
      */
     public function produce($topic, $partition, array $topicMessages)
     {
-        $leader = $this->cluster->leaderFor($topic, $partition);
-        $stream = $this->connections[$leader->nodeId];
-
+        $stream  = $this->cluster->leaderFor($topic, $partition)->getConnection($this->configuration);
         $request = new ProduceRequest(
             [$topic => [$partition => $topicMessages]],
             $this->configuration[ProducerConfig::ACKS],
@@ -123,7 +111,7 @@ class Client
      */
     public function commitGroupOffsets(Node $coordinatorNode, $groupId, array $topicPartitionOffsets)
     {
-        $stream  = $this->connections[$coordinatorNode->nodeId];
+        $stream  = $coordinatorNode->getConnection($this->configuration);
         $request = new OffsetCommitRequest(
             $groupId,
             $topicPartitionOffsets,
@@ -160,7 +148,7 @@ class Client
      */
     public function fetchGroupOffsets(Node $coordinatorNode, $groupId, array $topicPartitions)
     {
-        $stream = $this->connections[$coordinatorNode->nodeId];
+        $stream = $coordinatorNode->getConnection($this->configuration);
 
         $request = new OffsetFetchRequest(
             $groupId,
@@ -206,7 +194,7 @@ class Client
      */
     public function joinGroup(Node $coordinatorNode, $groupId, $memberId, $protocolType, array $groupProtocols)
     {
-        $stream = $this->connections[$coordinatorNode->nodeId];
+        $stream = $coordinatorNode->getConnection($this->configuration);
 
         $request = new JoinGroupRequest(
             $groupId,
@@ -241,7 +229,7 @@ class Client
      */
     public function leaveGroup(Node $coordinatorNode, $groupId, $memberId)
     {
-        $stream = $this->connections[$coordinatorNode->nodeId];
+        $stream = $coordinatorNode->getConnection($this->configuration);
 
         $request = new LeaveGroupRequest(
             $groupId,
@@ -276,7 +264,7 @@ class Client
      */
     public function syncGroup(Node $coordinatorNode, $groupId, $memberId, $generationId, array $groupAssignments = [])
     {
-        $stream = $this->connections[$coordinatorNode->nodeId];
+        $stream = $coordinatorNode->getConnection($this->configuration);
 
         $request = new SyncGroupRequest(
             $groupId,
@@ -312,7 +300,7 @@ class Client
      */
     public function heartbeat(Node $coordinatorNode, $groupId, $memberId, $generationId)
     {
-        $stream = $this->connections[$coordinatorNode->nodeId];
+        $stream = $coordinatorNode->getConnection($this->configuration);
 
         $request = new HeartbeatRequest(
             $groupId,
@@ -341,7 +329,10 @@ class Client
     public function getGroupCoordinator($groupId)
     {
         // TODO: iterate over connections and wrap logic into the try..catch block
-        $stream = reset($this->connections);
+        /** @var Node $firstNode */
+        $clusterNodes = $this->cluster->nodes();
+        $firstNode    = reset($clusterNodes);
+        $stream       = $firstNode->getConnection($this->configuration);
 
         $request = new GroupCoordinatorRequest(
             $groupId,
@@ -353,7 +344,12 @@ class Client
             throw KafkaException::fromCode($response->errorCode, compact('groupId'));
         }
 
-        return $this->cluster->nodeById($response->coordinator->nodeId);
+        $coordinator = $this->cluster->nodeById($response->coordinator->nodeId);
+        if (!isset($coordinator)) {
+            throw new Kafka\Error\GroupCoordinatorNotAvailable(compact('groupId'));
+        }
+
+        return $coordinator;
     }
 
     /**
@@ -460,6 +456,10 @@ class Client
 
         // TODO: Implement StreamGroup(Stream[] $connections) and Stream->joinGroup(StreamGroup $group)
         $socketAccessor = function (SocketStream $socket) {
+            if (!$socket->isConnected) {
+                $socket->connect();
+            }
+
             return $socket->streamSocket;
         };
         $socketAccessor  = $socketAccessor->bindTo(null, SocketStream::class);
@@ -469,7 +469,7 @@ class Client
         {
             /** @var Record $request */
             $request = $nodeRequest($nodeTopicPartitions);
-            $stream  = $this->connections[$nodeId];
+            $stream  = $this->cluster->nodeById($nodeId)->getConnection($this->configuration);
 
             $readNodeSockets[$nodeId] = $socketAccessor($stream);
             $request->writeTo($stream);
@@ -485,8 +485,9 @@ class Client
             $writeSelect = $exceptSelect = null;
             if (stream_select($readSelect, $writeSelect, $exceptSelect, intdiv($timeout, 1000), $timeout % 1000) > 0) {
                 foreach ($readSelect as $resourceToRead) {
-                    $nodeId = array_search($resourceToRead, $readNodeSockets);
-                    $responses[$nodeId] = $responseClass::unpack($this->connections[$nodeId]);
+                    $nodeId             = array_search($resourceToRead, $readNodeSockets);
+                    $connection         = $this->cluster->nodeById($nodeId)->getConnection($this->configuration);
+                    $responses[$nodeId] = $responseClass::unpack($connection);
                 }
                 $incompleteReads = array_diff($incompleteReads, $readSelect);
             }
