@@ -62,33 +62,35 @@ class Client
     /**
      * Produce messages to the specific topic partition
      *
-     * @param string  $topic         Name of the topic
-     * @param integer $partition     Identifier of partition to send messages to
-     * @param array   $topicMessages List of messages for this topic
+     * @param array $topicPartitionMessages List of messages for each topic and partition
      *
      * @return ProduceResponse
      */
-    public function produce($topic, $partition, array $topicMessages)
+    public function produce(array $topicPartitionMessages)
     {
-        $stream  = $this->cluster->leaderFor($topic, $partition)->getConnection($this->configuration);
-        $request = new ProduceRequest(
-            [$topic => [$partition => $topicMessages]],
-            $this->configuration[ProducerConfig::ACKS],
-            $this->configuration[ProducerConfig::TIMEOUT_MS],
-            $this->configuration[ProducerConfig::CLIENT_ID]
-        );
-        $request->writeTo($stream);
-        $response = ProduceResponse::unpack($stream);
-        /** @var Kafka\DTO\ProduceResponsePartition[] $partitions */
-        foreach ($response->topics as $topic => $partitions) {
-            foreach ($partitions as $partitionId => $partitionInfo) {
-                if ($partitionInfo->errorCode !== 0) {
-                    throw KafkaException::fromCode($partitionInfo->errorCode, compact('topic', 'partitionId'));
+        $result = $this->clusterRequest($topicPartitionMessages, function (array $nodeTopicPartitionMessages) {
+            $request = new ProduceRequest(
+                $nodeTopicPartitionMessages,
+                $this->configuration[ProducerConfig::ACKS],
+                $this->configuration[ProducerConfig::TIMEOUT_MS],
+                $this->configuration[ProducerConfig::CLIENT_ID]
+            );
+
+            return $request;
+        }, ProduceResponse::class, function (array $result, ProduceResponse $response) {
+            /** @var Kafka\DTO\ProduceResponsePartition[] $partitions */
+            foreach ($response->topics as $topic => $partitions) {
+                foreach ($partitions as $partitionId => $partitionInfo) {
+                    if ($partitionInfo->errorCode !== 0) {
+                        throw KafkaException::fromCode($partitionInfo->errorCode, compact('topic', 'partitionId'));
+                    }
+                    $result[$topic][$partitionId] = $partitionInfo;
                 }
             }
-        }
+            return $result;
+        });
 
-        return $response;
+        return $result;
     }
 
     /**

@@ -109,6 +109,5 @@ final class Config extends GeneralConfig
     const VALUE_DESERIALIZER            = 'value.deserializer';
     const EXCLUDE_INTERNAL_TOPICS       = 'exclude.internal.topics';
     const MAX_POLL_RECORDS              = 'max.poll.records';
-    const RECEIVE_BUFFER_BYTES          = 'receive.buffer.bytes';
     const CHECK_CRCS                    = 'check.crcs';
 }
