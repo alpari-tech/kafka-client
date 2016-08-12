@@ -163,6 +163,8 @@ class SocketStream extends AbstractStream
         if (!$streamSocket) {
             throw new NetworkException(compact('errorNumber', 'errorString'));
         }
+        socket_set_option($streamSocket, SOL_SOCKET, SO_SNDBUF, $this->configuration[Config::SEND_BUFFER_BYTES]);
+        socket_set_option($streamSocket, SOL_SOCKET, SO_RCVBUF, $this->configuration[Config::RECEIVE_BUFFER_BYTES]);
 
         $this->streamSocket = $streamSocket;
         $this->isConnected  = true;
