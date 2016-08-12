@@ -87,7 +87,7 @@ class Client
                     $result[$topic][$partitionId] = $partitionInfo;
                 }
             }
-
+            return $result;
         });
 
         return $result;
