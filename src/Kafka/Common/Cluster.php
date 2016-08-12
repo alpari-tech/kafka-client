@@ -79,7 +79,7 @@ final class Cluster
         $isLoaded       = false;
 
         if ($isCacheEnabled) {
-            $isLoaded = $cluster->loadFromCache($configuration, $cluster);
+            $isLoaded = $cluster->loadFromCache();
         }
         if (!$isLoaded) {
             $cluster->reload();
