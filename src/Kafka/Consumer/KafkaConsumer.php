@@ -11,8 +11,19 @@ use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\Node;
 use Protocol\Kafka\Common\PartitionInfo;
 use Protocol\Kafka\DTO\MessageSet;
+use Protocol\Kafka\Error\BrokerNotAvailable;
+use Protocol\Kafka\Error\GroupCoordinatorNotAvailable;
+use Protocol\Kafka\Error\GroupLoadInProgress;
+use Protocol\Kafka\Error\IllegalGeneration;
+use Protocol\Kafka\Error\InvalidTopicException;
 use Protocol\Kafka\Error\KafkaException;
+use Protocol\Kafka\Error\LeaderNotAvailable;
+use Protocol\Kafka\Error\NetworkException;
+use Protocol\Kafka\Error\NotLeaderForPartition;
 use Protocol\Kafka\Error\OffsetOutOfRange;
+use Protocol\Kafka\Error\RebalanceInProgress;
+use Protocol\Kafka\Error\RetriableException;
+use Protocol\Kafka\Error\UnknownMemberId;
 use Protocol\Kafka\Error\UnknownTopicOrPartition;
 use Protocol\Kafka\Record\OffsetsRequest;
 use Protocol\Kafka\Stream;
@@ -181,12 +192,15 @@ class KafkaConsumer
         }
         $this->assignedTopicPartitions = $topicPartitions;
 
-        $topicPartitionOffsets = $this->client->fetchGroupOffsets(
-            $this->coordinator,
-            $this->configuration[Config::GROUP_ID],
-            $topicPartitions
-        );
-        $this->topicPartitionOffsets = $this->autoResetOffsets($topicPartitionOffsets);
+        $this->protectedRequest(function () {
+            $topicPartitionOffsets = $this->client->fetchGroupOffsets(
+                $this->coordinator,
+                $this->configuration[Config::GROUP_ID],
+                $this->assignedTopicPartitions
+            );
+
+            $this->topicPartitionOffsets = $this->autoResetOffsets($topicPartitionOffsets);
+        });
     }
 
     /**
@@ -208,11 +222,13 @@ class KafkaConsumer
     {
         $topicPartitionOffsets = isset($topicPartitionOffsets) ? $topicPartitionOffsets : $this->topicPartitionOffsets;
 
-        $this->client->commitGroupOffsets(
-            $this->coordinator,
-            $this->configuration[Config::GROUP_ID],
-            $topicPartitionOffsets
-        );
+        $this->protectedRequest(function () use ($topicPartitionOffsets) {
+            $this->client->commitGroupOffsets(
+                $this->coordinator,
+                $this->configuration[Config::GROUP_ID],
+                $topicPartitionOffsets
+            );
+        });
 
         $this->topicPartitionOffsets = $topicPartitionOffsets;
     }
@@ -255,7 +271,9 @@ class KafkaConsumer
     {
         $milliSeconds = (int) (microtime(true) * 1e3);
         if (($milliSeconds - $this->lastHearbeatMs) > $this->configuration[Config::HEARTBEAT_INTERVAL_MS]) {
-            $this->heartbeat($milliSeconds);
+            $this->protectedRequest(function () use ($milliSeconds) {
+                $this->heartbeat($milliSeconds);
+            });
         }
 
         $activeTopicPartitionOffsets = $this->topicPartitionOffsets;
@@ -263,7 +281,9 @@ class KafkaConsumer
             // This can be optimized in pause()/resume methods
             $activeTopicPartitionOffsets[$topic] = array_diff($activeTopicPartitionOffsets[$topic], $partitions);
         }
-        $result = $this->client->fetch($activeTopicPartitionOffsets, $timeout);
+        $result = $this->protectedRequest(function () use ($activeTopicPartitionOffsets, $timeout) {
+            return $this->client->fetch($activeTopicPartitionOffsets, $timeout);
+        });
 
         $resultOffsets = $this->fetchResultOffsets($result);
         if ($resultOffsets) {
@@ -354,47 +374,52 @@ class KafkaConsumer
     public function subscribe(array $topics)
     {
         $groupId           = $this->configuration[Config::GROUP_ID];
-        $this->coordinator = $this->client->getGroupCoordinator($groupId);
+        $this->coordinator = $this->protectedRequest(function () use ($groupId) {
+            return $this->client->getGroupCoordinator($groupId);
+        });
 
         $subscription = Subscription::fromSubscription($topics);
-        $joinResult   = $this->client->joinGroup(
-            $this->coordinator,
-            $this->configuration[Config::GROUP_ID],
-            $this->memberId,
-            'consumer',
-            ['range' => $subscription]
-        );
 
-        $this->memberId     = $joinResult->memberId;
-        $this->generationId = $joinResult->generationId;
-
-        $isLeader = $joinResult->memberId === $joinResult->leaderId;
-
-        if ($isLeader) {
-            $groupAssignments = $this->assignorStrategy->assign($this->cluster, $joinResult->members);
-            $syncResult       = $this->client->syncGroup(
+        $this->protectedRequest(function () use ($subscription) {
+            $joinResult   = $this->client->joinGroup(
                 $this->coordinator,
                 $this->configuration[Config::GROUP_ID],
                 $this->memberId,
-                $this->generationId,
-                $groupAssignments
-            );
-            $topicPartitions = $groupAssignments[$this->memberId]->topicPartitions;
-        } else {
-            $syncResult = $this->client->syncGroup(
-                $this->coordinator,
-                $this->configuration[Config::GROUP_ID],
-                $this->memberId,
-                $this->generationId
+                'consumer',
+                ['range' => $subscription]
             );
 
-            $assignments = MemberAssignment::unpack(new Stream\StringStream($syncResult->memberAssignment));
+            $this->memberId     = $joinResult->memberId;
+            $this->generationId = $joinResult->generationId;
 
-            // TODO: Use $assignments->userData; $assignments->version;
-            $topicPartitions = $assignments->topicPartitions;
-        }
-        $this->subscription = $subscription;
-        $this->assign($topicPartitions);
+            $isLeader = $joinResult->memberId === $joinResult->leaderId;
+
+            if ($isLeader) {
+                $groupAssignments = $this->assignorStrategy->assign($this->cluster, $joinResult->members);
+                $syncResult       = $this->client->syncGroup(
+                    $this->coordinator,
+                    $this->configuration[Config::GROUP_ID],
+                    $this->memberId,
+                    $this->generationId,
+                    $groupAssignments
+                );
+                $topicPartitions = $groupAssignments[$this->memberId]->topicPartitions;
+            } else {
+                $syncResult = $this->client->syncGroup(
+                    $this->coordinator,
+                    $this->configuration[Config::GROUP_ID],
+                    $this->memberId,
+                    $this->generationId
+                );
+
+                $assignments = MemberAssignment::unpack(new Stream\StringStream($syncResult->memberAssignment));
+
+                // TODO: Use $assignments->userData; $assignments->version;
+                $topicPartitions = $assignments->topicPartitions;
+            }
+            $this->subscription = $subscription;
+            $this->assign($topicPartitions);
+        });
     }
 
     /**
@@ -442,17 +467,13 @@ class KafkaConsumer
      */
     protected function heartbeat($heartBeatTimeMs)
     {
-        try {
-            $this->client->heartbeat(
-                $this->coordinator,
-                $this->configuration[Config::GROUP_ID],
-                $this->memberId,
-                $this->generationId
-            );
-        } catch (KafkaException $e) {
-            // Re-subscribe to the group in the case of failed heartbeat
-            $this->subscribe($this->subscription->topics);
-        }
+        $this->client->heartbeat(
+            $this->coordinator,
+            $this->configuration[Config::GROUP_ID],
+            $this->memberId,
+            $this->generationId
+        );
+
         $this->lastHearbeatMs = $heartBeatTimeMs; // Expect 64-bit platform PHP
     }
 
@@ -542,5 +563,62 @@ class KafkaConsumer
         }
 
         return $result;
+    }
+
+    protected function protectedRequest(\Closure $requestBodyCallback)
+    {
+        $currentTry = 0;
+        while ($currentTry <= 1) {
+            try {
+                return $requestBodyCallback();
+            } catch (GroupCoordinatorNotAvailable $e) {
+                // Coordinator was died, waiting for the new one...
+                usleep($this->configuration[Config::RECONNECT_BACKOFF_MS] * 1e3);
+                $this->cluster->reload();
+            } catch (GroupLoadInProgress $e) {
+                // We need to wait a little bit, while group load process will be finished
+                usleep($this->configuration[Config::RECONNECT_BACKOFF_MS] * 1e3);
+            } catch (IllegalGeneration $e) {
+                // Our consumer is old, need to rejoin to the new group
+                $this->subscribe($this->subscription->topics);
+            } catch (InvalidTopicException $e) {
+                // Our consumer sending request to the wrong topic, maybe this node just don't hold the partition?
+                $this->cluster->reload();
+                $this->subscribe($this->subscription->topics);
+            } catch (LeaderNotAvailable $e) {
+                // We need to wait a little bit, while new leader will be elected
+                usleep($this->configuration[Config::RECONNECT_BACKOFF_MS] * 1e3);
+            } catch (NotLeaderForPartition $e) {
+                // Something bad happened with node, need to ask who is leader now
+                $this->cluster->reload();
+            } catch (RebalanceInProgress $e) {
+                // Cluster is rebalancing now, need to perform a rejoin after small timeout
+                usleep($this->configuration[Config::RECONNECT_BACKOFF_MS] * 1e3);
+                $this->cluster->reload();
+                $this->subscribe($this->subscription->topics);
+            } catch (UnknownMemberId $e) {
+                // We have a stale memberId, need to rejoin
+                $this->subscribe($this->subscription->topics);
+            } catch (UnknownTopicOrPartition $e) {
+                // Either we send a request to the wrong node or topic is not exists
+                $this->cluster->reload();
+            } catch (NetworkException $e) {
+                // Network error is bad one, because we don't know the exact state and reason
+                $this->cluster->reload();
+                usleep($this->configuration[Config::RETRY_BACKOFF_MS] * 1e3);
+            } catch (RetriableException $e) {
+                // Nothing here
+            }
+
+            echo get_class($e), $e->getTraceAsString();
+            if ($e instanceof RetriableException) {
+                $currentTry++;
+            } else {
+                throw $e;
+            }
+        }
+
+        // We should never be there
+        throw new BrokerNotAvailable([], $e);
     }
 }
