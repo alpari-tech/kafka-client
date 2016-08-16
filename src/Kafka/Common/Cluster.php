@@ -118,7 +118,7 @@ final class Cluster
     public function nodeById($nodeId)
     {
         if (!isset($this->nodes[$nodeId])) {
-            return null;
+            throw new Kafka\Error\UnknownError(compact('nodeId') + ['error' => 'Node was not found']);
         }
 
         return $this->nodes[$nodeId];
