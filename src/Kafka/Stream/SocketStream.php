@@ -10,6 +10,7 @@ use Protocol\Kafka;
 use Protocol\Kafka\Common\Config;
 use Protocol\Kafka\Error\NetworkException;
 use Protocol\Kafka\Stream;
+use Protocol\Kafka\StreamGroupRequest;
 
 /**
  * Implementation of simple socket stream
@@ -75,6 +76,18 @@ class SocketStream extends AbstractStream
         $this->port          = isset($tcpInfo['port']) ? $tcpInfo['port'] : 9092;
         $this->timeout       = isset($connectionTimeout) ? $connectionTimeout : ini_get("default_socket_timeout");
         $this->configuration = $configuration;
+    }
+
+    /**
+     * Joins current stream to the group (for stream_select)
+     *
+     * @param StreamGroupRequest $group Instance of group
+     *
+     * @return void
+     */
+    public function joinGroup(StreamGroupRequest $group)
+    {
+        $group->registerHandle($this, $this->streamSocket);
     }
 
     /**

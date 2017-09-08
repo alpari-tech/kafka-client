@@ -8,6 +8,7 @@ namespace Protocol\Kafka\Stream;
 
 use Protocol\Kafka;
 use Protocol\Kafka\Stream;
+use Protocol\Kafka\StreamGroupRequest;
 
 class StringStream extends AbstractStream
 {
@@ -58,5 +59,17 @@ class StringStream extends AbstractStream
         $this->buffer = substr($this->buffer, self::packetSize($format));
 
         return $arguments;
+    }
+
+    /**
+     * Joins current stream to the group (for stream_select)
+     *
+     * @param StreamGroupRequest $group Instance of group
+     *
+     * @return void
+     */
+    public function joinGroup(StreamGroupRequest $group)
+    {
+        $group->registerHandle($this, $this->buffer);
     }
 }

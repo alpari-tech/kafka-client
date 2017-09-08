@@ -61,4 +61,13 @@ interface Stream
      * @return mixed
      */
     public function writeByteArray($data);
+
+    /**
+     * Joins current stream to the group (for stream_select)
+     *
+     * @param StreamGroupRequest $group Instance of group
+     *
+     * @return void
+     */
+    public function joinGroup(StreamGroupRequest $group);
 }
