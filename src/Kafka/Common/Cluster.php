@@ -54,7 +54,7 @@ final class Cluster
      *
      * @param string $topic Name of the topic
      *
-     * @return array|PartitionInfo[]
+     * @return array|PartitionMetadata[]
      */
     public function availablePartitionsForTopic($topic)
     {
@@ -140,7 +140,7 @@ final class Cluster
      * @param string  $topic     Name of the topic
      * @param integer $partition Number of the partition
      *
-     * @return PartitionInfo
+     * @return PartitionMetadata
      */
     public function partition($topic, $partition)
     {
@@ -157,7 +157,7 @@ final class Cluster
      *
      * @param string $topic Name of the topic
      *
-     * @return PartitionInfo[]
+     * @return PartitionMetadata[]
      */
     public function partitionsForTopic($topic)
     {
