@@ -9,9 +9,9 @@ namespace Protocol\Kafka\Common;
 use Protocol\Kafka\Stream;
 
 /**
- * Information about a topic-partition.
+ * Information about a topic-partition metadata.
  */
-class PartitionInfo
+class PartitionMetadata
 {
     use RestorableTrait;
 
