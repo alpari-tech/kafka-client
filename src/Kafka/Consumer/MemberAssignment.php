@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\Consumer;
 
-use Protocol\Kafka;
 use Protocol\Kafka\Stream;
 
 /**

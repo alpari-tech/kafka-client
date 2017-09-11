@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\DTO;
 
-use Protocol\Kafka;
 use Protocol\Kafka\Stream;
 
 /**

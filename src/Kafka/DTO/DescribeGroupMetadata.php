@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\DTO;
 
-use Protocol\Kafka;
 use Protocol\Kafka\Stream;
 
 /**
@@ -64,7 +63,7 @@ class DescribeGroupMetadata
      * @param Stream $stream Binary buffer
      *
      * @return static
-     * 
+     *
      * DescibeGroupMetadata => error_code group_id state protocol_type protocol [members]
      *   error_code => INT16
      *   group_id => STRING
