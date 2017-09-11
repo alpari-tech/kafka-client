@@ -7,7 +7,6 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\Record;
 
 /**
  * The offsets for a given consumer group are maintained by a specific broker called the group coordinator. i.e., a

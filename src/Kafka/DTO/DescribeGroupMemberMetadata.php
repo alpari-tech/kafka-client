@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\DTO;
 
-use Protocol\Kafka;
 use Protocol\Kafka\Stream;
 
 /**
@@ -56,8 +55,8 @@ class DescribeGroupMemberMetadata
      * @param Stream $stream Binary buffer
      *
      * @return static
-     * 
-     *  members => member_id client_id client_host member_metadata member_assignment 
+     *
+     *  members => member_id client_id client_host member_metadata member_assignment
      *    member_id => STRING
      *    client_id => STRING
      *    client_host => STRING

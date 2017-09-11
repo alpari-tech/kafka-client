@@ -1,6 +1,6 @@
 {
-    "name": "lisachenko/protocol-kafka",
-    "description": "Implementation of Kafka Protocol in PHP",
+    "name": "gtt/kafka-client",
+    "description": "Implementation of Kafka Client in PHP",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -14,5 +14,7 @@
             "Protocol\\" : "src/"
         }
     },
-    "require": {}
+    "require": {
+        "php": "~5.6"
+    }
 }

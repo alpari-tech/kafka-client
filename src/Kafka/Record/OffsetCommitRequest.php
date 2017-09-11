@@ -8,7 +8,6 @@ namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
 use Protocol\Kafka\DTO\OffsetCommitPartition;
-use Protocol\Kafka\Record;
 
 /**
  * OffsetCommit

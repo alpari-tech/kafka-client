@@ -6,10 +6,8 @@
 
 namespace Protocol\Kafka\Stream;
 
-use Protocol\Kafka;
 use Protocol\Kafka\Common\Config;
 use Protocol\Kafka\Error\NetworkException;
-use Protocol\Kafka\Stream;
 
 /**
  * Implementation of simple socket stream

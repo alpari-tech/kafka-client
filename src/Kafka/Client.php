@@ -357,9 +357,6 @@ class Client
         }
 
         $coordinator = $this->cluster->nodeById($response->coordinator->nodeId);
-        if (!isset($coordinator)) {
-            throw new Kafka\Error\GroupCoordinatorNotAvailable(compact('groupId'));
-        }
 
         return $coordinator;
     }
