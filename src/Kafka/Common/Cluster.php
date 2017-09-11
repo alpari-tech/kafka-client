@@ -28,7 +28,7 @@ final class Cluster
     /**
      * Topic partitions
      *
-     * @var TopicPartition[]|array
+     * @var TopicMetadata[]|array
      */
     private $topicPartitions = [];
 

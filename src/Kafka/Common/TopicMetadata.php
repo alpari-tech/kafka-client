@@ -11,7 +11,7 @@ use Protocol\Kafka\Stream;
 /**
  * Topic metadata DTO
  */
-class TopicPartition
+class TopicMetadata
 {
     use RestorableTrait;
 
