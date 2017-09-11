@@ -8,7 +8,7 @@ namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
 use Protocol\Kafka\Common\Node;
-use Protocol\Kafka\Common\TopicPartition;
+use Protocol\Kafka\Common\TopicMetadata;
 use Protocol\Kafka\Record;
 use Protocol\Kafka\Stream;
 
@@ -29,7 +29,7 @@ class MetadataResponse extends AbstractResponse
     /**
      * List of topics
      *
-     * @var array|TopicPartition[]
+     * @var array|TopicMetadata[]
      */
     public $topics = [];
 
@@ -56,7 +56,7 @@ class MetadataResponse extends AbstractResponse
         $numberOfTopics = $stream->read('NnumberOfTopics')['numberOfTopics'];
 
         for ($topic=0; $topic<$numberOfTopics; $topic++) {
-            $topicMetadata = TopicPartition::unpack($stream);
+            $topicMetadata = TopicMetadata::unpack($stream);
 
             $self->topics[$topicMetadata->topic] = $topicMetadata;
         }
