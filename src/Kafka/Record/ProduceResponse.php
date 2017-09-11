@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka;
 use Protocol\Kafka\DTO\ProduceResponsePartition;
 use Protocol\Kafka\Record;
 use Protocol\Kafka\Stream;

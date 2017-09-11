@@ -7,7 +7,6 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\Record;
 
 /**
  * LeaveGroup Request
@@ -50,10 +49,10 @@ class LeaveGroupRequest extends AbstractRequest
         $memberLength = strlen($this->memberId);
 
         $payload .= pack(
-            "na{$groupLength}na{$memberLength}", 
-            $groupLength, 
-            $this->consumerGroup, 
-            $memberLength, 
+            "na{$groupLength}na{$memberLength}",
+            $groupLength,
+            $this->consumerGroup,
+            $memberLength,
             $this->memberId
         );
 

@@ -10,12 +10,8 @@ use Protocol\Kafka\Client;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\PartitionInfo;
 use Protocol\Kafka\DTO\Message;
-use Protocol\Kafka\DTO\ProduceResponsePartition;
-use Protocol\Kafka\Error\NetworkException;
 use Protocol\Kafka\Error\NotLeaderForPartition;
 use Protocol\Kafka\Error\RetriableException;
-use Protocol\Kafka\Error\UnknownTopicOrPartition;
-use Protocol\Kafka\Record\ProduceResponse;
 
 /**
  * A Kafka client that publishes records to the Kafka cluster.

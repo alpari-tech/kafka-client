@@ -7,7 +7,6 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\Record;
 
 /**
  * This API describes the valid offset range available for a set of topic-partitions.

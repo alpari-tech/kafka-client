@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\Stream;
 
-use Protocol\Kafka;
 use Protocol\Kafka\Stream;
 
 abstract class AbstractStream implements Stream

@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\Common;
 
-use Protocol\Kafka;
 use Protocol\Kafka\Stream;
 
 /**

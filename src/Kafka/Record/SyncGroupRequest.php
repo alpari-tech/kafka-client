@@ -7,7 +7,6 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\Record;
 
 /**
  * SyncGroup Request
@@ -65,7 +64,7 @@ class SyncGroupRequest extends AbstractRequest
 
     /**
      * @inheritDoc
-     * 
+     *
      * SyncGroupRequest => GroupId GenerationId MemberId GroupAssignment
      *   GroupId => string
      *   GenerationId => int32

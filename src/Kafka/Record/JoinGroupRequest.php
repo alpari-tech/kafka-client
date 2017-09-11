@@ -7,7 +7,6 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\Record;
 
 /**
  * Join Group Request
@@ -75,15 +74,15 @@ class JoinGroupRequest extends AbstractRequest
 
     /**
      * @inheritDoc
-     * 
-     * JoinGroup Request (Version: 0) => group_id session_timeout member_id protocol_type [group_protocols] 
+     *
+     * JoinGroup Request (Version: 0) => group_id session_timeout member_id protocol_type [group_protocols]
      *   group_id => STRING
      *   session_timeout => INT32
      *   member_id => STRING
      *   protocol_type => STRING
-     *   group_protocols => protocol_name protocol_metadata 
+     *   group_protocols => protocol_name protocol_metadata
      *     protocol_name => STRING
-     *     protocol_metadata => BYTES     
+     *     protocol_metadata => BYTES
      */
     protected function packPayload()
     {
