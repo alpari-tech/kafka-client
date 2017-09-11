@@ -32,7 +32,7 @@ class TopicPartition
     /**
      * Metadata for each partition of the topic.
      *
-     * @var PartitionInfo[]|array
+     * @var PartitionMetadata[]|array
      */
     public $partitions = [];
 
@@ -53,7 +53,7 @@ class TopicPartition
         ) = array_values($stream->read("a{$topicLength}topic/NnumberOfPartition"));
 
         for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
-            $partitionMetadata = PartitionInfo::unpack($stream);
+            $partitionMetadata = PartitionMetadata::unpack($stream);
 
             $topic->partitions[$partitionMetadata->partitionId] = $partitionMetadata;
         }

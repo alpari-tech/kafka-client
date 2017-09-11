@@ -8,7 +8,7 @@ namespace Protocol\Kafka\Producer;
 
 use Protocol\Kafka\Client;
 use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\Common\PartitionInfo;
+use Protocol\Kafka\Common\PartitionMetadata;
 use Protocol\Kafka\DTO\Message;
 use Protocol\Kafka\Error\NotLeaderForPartition;
 use Protocol\Kafka\Error\RetriableException;
@@ -153,7 +153,7 @@ class KafkaProducer
      *
      * @param string $topic
      *
-     * @return PartitionInfo[]
+     * @return PartitionMetadata[]
      */
     public function partitionsFor($topic)
     {

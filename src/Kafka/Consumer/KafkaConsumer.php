@@ -9,7 +9,7 @@ namespace Protocol\Kafka\Consumer;
 use Protocol\Kafka\Client;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\Node;
-use Protocol\Kafka\Common\PartitionInfo;
+use Protocol\Kafka\Common\PartitionMetadata;
 use Protocol\Kafka\DTO\MessageSet;
 use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\OffsetOutOfRange;
@@ -222,7 +222,7 @@ class KafkaConsumer
      *
      * @param string $topic
      *
-     * @return PartitionInfo[]
+     * @return PartitionMetadata[]
      */
     public function partitionsFor($topic)
     {
