@@ -7,10 +7,6 @@ namespace Protocol;
 
 class Kafka
 {
-    /**
-     * Protocol version implementation
-     */
-    const VERSION = 0;
 
     /**
      * Number of bytes in a kafka header
