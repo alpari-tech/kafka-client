@@ -37,7 +37,7 @@ class FetchRequest extends AbstractRequest
     /**
      * @inheritDoc
      */
-    const VERSION = 1;
+    const VERSION = 2;
 
     /**
      * @var array
