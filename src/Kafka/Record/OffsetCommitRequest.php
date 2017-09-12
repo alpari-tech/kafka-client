@@ -19,6 +19,11 @@ use Protocol\Kafka\DTO\OffsetCommitPartition;
 class OffsetCommitRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 2;
+
+    /**
      * The consumer group id.
      *
      * @var string

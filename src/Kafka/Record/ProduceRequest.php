@@ -21,6 +21,11 @@ use Protocol\Kafka\DTO\MessageSet;
 class ProduceRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 2;
+
+    /**
      * @var integer
      */
     private $requiredAcks;

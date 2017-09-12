@@ -30,6 +30,11 @@ use Protocol\Kafka;
 class MetadataRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 1;
+
+    /**
      * An array of topics to fetch metadata for. If no topics are specified fetch metadata for all topics.
      *
      * @var string
@@ -40,7 +45,7 @@ class MetadataRequest extends AbstractRequest
     {
         $this->topics = $topics;
 
-        parent::__construct(Kafka::METADATA, $clientId, $correlationId, Kafka::VERSION_1);
+        parent::__construct(Kafka::METADATA, $clientId, $correlationId);
     }
 
     /**

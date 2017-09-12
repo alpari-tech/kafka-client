@@ -20,6 +20,11 @@ use Protocol\Kafka;
 class OffsetFetchRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 1;
+
+    /**
      * The consumer group id.
      *
      * @var string
@@ -36,7 +41,7 @@ class OffsetFetchRequest extends AbstractRequest
         $this->consumerGroup   = $consumerGroup;
         $this->topicPartitions = $topicPartitions;
 
-        parent::__construct(Kafka::OFFSET_FETCH, $clientId, $correlationId, Kafka::VERSION_1);
+        parent::__construct(Kafka::OFFSET_FETCH, $clientId, $correlationId);
     }
 
     /**
