@@ -14,6 +14,23 @@ use Protocol\Kafka\Common\Config as GeneralConfig;
 final class Config extends GeneralConfig
 {
     /**
+     * Default configuration for producer (should be applied on top of default config)
+     *
+     * @var array
+     */
+    protected static $producerConfiguration = [
+        Config::PARTITIONER_CLASS => DefaultPartitioner::class,
+        Config::ACKS              => 1,
+        Config::TIMEOUT_MS        => 2000,
+        Config::RETRIES           => 0,
+        Config::BATCH_SIZE        => 0,
+
+        Config::COMPRESSION_TYPE => 'none',
+        Config::LINGER_MS        => 0,
+        Config::MAX_REQUEST_SIZE => 1048576,
+    ];
+
+    /**
      * The number of acknowledgments the producer requires the leader to have received before considering a request
      * complete. This controls the durability of records that are sent. The following settings are common:
      *
@@ -74,4 +91,14 @@ final class Config extends GeneralConfig
     const COMPRESSION_TYPE          = 'compression.type';
     const LINGER_MS                 = 'linger.ms';
     const MAX_REQUEST_SIZE          = 'max.request.size';
+
+    /**
+     * Returns default configuration for producer
+     *
+     * @return array
+     */
+    public static function getDefaultConfiguration()
+    {
+        return self::$producerConfiguration + parent::$generalConfiguration;
+    }
 }
