@@ -7,7 +7,7 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\DTO\MessageSet;
+use Protocol\Kafka\DTO\RecordBatch;
 
 /**
  * The produce API
@@ -79,14 +79,14 @@ class ProduceRequest extends AbstractRequest
         foreach ($this->topicMessages as $topic => $partitions) {
             $topicLength = strlen($topic);
             $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
-            foreach ($partitions as $partition => $messages) {
-                $messageSetPayload = '';
-                foreach ($messages as $message) {
-                    $messageSet = MessageSet::fromMessage($message);
-                    $messageSetPayload .= $messageSet;
+            foreach ($partitions as $partition => $recordBatch) {
+                $recordBatchPayload = '';
+                foreach ($recordBatch as $message) {
+                    $recordBatch        = RecordBatch::fromRecord($message);
+                    $recordBatchPayload .= $recordBatch;
                 }
-                $payload .= pack('NN', $partition, strlen($messageSetPayload));
-                $payload .= $messageSetPayload;
+                $payload .= pack('NN', $partition, strlen($recordBatchPayload));
+                $payload .= $recordBatchPayload;
             }
         }
 

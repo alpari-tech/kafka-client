@@ -9,7 +9,7 @@ namespace Protocol\Kafka\Producer;
 use Protocol\Kafka\Client;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\PartitionMetadata;
-use Protocol\Kafka\DTO\Message;
+use Protocol\Kafka\DTO\Record;
 use Protocol\Kafka\Error\NotLeaderForPartition;
 use Protocol\Kafka\Error\RetriableException;
 
@@ -130,13 +130,13 @@ class KafkaProducer
      *
      * @todo Use futures instead of void result
      *
-     * @param string  $topic   Name of the topic
-     * @param Message $message Message to send
-     * @param integer|null    $concretePartition Optional partition for sending message
+     * @param string       $topic             Name of the topic
+     * @param Record       $message           Message to send
+     * @param integer|null $concretePartition Optional partition for sending message
      *
      * @return array
      */
-    public function send($topic, Message $message, $concretePartition = null)
+    public function send($topic, Record $message, $concretePartition = null)
     {
         if (isset($concretePartition)) {
             $partition = $concretePartition;

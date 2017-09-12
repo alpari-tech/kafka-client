@@ -10,7 +10,7 @@ use Protocol\Kafka\Client;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\Node;
 use Protocol\Kafka\Common\PartitionMetadata;
-use Protocol\Kafka\DTO\MessageSet;
+use Protocol\Kafka\DTO\RecordBatch;
 use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\OffsetOutOfRange;
 use Protocol\Kafka\Error\UnknownTopicOrPartition;
@@ -498,13 +498,13 @@ class KafkaConsumer
         $result = [];
 
         foreach ($fetchResult as $topic => $partitions) {
-            foreach ($partitions as $partitionId => $messageSet) {
-                if (empty($messageSet)) {
+            foreach ($partitions as $partitionId => $recordBatch) {
+                if (empty($recordBatch)) {
                     continue;
                 }
-                /** @var MessageSet $lastMessage */
-                $lastMessage = end($messageSet);
-                $result[$topic][$partitionId] = $lastMessage->offset + 1;
+                /** @var RecordBatch $lastRecord */
+                $lastRecord = end($recordBatch);
+                $result[$topic][$partitionId] = $lastRecord->offset + 1;
             }
         }
 

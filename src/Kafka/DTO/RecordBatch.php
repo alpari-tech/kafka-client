@@ -9,13 +9,13 @@ namespace Protocol\Kafka\DTO;
 use Protocol\Kafka\Stream;
 
 /**
- * The message set structure is common to both the produce and fetch requests.
+ * The record batch structure is common to both the produce and fetch requests.
  *
- * A message set is just a sequence of messages with offset and size information.
+ * A record batch is just a sequence of records with offset and size information.
  *
- * This format happens to be used both for the on-disk storage on the broker and the on-the-wire format.
+ * @since 0.11.0
  */
-class MessageSet
+class RecordBatch
 {
     /**
      * Offset used in kafka as the log sequence number.
@@ -29,28 +29,28 @@ class MessageSet
     public $offset;
 
     /**
-     * Size of the message data
+     * Size of the record data
      *
      * @var integer
      */
     public $messageSize;
 
     /**
-     * Message information
+     * Record information
      *
-     * @var Message
+     * @var Record
      */
     public $message;
 
-    public static function fromMessage(Message $message, $offset = 0)
+    public static function fromRecord(Record $message, $offset = 0)
     {
-        $messageSet = new static();
+        $recordBatch = new static();
 
-        $messageSet->offset      = $offset;
-        $messageSet->message     = $message;
-        $messageSet->messageSize = strlen((string)$message);
+        $recordBatch->offset      = $offset;
+        $recordBatch->message     = $message;
+        $recordBatch->messageSize = strlen((string)$message);
 
-        return $messageSet;
+        return $recordBatch;
     }
 
     /**
@@ -62,15 +62,15 @@ class MessageSet
      */
     public static function unpack(Stream $stream)
     {
-        $messageSet = new static();
+        $recordBatch = new static();
         list(
-            $messageSet->offset,
-            $messageSet->messageSize
+            $recordBatch->offset,
+            $recordBatch->messageSize
         ) = array_values($stream->read('Joffset/NmessageSize'));
 
-        $messageSet->message = Message::unpack($stream);
+        $recordBatch->message = Record::unpack($stream);
 
-        return $messageSet;
+        return $recordBatch;
     }
 
     public function __toString()

@@ -9,9 +9,11 @@ namespace Protocol\Kafka\DTO;
 use Protocol\Kafka\Stream;
 
 /**
- * A message in kafka is a key-value pair with a small amount of associated metadata.
+ * A record in kafka is a key-value pair with a small amount of associated metadata.
+ *
+ * @since 0.11.0
  */
-class Message
+class Record
 {
     /**
      * The CRC is the CRC32 of the remainder of the message bytes.
