@@ -21,6 +21,11 @@ use Protocol\Kafka\DTO\RecordBatch;
 class ProduceRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 2;
+
+    /**
      * @var integer
      */
     private $requiredAcks;

@@ -68,7 +68,7 @@ class JoinGroupRequest extends AbstractRequest
         $this->protocolType   = $protocolType;
         $this->groupProtocols = $groupProtocols;
 
-        parent::__construct(Kafka::JOIN_GROUP, $clientId, $correlationId, Kafka::VERSION_0);
+        parent::__construct(Kafka::JOIN_GROUP, $clientId, $correlationId);
     }
 
     /**

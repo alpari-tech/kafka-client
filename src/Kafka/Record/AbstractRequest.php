@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka;
 use Protocol\Kafka\Record;
 
 /**
@@ -14,6 +13,13 @@ use Protocol\Kafka\Record;
  */
 abstract class AbstractRequest extends Record
 {
+    /**
+     * Version of API request, could be overridden in children classes
+     *
+     * @var int
+     */
+    const VERSION = 0;
+
     /**
      * The id of the request type. (INT16)
      *
@@ -24,7 +30,6 @@ abstract class AbstractRequest extends Record
     /**
      * The version of the API. (INT16)
      *
-     * @see Kafka::VERSION constant value
      * @var integer
      */
     protected $apiVersion;
@@ -50,12 +55,12 @@ abstract class AbstractRequest extends Record
      */
     private static $counter = 0;
 
-    public function __construct($apiKey, $clientId = '', $correlationId = 0, $apiVersion = Kafka::VERSION)
+    public function __construct($apiKey, $clientId = '', $correlationId = 0)
     {
         $this->apiKey        = $apiKey;
         $this->clientId      = $clientId;
         $this->correlationId = $correlationId ?: self::$counter++;
-        $this->apiVersion    = $apiVersion;
+        $this->apiVersion    = static::VERSION;
 
         $this->setMessageData($this->packPayload());
     }

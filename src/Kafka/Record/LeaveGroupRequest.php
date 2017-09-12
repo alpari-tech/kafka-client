@@ -36,7 +36,7 @@ class LeaveGroupRequest extends AbstractRequest
         $this->consumerGroup = $consumerGroup;
         $this->memberId      = $memberId;
 
-        parent::__construct(Kafka::LEAVE_GROUP, $clientId, $correlationId, Kafka::VERSION_0);
+        parent::__construct(Kafka::LEAVE_GROUP, $clientId, $correlationId);
     }
 
     /**

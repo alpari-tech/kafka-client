@@ -35,6 +35,11 @@ use Protocol\Kafka;
 class FetchRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 1;
+
+    /**
      * @var array
      */
     private $topicPartitions;

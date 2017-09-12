@@ -14,6 +14,11 @@ use Protocol\Kafka;
 class ControlledShutdownRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 1;
+
+    /**
      * Broker identifier to shutdown
      *
      * @var integer
@@ -24,7 +29,7 @@ class ControlledShutdownRequest extends AbstractRequest
     {
         $this->brokerId = $brokerId;
 
-        parent::__construct(Kafka::CONTROLLED_SHUTDOWN, $clientId, $correlationId, Kafka::VERSION_1);
+        parent::__construct(Kafka::CONTROLLED_SHUTDOWN, $clientId, $correlationId);
     }
 
     /**
