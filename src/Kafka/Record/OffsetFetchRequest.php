@@ -20,6 +20,11 @@ use Protocol\Kafka;
 class OffsetFetchRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 1;
+
+    /**
      * The consumer group id.
      *
      * @var string

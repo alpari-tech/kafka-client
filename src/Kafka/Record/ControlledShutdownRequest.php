@@ -14,6 +14,11 @@ use Protocol\Kafka;
 class ControlledShutdownRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 1;
+
+    /**
      * Broker identifier to shutdown
      *
      * @var integer
