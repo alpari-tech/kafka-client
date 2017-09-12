@@ -214,6 +214,7 @@ class Client
         $request = new JoinGroupRequest(
             $groupId,
             $this->configuration[ConsumerConfig::SESSION_TIMEOUT_MS],
+            $this->configuration[ConsumerConfig::REBALANCE_TIMEOUT_MS],
             $memberId,
             $protocolType,
             $groupProtocols,

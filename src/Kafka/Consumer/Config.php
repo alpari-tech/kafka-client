@@ -24,6 +24,7 @@ final class Config extends GeneralConfig
         Config::GROUP_ID                      => '',
         Config::PARTITION_ASSIGNMENT_STRATEGY => RoundRobinAssignor::class,
         Config::SESSION_TIMEOUT_MS            => 30000,
+        Config::REBALANCE_TIMEOUT_MS          => 60000,
         Config::FETCH_MIN_BYTES               => 1,
         Config::FETCH_MAX_WAIT_MS             => 500,
         Config::MAX_PARTITION_FETCH_BYTES     => 65536,
@@ -61,6 +62,15 @@ final class Config extends GeneralConfig
      * group.max.session.timeout.ms
      */
     const SESSION_TIMEOUT_MS = 'session.timeout.ms';
+
+    /**
+     * The maximum allowed time for each worker to join the group once a rebalance has begun.
+     *
+     * This is basically a limit on the amount of time needed for all tasks to flush any pending data and commit
+     * offsets. If the timeout is exceeded, then the worker will be removed from the group, which will cause offset
+     * commit failures.
+     */
+    const REBALANCE_TIMEOUT_MS = 'rebalance.timeout.ms';
 
     /**
      * The minimum amount of data the server should return for a fetch request.
