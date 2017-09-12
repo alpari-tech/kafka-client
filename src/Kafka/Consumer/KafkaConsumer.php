@@ -113,45 +113,9 @@ class KafkaConsumer
      */
     private $lastAutoCommitMs;
 
-    /**
-     * Default configuration for producer
-     *
-     * @var array
-     */
-    private static $defaultConfiguration = [
-        /* Used configs */
-        Config::BOOTSTRAP_SERVERS             => [],
-        Config::CLIENT_ID                     => 'PHP/Kafka',
-        Config::GROUP_ID                      => '',
-        Config::PARTITION_ASSIGNMENT_STRATEGY => RoundRobinAssignor::class,
-        Config::SESSION_TIMEOUT_MS            => 30000,
-        Config::FETCH_MIN_BYTES               => 1,
-        Config::FETCH_MAX_WAIT_MS             => 500,
-        Config::MAX_PARTITION_FETCH_BYTES     => 65536,
-        Config::AUTO_OFFSET_RESET             => OffsetResetStrategy::LATEST,
-        Config::REQUEST_TIMEOUT_MS            => 2000,
-        Config::HEARTBEAT_INTERVAL_MS         => 2000,
-        Config::ENABLE_AUTO_COMMIT            => true,
-        Config::AUTO_COMMIT_INTERVAL_MS       => 0, // Commit always after each poll()
-        Config::STREAM_PERSISTENT_CONNECTION  => false,
-        Config::STREAM_ASYNC_CONNECT          => false,
-        Config::METADATA_MAX_AGE_MS           => 300000,
-        Config::RECEIVE_BUFFER_BYTES          => 65536,
-        Config::SEND_BUFFER_BYTES             => 131072,
-
-        Config::SSL_KEY_PASSWORD          => null,
-        Config::SSL_KEYSTORE_LOCATION     => null,
-        Config::SSL_KEYSTORE_PASSWORD     => null,
-        Config::CONNECTIONS_MAX_IDLE_MS   => 540000,
-        Config::SASL_MECHANISM            => 'GSSAPI',
-        Config::SECURITY_PROTOCOL         => 'plaintext',
-        Config::RECONNECT_BACKOFF_MS      => 50,
-        Config::RETRY_BACKOFF_MS          => 100,
-    ];
-
     public function __construct(array $configuration = [])
     {
-        $this->configuration = $configuration + self::$defaultConfiguration;
+        $this->configuration = $configuration + Config::getDefaultConfiguration();
         $this->cluster       = Cluster::bootstrap($this->configuration);
         $this->client        = new Client($this->cluster, $this->configuration);
         $assignorStrategy    = $this->configuration[Config::PARTITION_ASSIGNMENT_STRATEGY];
