@@ -19,6 +19,11 @@ use Protocol\Kafka;
 class JoinGroupRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 1;
+
+    /**
      * The consumer group id.
      *
      * @var string
@@ -31,6 +36,13 @@ class JoinGroupRequest extends AbstractRequest
      * @var int
      */
     private $sessionTimeout;
+
+    /**
+     * The maximum time that the coordinator will wait for each member to rejoin when rebalancing the group
+     *
+     * @var int
+     */
+    private $rebalanceTimeout;
 
     /**
      * The member id assigned by the group coordinator.
@@ -56,17 +68,19 @@ class JoinGroupRequest extends AbstractRequest
     public function __construct(
         $consumerGroup,
         $sessionTimeout,
+        $rebalanceTimeout,
         $memberId,
         $protocolType,
         array $groupProtocols,
         $clientId = '',
         $correlationId = 0
     ) {
-        $this->consumerGroup  = $consumerGroup;
-        $this->sessionTimeout = $sessionTimeout;
-        $this->memberId       = $memberId;
-        $this->protocolType   = $protocolType;
-        $this->groupProtocols = $groupProtocols;
+        $this->consumerGroup    = $consumerGroup;
+        $this->sessionTimeout   = $sessionTimeout;
+        $this->rebalanceTimeout = $rebalanceTimeout;
+        $this->memberId         = $memberId;
+        $this->protocolType     = $protocolType;
+        $this->groupProtocols   = $groupProtocols;
 
         parent::__construct(Kafka::JOIN_GROUP, $clientId, $correlationId);
     }
@@ -77,6 +91,7 @@ class JoinGroupRequest extends AbstractRequest
      * JoinGroup Request (Version: 0) => group_id session_timeout member_id protocol_type [group_protocols]
      *   group_id => STRING
      *   session_timeout => INT32
+     *   rebalance_timeout => INT32
      *   member_id => STRING
      *   protocol_type => STRING
      *   group_protocols => protocol_name protocol_metadata
@@ -91,10 +106,11 @@ class JoinGroupRequest extends AbstractRequest
         $protocolLength = strlen($this->protocolType);
 
         $payload .= pack(
-            "na{$groupLength}Nna{$memberLength}na{$protocolLength}N",
+            "na{$groupLength}NNna{$memberLength}na{$protocolLength}N",
             $groupLength,
             $this->consumerGroup,
             $this->sessionTimeout,
+            $this->rebalanceTimeout,
             $memberLength,
             $this->memberId,
             $protocolLength,
