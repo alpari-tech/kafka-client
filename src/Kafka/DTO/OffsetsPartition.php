@@ -10,6 +10,15 @@ use Protocol\Kafka\Stream;
 
 /**
  * Offsets response DTO
+ *
+ * Offsets Response (Version: 1) => [responses]
+ *   responses => topic [partition_responses]
+ *     topic => STRING
+ *     partition_responses => partition error_code timestamp offset
+ *       partition => INT32
+ *       error_code => INT16
+ *       timestamp => INT64
+ *       offset => INT64
  */
 class OffsetsPartition
 {
@@ -31,6 +40,15 @@ class OffsetsPartition
     public $errorCode;
 
     /**
+     * The timestamp associated with the returned offset
+     *
+     * @since 0.10.1
+     *
+     * @var integer
+     */
+    public $timestamp;
+
+    /**
      * List of offsets in the partition
      *
      * @var integer[]|array
@@ -50,8 +68,9 @@ class OffsetsPartition
         list(
             $partition->partition,
             $partition->errorCode,
+            $partition->timestamp,
             $offsetsNumber
-        ) = array_values($stream->read('Npartition/nerrorCode/NoffsetsNumber'));
+        ) = array_values($stream->read('Npartition/nerrorCode/Jtimestamp/NoffsetsNumber'));
 
         $partition->offsets = array_values($stream->read("J{$offsetsNumber}metadata"));
 
