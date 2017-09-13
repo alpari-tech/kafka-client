@@ -21,6 +21,11 @@ use Protocol\Kafka;
 class OffsetsRequest extends AbstractRequest
 {
     /**
+     * @inheritDoc
+     */
+    const VERSION = 1;
+
+    /**
      * Special value for the offset of the next coming message
      */
     const LATEST = -1;
@@ -45,22 +50,13 @@ class OffsetsRequest extends AbstractRequest
      */
     private $replicaId;
 
-    /**
-     * Maximum number of offsets to return
-     *
-     * @var int
-     */
-    private $maxOffsets;
-
     public function __construct(
         array $topicPartitions,
-        $maxOffsets = 1,
         $replicaId = -1,
         $clientId = '',
         $correlationId = 0
     ) {
         $this->topicPartitions = $topicPartitions;
-        $this->maxOffsets      = $maxOffsets;
         $this->replicaId       = $replicaId;
 
         parent::__construct(Kafka::OFFSETS, $clientId, $correlationId);
@@ -79,7 +75,7 @@ class OffsetsRequest extends AbstractRequest
             $topicLength = strlen($topic);
             $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
             foreach ($partitions as $partitionId => $timeOffset) {
-                $payload .= pack('NJN', $partitionId, $timeOffset, $this->maxOffsets);
+                $payload .= pack('NJ', $partitionId, $timeOffset);
             }
         }
 

@@ -427,7 +427,6 @@ class Client
         $result = $this->clusterRequest($topicPartitions, function (array $nodeTopicRequest) {
             $request = new OffsetsRequest(
                 $nodeTopicRequest,
-                1,
                 -1,
                 $this->configuration[ConsumerConfig::CLIENT_ID]
             );
