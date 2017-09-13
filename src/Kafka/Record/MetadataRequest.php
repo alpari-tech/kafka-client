@@ -32,7 +32,7 @@ class MetadataRequest extends AbstractRequest
     /**
      * @inheritDoc
      */
-    const VERSION = 1;
+    const VERSION = 2;
 
     /**
      * An array of topics to fetch metadata for. If no topics are specified fetch metadata for all topics.

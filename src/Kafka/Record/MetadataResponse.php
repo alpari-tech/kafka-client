@@ -27,6 +27,15 @@ class MetadataResponse extends AbstractResponse
     public $brokers = [];
 
     /**
+     * The cluster id that this broker belongs to.
+     *
+     * @since 0.10.1
+     *
+     * @var string
+     */
+    public $clusterId;
+
+    /**
      * The broker id of the controller broker.
      *
      * @var integer
@@ -61,6 +70,7 @@ class MetadataResponse extends AbstractResponse
 
             $self->brokers[$brokerNode->nodeId] = $brokerNode;
         }
+        $self->clusterId    = $stream->readString();
         $self->controllerId = $stream->read('NcontrollerId')['controllerId'];
         $numberOfTopics     = $stream->read('NnumberOfTopics')['numberOfTopics'];
 
