@@ -15,9 +15,9 @@ $ composer require gtt/kafka-client
 
 This library contains several branches, each branch contains support for specfic version of Apache Kafka, see mapping below:
 
- - Branch 0.x is suited for Kafka 0.8.0 version
- - Branch 1.x is suited for Kafka 0.9.0 versions
- - Branch 2.x is suited for Kafka 0.10.0 versions
+ - Branch 0.8.x is suited for Kafka 0.8.0 versions
+ - Branch 0.9.x is suited for Kafka 0.9.0 versions
+ - Branch 0.10.x is suited for Kafka 0.10.0 versions
  
 Producer API
 ------------
