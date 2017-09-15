@@ -440,7 +440,7 @@ class Client
                     if ($partitionMetadata->errorCode !== 0) {
                         throw KafkaException::fromCode($partitionMetadata->errorCode, compact('topic', 'partitionId'));
                     }
-                    $result[$topic][$partitionId] = reset($partitionMetadata->offsets);
+                    $result[$topic][$partitionId] = $partitionMetadata->offset;
                 }
             }
 
