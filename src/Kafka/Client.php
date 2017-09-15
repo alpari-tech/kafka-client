@@ -492,7 +492,7 @@ class Client
             $timeout = $this->configuration[ConsumerConfig::REQUEST_TIMEOUT_MS];
         }
         $responses  = [];
-        $finishTime = microtime(true) + ($timeout / 1000);
+        $finishTime = microtime(true) + 2 * ($timeout / 1000);
         do {
             $readSelect  = $incompleteReads;
             $writeSelect = $exceptSelect = null;
