@@ -16,13 +16,15 @@ use Protocol\Kafka;
  *
  * The response contains the starting offset of each segment for the requested partition as well as the "log end
  * offset" i.e. the offset of the next message that would be appended to the given partition.
+ *
+ * Since v2 if no topics (null input for list of topics) are provided, the offset information of all topics (or topic partitions) associated with the group is returned
  */
 class OffsetFetchRequest extends AbstractRequest
 {
     /**
      * @inheritDoc
      */
-    const VERSION = 1;
+    const VERSION = 2;
 
     /**
      * The consumer group id.
@@ -36,7 +38,7 @@ class OffsetFetchRequest extends AbstractRequest
      */
     private $topicPartitions;
 
-    public function __construct($consumerGroup, array $topicPartitions, $clientId = '', $correlationId = 0)
+    public function __construct($consumerGroup, array $topicPartitions = [], $clientId = '', $correlationId = 0)
     {
         $this->consumerGroup   = $consumerGroup;
         $this->topicPartitions = $topicPartitions;
@@ -51,7 +53,7 @@ class OffsetFetchRequest extends AbstractRequest
     {
         $payload     = parent::packPayload();
         $groupLength = strlen($this->consumerGroup);
-        $totalTopics = count($this->topicPartitions);
+        $totalTopics = count($this->topicPartitions) ?: -1;
 
         $payload .= pack("na{$groupLength}N", $groupLength, $this->consumerGroup, $totalTopics);
         foreach ($this->topicPartitions as $topic => $partitions) {
