@@ -7,6 +7,7 @@
 namespace Protocol\Kafka\Consumer;
 
 use Protocol\Kafka\Common\Config as GeneralConfig;
+use Protocol\Kafka\Record\FetchRequest;
 
 /**
  * Consumer config enumeration class
@@ -33,6 +34,7 @@ final class Config extends GeneralConfig
         Config::ENABLE_AUTO_COMMIT            => true,
         Config::AUTO_COMMIT_INTERVAL_MS       => 0, // Commit always after each poll()
         Config::OFFSET_RETENTION_MS           => -1, // Use broker retention time for offsets
+        Config::ISOLATION_LEVEL               => FetchRequest::READ_UNCOMMITTED
     ];
 
     /**
@@ -135,6 +137,23 @@ final class Config extends GeneralConfig
      */
     const OFFSET_RETENTION_MS = 'offset.retention.ms';
 
+    /**
+     *Controls how to read messages written transactionally.
+     *
+     * If set to read_committed, Consumer->poll() will only return transactional messages which have been committed.
+     *
+     * If set to read_uncommitted' (the default), Consumer->poll() will return all messages, even transactional
+     * messages which have been aborted. Non-transactional messages will be returned unconditionally in either mode.
+     *
+     * Messages will always be returned in offset order. Hence, in read_committed mode, Consumer->poll() will only
+     * return messages up to the last stable offset (LSO), which is the one less than the offset of the first open
+     * transaction. In particular any messages appearing after messages belonging to ongoing transactions will be
+     * withheld until the relevant transaction has been completed. As a result, read_committed consumers will not be
+     * able to read up to the high watermark when there are in flight transactions.
+     *
+     * Further, when in read_committed the seekToEnd method will return the LSO
+     */
+    const ISOLATION_LEVEL = 'isolation.level';
 
     const KEY_DESERIALIZER              = 'key.deserializer';
     const VALUE_DESERIALIZER            = 'value.deserializer';

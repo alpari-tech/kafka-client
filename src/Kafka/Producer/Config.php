@@ -24,6 +24,7 @@ final class Config extends GeneralConfig
         Config::TIMEOUT_MS        => 2000,
         Config::RETRIES           => 0,
         Config::BATCH_SIZE        => 0,
+        Config::TRANSACTIONAL_ID  => null,
 
         Config::COMPRESSION_TYPE => 'none',
         Config::LINGER_MS        => 0,
@@ -87,6 +88,17 @@ final class Config extends GeneralConfig
      * measured on the server side and does not include the network latency of the request.
      */
     const TIMEOUT_MS = 'timeout.ms';
+
+    /**
+     * The TransactionalId to use for transactional delivery.
+     *
+     * This enables reliability semantics which span multiple producer sessions since it allows the client to guarantee
+     * that transactions using the same TransactionalId have been completed prior to starting any new transactions. If
+     * no TransactionalId is provided, then the producer is limited to idempotent delivery. Note that
+     * enable.idempotence must be enabled if a TransactionalId is configured. The default is empty, which means
+     * transactions cannot be used.
+     */
+    const TRANSACTIONAL_ID = 'transactional.id';
 
     const COMPRESSION_TYPE          = 'compression.type';
     const LINGER_MS                 = 'linger.ms';

@@ -75,6 +75,7 @@ class Client
             $request = new ProduceRequest(
                 $nodeTopicPartitionMessages,
                 $this->configuration[ProducerConfig::ACKS],
+                $this->configuration[ProducerConfig::TRANSACTIONAL_ID],
                 $this->configuration[ProducerConfig::TIMEOUT_MS],
                 $this->configuration[ProducerConfig::CLIENT_ID]
             );
@@ -402,6 +403,7 @@ class Client
                 $timeout,
                 $this->configuration[ConsumerConfig::FETCH_MIN_BYTES],
                 $this->configuration[ConsumerConfig::MAX_PARTITION_FETCH_BYTES],
+                $this->configuration[ConsumerConfig::ISOLATION_LEVEL],
                 -1,
                 $this->configuration[ConsumerConfig::CLIENT_ID]
             );
