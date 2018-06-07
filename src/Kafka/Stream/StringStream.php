@@ -19,11 +19,11 @@ class StringStream extends AbstractStream
     /**
      * String stream constructor.
      *
-     * @param string $stringBuffer Buffer to write to or read from
+     * @param string $stringBuffer Optional buffer to write to or read from
      */
-    public function __construct(&$stringBuffer)
+    public function __construct($stringBuffer = null)
     {
-        $this->buffer = &$stringBuffer;
+        $this->buffer = $stringBuffer;
     }
 
     /**
@@ -63,5 +63,15 @@ class StringStream extends AbstractStream
     public function isConnected()
     {
         return true;
+    }
+
+    /**
+     * Returns the current buffer, useful for write opertaions
+     *
+     * @return string
+     */
+    public function getBuffer()
+    {
+        return $this->buffer;
     }
 }

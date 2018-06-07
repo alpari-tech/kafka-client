@@ -30,8 +30,6 @@ abstract class AbstractStream implements Stream
      * Writes the string to the stream
      *
      * @param $string
-     *
-     * @return mixed
      */
     public function writeString($string)
     {
@@ -58,14 +56,56 @@ abstract class AbstractStream implements Stream
      * Writes the string to the stream
      *
      * @param string $data Binary data
-     *
-     * @return mixed
      */
     public function writeByteArray($data)
     {
         $dataLength = strlen($data);
         $this->write("Na{$dataLength}", $dataLength, $data);
-     }
+    }
+
+    /**
+     * Reads varint from the stream
+     *
+     * @return integer
+     */
+    public function readVarint()
+    {
+        $value  = 0;
+        $offset = 0;
+        do {
+            $byte   = $this->read('Cbyte')['byte'];
+            $value  += ($byte & 0x7f) << $offset;
+            $offset += 7;
+        } while (($byte & 0x80) !== 0);
+
+        return $value;
+    }
+
+    /**
+     * Writes a varint value from the stream
+     *
+     * @param integer $value
+     */
+    public function writeVarint($value)
+    {
+        do {
+            $byte  = $value & 0x7f;
+            $value >>= 7;
+            $byte  = $value > 0 ? ($byte | 0x80) : $byte;
+            $this->write('C', $byte);
+        } while ($value > 0);
+    }
+
+    /**
+     * Writes the raw buffer into the stream as-is
+     *
+     * @param string $buffer
+     */
+    public function writeBuffer($buffer)
+    {
+        $bufferLength = strlen($buffer);
+        $this->write("a{$bufferLength}", $buffer);
+    }
 
     /**
      * Calculates the format size for unpack() operation

@@ -45,20 +45,23 @@ interface Stream
     public function readByteArray();
 
     /**
-     * Writes the string to the stream
+     * Reads a varint value from the stream
      *
-     * @param string $string
-     *
-     * @return mixed
+     * @return integer
      */
-    public function writeString($string);
+    public function readVarint();
 
     /**
      * Writes the string to the stream
      *
-     * @param string $data Binary data
+     * @param string $string
+     */
+    public function writeString($string);
+
+    /**
+     * Writes the byte array to the stream
      *
-     * @return mixed
+     * @param string $data Binary data
      */
     public function writeByteArray($data);
 
@@ -68,4 +71,18 @@ interface Stream
      * @return bool
      */
     public function isConnected();
+
+    /**
+     * Writes the varint value to the stream
+     *
+     * @param integer $value
+     */
+    public function writeVarint($value);
+
+    /**
+     * Writes the raw buffer into the stream as-is
+     *
+     * @param string $buffer
+     */
+    public function writeBuffer($buffer);
 }

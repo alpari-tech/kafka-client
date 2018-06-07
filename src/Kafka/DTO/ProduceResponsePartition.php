@@ -35,7 +35,7 @@ class ProduceResponsePartition
      *
      * @var integer
      */
-    public $offset;
+    public $baseOffset;
 
     /**
      * If LogAppendTime is used for the topic, this is the timestamp assigned by the broker to the message set.
@@ -49,7 +49,7 @@ class ProduceResponsePartition
      * @var integer
      * @since Version 2 of protocol
      */
-    public $timestamp;
+    public $logAppendTime;
 
     /**
      * Unpacks the DTO from the binary buffer
@@ -64,9 +64,9 @@ class ProduceResponsePartition
         list(
             $partition->partition,
             $partition->errorCode,
-            $partition->offset,
-            $partition->timestamp
-        ) = array_values($stream->read('Npartition/nerrorCode/Joffset/Jtimestamp'));
+            $partition->baseOffset,
+            $partition->logAppendTime
+        ) = array_values($stream->read('Npartition/nerrorCode/JbaseOffset/JlogAppendTime'));
 
         return $partition;
     }

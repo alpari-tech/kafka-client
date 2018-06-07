@@ -509,6 +509,8 @@ class KafkaConsumer
                 if (empty($recordBatch)) {
                     continue;
                 }
+                //TODO: Use new RecordBatch format for offset calculation
+
                 /** @var RecordBatch $lastRecord */
                 $lastRecord = end($recordBatch);
 
