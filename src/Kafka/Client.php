@@ -161,7 +161,7 @@ class Client
      * @throws Kafka\Error\TopicAuthorizationFailed
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function fetchGroupOffsets(Node $coordinatorNode, $groupId, array $topicPartitions)
+    public function fetchGroupOffsets(Node $coordinatorNode, $groupId, array $topicPartitions = [])
     {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
@@ -172,7 +172,9 @@ class Client
         );
         $request->writeTo($stream);
         $response = OffsetFetchResponse::unpack($stream);
-
+        if ($response->errorCode !== 0) {
+            throw KafkaException::fromCode($response->errorCode, compact('groupId'));
+        }
         $result = [];
         foreach ($response->topics as $topic => $partitions) {
             /** @var Kafka\DTO\OffsetFetchPartition[] $partitions */
