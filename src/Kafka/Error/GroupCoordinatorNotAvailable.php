@@ -7,7 +7,7 @@ use Exception;
 /**
  * The group coordinator is not available.
  */
-class GroupCoordinatorNotAvailable extends KafkaException implements RetriableException
+class GroupCoordinatorNotAvailable extends KafkaException implements RetriableException, ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {

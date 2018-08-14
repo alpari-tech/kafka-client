@@ -7,7 +7,7 @@ use Exception;
 /**
  * The controller moved to another broker.
  */
-class StaleControllerEpoch extends KafkaException
+class StaleControllerEpoch extends KafkaException implements ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {

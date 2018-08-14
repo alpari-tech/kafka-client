@@ -61,4 +61,11 @@ interface Stream
      * @return mixed
      */
     public function writeByteArray($data);
+
+    /**
+     * Checks whether we are actually connected to server
+     *
+     * @return bool
+     */
+    public function isConnected();
 }

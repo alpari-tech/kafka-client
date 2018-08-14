@@ -7,7 +7,7 @@ use Exception;
 /**
  * The coordinator is not aware of this member.
  */
-class UnknownMemberId extends KafkaException
+class UnknownMemberId extends KafkaException implements ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {

@@ -7,7 +7,7 @@ use Exception;
 /**
  * This is not the correct coordinator for this group.
  */
-class NotCoordinatorForGroup extends KafkaException implements RetriableException
+class NotCoordinatorForGroup extends KafkaException implements RetriableException, ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {

@@ -10,7 +10,9 @@ use Protocol\Kafka;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\Node;
 use Protocol\Kafka\Consumer\Config as ConsumerConfig;
+use Protocol\Kafka\Error\AllBrokersNotAvailable;
 use Protocol\Kafka\Error\KafkaException;
+use Protocol\Kafka\Error\NetworkException;
 use Protocol\Kafka\Producer\Config as ProducerConfig;
 use Protocol\Kafka\Record\FetchRequest;
 use Protocol\Kafka\Record\FetchResponse;
@@ -346,25 +348,32 @@ class Client
      */
     public function getGroupCoordinator($groupId)
     {
-        // TODO: iterate over connections and wrap logic into the try..catch block
-        /** @var Node $firstNode */
         $clusterNodes = $this->cluster->nodes();
-        $firstNode    = reset($clusterNodes);
-        $stream       = $firstNode->getConnection($this->configuration);
+        $failures     = [];
+        foreach ($clusterNodes as $node) {
+            $stream = $node->getConnection($this->configuration);
 
-        $request = new GroupCoordinatorRequest(
-            $groupId,
-            $this->configuration[ConsumerConfig::CLIENT_ID]
-        );
-        $request->writeTo($stream);
-        $response = GroupCoordinatorResponse::unpack($stream);
-        if ($response->errorCode !== 0) {
-            throw KafkaException::fromCode($response->errorCode, compact('groupId'));
+            try {
+                $request = new GroupCoordinatorRequest(
+                    $groupId,
+                    $this->configuration[ConsumerConfig::CLIENT_ID]
+                );
+                $request->writeTo($stream);
+                $response = GroupCoordinatorResponse::unpack($stream);
+                if ($response->errorCode !== 0) {
+                    throw KafkaException::fromCode($response->errorCode, compact('groupId'));
+                }
+
+                $coordinator = $this->cluster->nodeById($response->coordinator->nodeId);
+
+                return $coordinator;
+            } catch (NetworkException $e) {
+                $failures[] = $e;
+                continue;
+            }
         }
 
-        $coordinator = $this->cluster->nodeById($response->coordinator->nodeId);
-
-        return $coordinator;
+        throw new AllBrokersNotAvailable($failures);
     }
 
     /**
@@ -470,7 +479,7 @@ class Client
 
         // TODO: Implement StreamGroup(Stream[] $connections) and Stream->joinGroup(StreamGroup $group)
         $socketAccessor = function (SocketStream $socket) {
-            if (!$socket->isConnected) {
+            if (!$socket->isConnected()) {
                 $socket->connect();
             }
 

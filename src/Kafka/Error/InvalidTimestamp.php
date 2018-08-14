@@ -7,7 +7,7 @@ use Exception;
 /**
  * The timestamp of the message is out of acceptable range.
  */
-class InvalidTimestamp extends KafkaException
+class InvalidTimestamp extends KafkaException implements ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {
