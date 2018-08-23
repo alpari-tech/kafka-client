@@ -7,7 +7,7 @@ use Exception;
 /**
  * Produce request specified an invalid value for required acks.
  */
-class InvalidRequiredAcks extends KafkaException
+class InvalidRequiredAcks extends KafkaException implements ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {

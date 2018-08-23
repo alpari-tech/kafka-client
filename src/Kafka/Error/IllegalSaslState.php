@@ -7,7 +7,7 @@ use Exception;
 /**
  * Request is not valid given the current SASL state.
  */
-class IllegalSaslState extends KafkaException
+class IllegalSaslState extends KafkaException implements ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {

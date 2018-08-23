@@ -7,7 +7,7 @@ use Exception;
 /**
  * The request attempted to perform an operation on an invalid topic.
  */
-class InvalidTopicException extends KafkaException
+class InvalidTopicException extends KafkaException implements ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {

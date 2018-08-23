@@ -7,7 +7,7 @@ use Exception;
 /**
  * The requested offset is not within the range of offsets maintained by the server.
  */
-class OffsetOutOfRange extends KafkaException
+class OffsetOutOfRange extends KafkaException implements ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {

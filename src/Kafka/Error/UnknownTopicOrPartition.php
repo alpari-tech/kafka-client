@@ -7,7 +7,7 @@ use Exception;
 /**
  * This server does not host this topic-partition.
  */
-class UnknownTopicOrPartition extends KafkaException implements RetriableException
+class UnknownTopicOrPartition extends KafkaException implements RetriableException, ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {

@@ -7,7 +7,7 @@ use Exception;
 /**
  * Not authorized to access group.
  */
-class GroupAuthorizationFailed extends KafkaException
+class GroupAuthorizationFailed extends KafkaException implements ServerExceptionInterface
 {
     public function __construct(array $context, Exception $previous = null)
     {
