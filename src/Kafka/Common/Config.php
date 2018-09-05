@@ -24,10 +24,10 @@ class Config
         Config::SEND_BUFFER_BYTES            => 131072,
         Config::SECURITY_PROTOCOL            => SecurityProtocol::PLAINTEXT,
         Config::SSL_PROTOCOL                 => SslProtocol::TLS,
+        Config::SSL_CLIENT_CERT_LOCATION     => null,
+        Config::SSL_KEY_PASSWORD             => null,
+        Config::SSL_KEY_LOCATION             => null,
 
-        Config::SSL_KEY_PASSWORD          => null,
-        Config::SSL_KEYSTORE_LOCATION     => null,
-        Config::SSL_KEYSTORE_PASSWORD     => null,
         Config::CONNECTIONS_MAX_IDLE_MS   => 540000,
         Config::REQUEST_TIMEOUT_MS        => 30000,
         Config::SASL_MECHANISM            => 'GSSAPI',
@@ -106,7 +106,7 @@ class Config
      * Location of Certificate Authority file on local filesystem which should be used to authenticate
      * the identity of the remote peer.
      */
-    const SSL_CAFILE_LOCATION           = 'ssl.cafile.location';
+    const SSL_CA_CERT_LOCATION           = 'ssl.ca.cert.location';
 
     /**
      * Protocol used to communicate with brokers. Valid values are: PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL.
@@ -122,9 +122,26 @@ class Config
      */
     const SSL_PROTOCOL                  = 'ssl.protocol';
 
+    /**
+     * Path to local certificate file on filesystem. It must be a PEM encoded file which contains your
+     * certificate and private key. It can optionally contain the certificate chain of issuers.
+     * The private key also may be contained in a separate file specified by SSL_KEY_LOCATION.
+     *
+     * (PHP Only option)
+     */
+    const SSL_CLIENT_CERT_LOCATION      = 'ssl.client.cert.location';
+
+    /**
+     * The location of the private key file. This is optional for client and can be used for two-way
+     * authentication for client.
+     */
+    const SSL_KEY_LOCATION              = 'ssl.key.location';
+
+    /**
+     * The password of the private key. This is optional for client.
+     */
     const SSL_KEY_PASSWORD              = 'ssl.key.password';
-    const SSL_KEYSTORE_LOCATION         = 'ssl.keystore.location';
-    const SSL_KEYSTORE_PASSWORD         = 'ssl.keystore.password';
+
     const CONNECTIONS_MAX_IDLE_MS       = 'connections.max.idle.ms';
     const SASL_MECHANISM                = 'sasl.mechanism';
     const SSL_ENABLED_PROTOCOLS         = 'ssl.enabled.protocols';
