@@ -178,8 +178,9 @@ final class Cluster
         $brokerAddresses = [];
         if (isset($this->configuration[Config::BOOTSTRAP_SERVERS])) {
             $brokerAddresses = $this->configuration[Config::BOOTSTRAP_SERVERS];
-        };
+        }
 
+        $cause = [];
         foreach ($brokerAddresses as $address) {
             try {
                 $stream  = new Stream\SocketStream($address, $this->configuration);
@@ -190,11 +191,17 @@ final class Cluster
                 break;
             }  catch (NetworkException $e) {
                 // we ignore all network errors and just try the next one address
+                $cause[$address] = $e->getMessage();
                 continue;
             }
         }
         if (empty($metadata)) {
-            throw new Kafka\Error\UnknownError(['error' => 'Can not fetch information about cluster metadata']);
+            throw new Kafka\Error\UnknownError(
+                [
+                    'error' => 'Can not fetch information about cluster metadata',
+                    'cause' => $cause
+                ]
+            );
         }
 
         $isCacheEnabled = !empty($this->configuration[Config::METADATA_CACHE_FILE]);

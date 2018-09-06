@@ -6,6 +6,9 @@
 
 namespace Protocol\Kafka\Common;
 
+use Protocol\Kafka\Enum\SecurityProtocol;
+use Protocol\Kafka\Enum\SslProtocol;
+
 /**
  * General config, suitable for both producer and consumer
  */
@@ -19,14 +22,15 @@ class Config
         Config::METADATA_MAX_AGE_MS          => 300000,
         Config::RECEIVE_BUFFER_BYTES         => 32768,
         Config::SEND_BUFFER_BYTES            => 131072,
+        Config::SECURITY_PROTOCOL            => SecurityProtocol::PLAINTEXT,
+        Config::SSL_PROTOCOL                 => SslProtocol::TLS,
+        Config::SSL_CLIENT_CERT_LOCATION     => null,
+        Config::SSL_KEY_PASSWORD             => null,
+        Config::SSL_KEY_LOCATION             => null,
 
-        Config::SSL_KEY_PASSWORD          => null,
-        Config::SSL_KEYSTORE_LOCATION     => null,
-        Config::SSL_KEYSTORE_PASSWORD     => null,
         Config::CONNECTIONS_MAX_IDLE_MS   => 540000,
         Config::REQUEST_TIMEOUT_MS        => 30000,
         Config::SASL_MECHANISM            => 'GSSAPI',
-        Config::SECURITY_PROTOCOL         => 'plaintext',
         Config::METADATA_FETCH_TIMEOUT_MS => 60000,
         Config::RECONNECT_BACKOFF_MS      => 50,
         Config::RETRY_BACKOFF_MS          => 100,
@@ -98,14 +102,49 @@ class Config
      */
     const RECEIVE_BUFFER_BYTES = 'receive.buffer.bytes';
 
+    /**
+     * Location of Certificate Authority file on local filesystem which should be used to authenticate
+     * the identity of the remote peer.
+     */
+    const SSL_CA_CERT_LOCATION           = 'ssl.ca.cert.location';
+
+    /**
+     * Protocol used to communicate with brokers. Valid values are: PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL.
+     *
+     * Implemented values: PLAINTEXT, SSL
+     */
+    const SECURITY_PROTOCOL             = 'security.protocol';
+
+    /**
+     * The SSL protocol used to generate the SSLContext. Default setting is TLS, which is fine for most cases.
+     * Allowed values are TLS, TLSv1.1 and TLSv1.2. SSL, SSLv2 and SSLv3, but their usage is discouraged due
+     * to known security vulnerabilities.
+     */
+    const SSL_PROTOCOL                  = 'ssl.protocol';
+
+    /**
+     * Path to local certificate file on filesystem. It must be a PEM encoded file which contains your
+     * certificate and private key. It can optionally contain the certificate chain of issuers.
+     * The private key also may be contained in a separate file specified by SSL_KEY_LOCATION.
+     *
+     * (PHP Only option)
+     */
+    const SSL_CLIENT_CERT_LOCATION      = 'ssl.client.cert.location';
+
+    /**
+     * The location of the private key file. This is optional for client and can be used for two-way
+     * authentication for client.
+     */
+    const SSL_KEY_LOCATION              = 'ssl.key.location';
+
+    /**
+     * The password of the private key. This is optional for client.
+     */
     const SSL_KEY_PASSWORD              = 'ssl.key.password';
-    const SSL_KEYSTORE_LOCATION         = 'ssl.keystore.location';
-    const SSL_KEYSTORE_PASSWORD         = 'ssl.keystore.password';
+
     const CONNECTIONS_MAX_IDLE_MS       = 'connections.max.idle.ms';
     const SASL_MECHANISM                = 'sasl.mechanism';
-    const SECURITY_PROTOCOL             = 'security.protocol';
     const SSL_ENABLED_PROTOCOLS         = 'ssl.enabled.protocols';
-    const SSL_PROTOCOL                  = 'ssl.protocol';
     const RECONNECT_BACKOFF_MS          = 'reconnect.backoff.ms';
     const RETRY_BACKOFF_MS              = 'retry.backoff.ms';
 
