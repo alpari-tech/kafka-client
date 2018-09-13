@@ -59,7 +59,10 @@ final class Cluster
     public function availablePartitionsForTopic($topic)
     {
         if (!isset($this->topicPartitions[$topic])) {
-            throw new InvalidTopicException(compact('topic'));
+            $this->reload();
+            if (!isset($this->topicPartitions[$topic])) {
+                throw new InvalidTopicException(compact('topic'));
+            }
         }
 
         return $this->topicPartitions[$topic]->partitions;
@@ -118,7 +121,10 @@ final class Cluster
     public function nodeById($nodeId)
     {
         if (!isset($this->nodes[$nodeId])) {
-            throw new Kafka\Error\UnknownError(compact('nodeId') + ['error' => 'Node was not found']);
+            $this->reload();
+            if (!isset($this->nodes[$nodeId])) {
+                throw new Kafka\Error\UnknownError(compact('nodeId') + ['error' => 'Node was not found']);
+            }
         }
 
         return $this->nodes[$nodeId];
@@ -162,7 +168,10 @@ final class Cluster
     public function partitionsForTopic($topic)
     {
         if (!isset($this->topicPartitions[$topic])) {
-            throw new InvalidTopicException(compact('topic'));
+            $this->reload();
+            if (!isset($this->topicPartitions[$topic])) {
+                throw new InvalidTopicException(compact('topic'));
+            }
         }
 
         return $this->topicPartitions[$topic]->partitions;

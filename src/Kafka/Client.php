@@ -13,6 +13,7 @@ use Protocol\Kafka\Consumer\Config as ConsumerConfig;
 use Protocol\Kafka\Error\AllBrokersNotAvailable;
 use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\NetworkException;
+use Protocol\Kafka\Error\TopicPartitionRequestException;
 use Protocol\Kafka\Producer\Config as ProducerConfig;
 use Protocol\Kafka\Record\FetchRequest;
 use Protocol\Kafka\Record\FetchResponse;
@@ -393,6 +394,7 @@ class Client
     public function fetch(array $topicPartitionOffsets, $timeout)
     {
         $timeout = min($this->configuration[ConsumerConfig::FETCH_MAX_WAIT_MS], $timeout);
+        $errors  = [];
 
         $result = $this->clusterRequest($topicPartitionOffsets, function (array $nodeTopicRequest) use ($timeout) {
             $request = new FetchRequest(
@@ -405,19 +407,30 @@ class Client
             );
 
             return $request;
-        }, FetchResponse::class, function (array $result, FetchResponse $response) {
+        }, FetchResponse::class, function (array $result, FetchResponse $response) use (&$errors) {
             foreach ($response->topics as $topic => $partitions) {
                 foreach ($partitions as $partitionId => $responsePartition) {
                     /** @var Kafka\DTO\FetchResponsePartition $responsePartition */
-                    if ($responsePartition->errorCode !== 0) {
-                        throw KafkaException::fromCode($responsePartition->errorCode, compact('topic', 'partitionId'));
+                    $isSucceeded = $responsePartition->errorCode === 0;
+                    if ($isSucceeded) {
+                        $result[$topic][$partitionId] = $responsePartition->recordBatch;
+                    } else {
+                        $error = KafkaException::fromCode(
+                            $responsePartition->errorCode,
+                            compact('topic', 'partitionId')
+                        );
+
+                        $errors[$topic][$partitionId] = $error;
                     }
-                    $result[$topic][$partitionId] = $responsePartition->recordBatch;
                 }
             }
 
             return $result;
         }, $timeout);
+
+        if (!empty($errors)) {
+            throw new TopicPartitionRequestException($result, $errors);
+        }
 
         return $result;
     }
