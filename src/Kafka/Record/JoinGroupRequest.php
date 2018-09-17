@@ -24,6 +24,11 @@ class JoinGroupRequest extends AbstractRequest
     const VERSION = 1;
 
     /**
+     * Member id for self-assigned consumer
+     */
+    const DEFAULT_MEMBER_ID = "";
+
+    /**
      * The consumer group id.
      *
      * @var string
