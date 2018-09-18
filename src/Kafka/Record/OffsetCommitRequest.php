@@ -24,6 +24,11 @@ class OffsetCommitRequest extends AbstractRequest
     const VERSION = 2;
 
     /**
+     * Generation id for unsubscribed consumer
+     */
+    const DEFAULT_GENERATION_ID = -1;
+
+    /**
      * The consumer group id.
      *
      * @var string

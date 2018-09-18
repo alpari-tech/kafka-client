@@ -6,15 +6,21 @@
 
 namespace Protocol\Kafka\Consumer;
 
+use BadMethodCallException;
+use InvalidArgumentException;
 use Protocol\Kafka\Client;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\Node;
 use Protocol\Kafka\Common\PartitionMetadata;
+use Protocol\Kafka\Consumer\Internals\SubscriptionState;
 use Protocol\Kafka\DTO\RecordBatch;
+use Protocol\Kafka\Error\EmptyAssignmentException;
 use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\OffsetOutOfRange;
 use Protocol\Kafka\Error\TopicPartitionRequestException;
 use Protocol\Kafka\Error\UnknownTopicOrPartition;
+use Protocol\Kafka\Record\JoinGroupRequest;
+use Protocol\Kafka\Record\OffsetCommitRequest;
 use Protocol\Kafka\Record\OffsetsRequest;
 use Protocol\Kafka\Stream;
 
@@ -56,42 +62,21 @@ class KafkaConsumer
      *
      * @var string
      */
-    private $memberId;
+    private $memberId = JoinGroupRequest::DEFAULT_MEMBER_ID;
 
     /**
      * Assigned consumer generation ID
      *
      * @var integer
      */
-    private $generationId;
+    private $generationId = OffsetCommitRequest::DEFAULT_GENERATION_ID;
 
     /**
-     * Metadata for subscribed topics
+     * Metadata for subscription
      *
-     * @var Subscription
+     * @var SubscriptionState
      */
-    private $subscription;
-
-    /**
-     * List of assigned topic partitions
-     *
-     * @var array
-     */
-    private $assignedTopicPartitions = [];
-
-    /**
-     * List of paused topic partitions
-     *
-     * @var array
-     */
-    private $pausedTopicPartitions = [];
-
-    /**
-     * Offsets for topic partitions in the consumer group
-     *
-     * @var array
-     */
-    private $topicPartitionOffsets = [];
+    private $subscriptionState;
 
     /**
      * Coordinator node
@@ -101,11 +86,11 @@ class KafkaConsumer
     private $coordinator;
 
     /**
-     * Last hearbeat time in ms
+     * Last heartbeat time in ms
      *
      * @var integer
      */
-    private $lastHearbeatMs;
+    private $lastHeartbeatMs;
 
     /**
      * Last commit time in ms
@@ -120,36 +105,44 @@ class KafkaConsumer
         $assignorStrategy    = $this->configuration[Config::PARTITION_ASSIGNMENT_STRATEGY];
 
         if (!is_subclass_of($assignorStrategy, PartitionAssignorInterface::class)) {
-            throw new \InvalidArgumentException('Partition strategy class should implement PartitionAssignorInterface');
+            throw new InvalidArgumentException('Partition strategy class should implement PartitionAssignorInterface');
         }
-        $this->assignorStrategy = new $assignorStrategy;
+        $this->assignorStrategy  = new $assignorStrategy();
+        $this->subscriptionState = new SubscriptionState();
     }
 
     /**
-     * Assign a list of partitions to this consumer.
+     * Manually assign a list of partitions to this consumer. This interface does not allow for incremental assignment
+     * and will replace the previous assignment (if there is one).
+     *
+     * If the given list of topic partitions is empty, it is treated the same as @see unsubscribe.
+     *
+     * Manual topic assignment through this method does not use the consumer's group management
+     * functionality. As such, there will be no rebalance operation triggered when group membership or cluster and topic
+     * metadata change. Note that it is not possible to use both manual partition assignment with @see assign
+     * and group assignment with @see subscribe.
+     *
+     * If auto-commit is enabled, an async commit (based on the old assignment) will be triggered before the new
+     * assignment replaces the old one.
      *
      * @param array $topicPartitions Key is topic and value is array of assigned partitions
+     *
+     * @return void
      */
     public function assign(array $topicPartitions)
     {
         if (empty($topicPartitions)) {
-            throw new \InvalidArgumentException(
-                'Can not assign empty list of topic partitions to the consumer.'.
-                'Probably, not enough partitions for this topic.'
-            );
+            $this->unsubscribe();
+            return;
         }
-        $unknownTopics = array_diff(array_keys($topicPartitions), $this->subscription->topics);
-        if (!empty($unknownTopics)) {
-            throw new UnknownTopicOrPartition(compact('unknownTopics'));
-        }
-        $this->assignedTopicPartitions = $topicPartitions;
 
-        $topicPartitionOffsets = $this->getClient()->fetchGroupOffsets(
-            $this->coordinator,
-            $this->configuration[Config::GROUP_ID],
-            $topicPartitions
-        );
-        $this->topicPartitionOffsets = $this->autoResetOffsets($topicPartitionOffsets);
+        if ($this->configuration[Config::ENABLE_AUTO_COMMIT]) {
+            // todo: this commit must be async
+            $this->commitSync($this->subscriptionState->allConsumed());
+        }
+
+        $this->subscriptionState->assignFromUser($topicPartitions);
+        $this->refreshTopicPartitionOffsets($topicPartitions);
     }
 
     /**
@@ -159,7 +152,14 @@ class KafkaConsumer
      */
     public function assignment()
     {
-        return $this->assignedTopicPartitions;
+        $result = [];
+        foreach ($this->subscriptionState->getAssignment() as $topic => $partitions) {
+            foreach ($partitions as $partitionId => $state) {
+                $result[$topic][$partitionId] = $partitionId;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -169,18 +169,22 @@ class KafkaConsumer
      */
     public function commitSync(array $topicPartitionOffsets = null)
     {
-        $topicPartitionOffsets = isset($topicPartitionOffsets) ? $topicPartitionOffsets : $this->topicPartitionOffsets;
+        $topicPartitionOffsets = $topicPartitionOffsets !== null
+            ? $topicPartitionOffsets
+            : $this->subscriptionState->allConsumed();
+
+        if (empty($topicPartitionOffsets)) {
+            return;
+        }
 
         $this->getClient()->commitGroupOffsets(
-            $this->coordinator,
+            $this->getCoordinator(),
             $this->configuration[Config::GROUP_ID],
             $this->memberId,
             $this->generationId,
             $topicPartitionOffsets,
             $this->configuration[Config::OFFSET_RETENTION_MS]
         );
-
-        $this->topicPartitionOffsets = $topicPartitionOffsets;
     }
 
     /**
@@ -198,11 +202,11 @@ class KafkaConsumer
     /**
      * Suspend fetching from the requested partitions.
      *
-     * @param array $topicPartitions List of topic partitions to suspend
+     * @param int[] $topicPartitions List of topic partitions to suspend
      */
     public function pause(array $topicPartitions)
     {
-        $this->pausedTopicPartitions = $topicPartitions;
+        $this->subscriptionState->pause($topicPartitions);
     }
 
     /**
@@ -216,26 +220,21 @@ class KafkaConsumer
      *
      * @param integer $timeout The time, in milliseconds, spent waiting in poll if data is not available.
      *                         If 0, returns immediately with any records that are available now.
+     *
+     * @return array
      */
     public function poll($timeout)
     {
         $milliSeconds = (int) (microtime(true) * 1e3);
-        if (($milliSeconds - $this->lastHearbeatMs) > $this->configuration[Config::HEARTBEAT_INTERVAL_MS]) {
+        if (($milliSeconds - $this->lastHeartbeatMs) > $this->configuration[Config::HEARTBEAT_INTERVAL_MS]) {
             $this->heartbeat($milliSeconds);
         }
 
-        $activeTopicPartitionOffsets = $this->topicPartitionOffsets;
-        foreach ($this->pausedTopicPartitions as $topic => $partitions) {
-            // This can be optimized in pause()/resume methods
-            $activeTopicPartitionOffsets[$topic] = array_diff($activeTopicPartitionOffsets[$topic], $partitions);
-        }
+        $activeTopicPartitionOffsets = $this->subscriptionState->fetchablePartitions();
 
         $result = $this->fetchMessages($activeTopicPartitionOffsets, $timeout);
 
-        $resultOffsets = $this->fetchResultOffsets($result);
-        if ($resultOffsets) {
-            $this->topicPartitionOffsets = array_replace_recursive($this->topicPartitionOffsets, $resultOffsets);
-        }
+        $this->updateFetchPositions($result);
 
         if ($this->configuration[Config::ENABLE_AUTO_COMMIT]) {
             if (($milliSeconds - $this->lastAutoCommitMs) > $this->configuration[Config::AUTO_COMMIT_INTERVAL_MS]) {
@@ -257,11 +256,7 @@ class KafkaConsumer
      */
     public function position($topic, $partition)
     {
-        if (!isset($this->assignedTopicPartitions[$topic][$partition])) {
-            throw new UnknownTopicOrPartition(compact('topic', 'partition'));
-        }
-
-        return $this->topicPartitionOffsets[$topic][$partition] + 1;
+        return $this->subscriptionState->position($topic, $partition);
     }
 
     /**
@@ -271,11 +266,7 @@ class KafkaConsumer
      */
     public function resume(array $topicPartitions)
     {
-        foreach ($topicPartitions as $topic => $partitions) {
-            if (isset($this->pausedTopicPartitions[$topic])) {
-                $this->pausedTopicPartitions[$topic] = array_diff($this->pausedTopicPartitions['topic'], $partitions);
-            }
-        }
+        $this->subscriptionState->resume($topicPartitions);
     }
 
     /**
@@ -287,10 +278,7 @@ class KafkaConsumer
      */
     public function seek($topic, $partition, $offset)
     {
-        if (!isset($this->assignedTopicPartitions[$topic][$partition])) {
-            throw new UnknownTopicOrPartition(compact('topic', 'partition'));
-        }
-        $this->topicPartitionOffsets[$topic][$partition] = $offset;
+        $this->subscriptionState->seek($topic, $partition, $offset);
     }
 
     /**
@@ -320,16 +308,26 @@ class KafkaConsumer
      */
     public function subscribe(array $topics)
     {
-        $groupId           = $this->configuration[Config::GROUP_ID];
-        $this->coordinator = $this->getClient()->getGroupCoordinator($groupId);
+        if (empty($topics)) {
+            $this->unsubscribe();
+            return;
+        }
 
-        $subscription = Subscription::fromSubscription($topics);
-        $joinResult   = $this->getClient()->joinGroup(
-            $this->coordinator,
+        if (count($topics) !== count(array_filter($topics))) {
+            throw new InvalidArgumentException('Topic collection to subscribe to cannot contain null or empty topic');
+        }
+
+        $coordinator = $this->getCoordinator();
+        $this->subscriptionState->subscribeByTopics($topics);
+
+        $joinResult = $this->getClient()->joinGroup(
+            $coordinator,
             $this->configuration[Config::GROUP_ID],
             $this->memberId,
             'consumer',
-            ['range' => $subscription]
+            [
+                'range' => Subscription::fromSubscription($topics)
+            ]
         );
 
         $this->memberId     = $joinResult->memberId;
@@ -340,7 +338,7 @@ class KafkaConsumer
         if ($isLeader) {
             $groupAssignments = $this->assignorStrategy->assign($this->getCluster(), $joinResult->members);
             $syncResult       = $this->getClient()->syncGroup(
-                $this->coordinator,
+                $coordinator,
                 $this->configuration[Config::GROUP_ID],
                 $this->memberId,
                 $this->generationId,
@@ -349,7 +347,7 @@ class KafkaConsumer
             $topicPartitions = $groupAssignments[$this->memberId]->topicPartitions;
         } else {
             $syncResult = $this->getClient()->syncGroup(
-                $this->coordinator,
+                $coordinator,
                 $this->configuration[Config::GROUP_ID],
                 $this->memberId,
                 $this->generationId
@@ -360,38 +358,45 @@ class KafkaConsumer
             // TODO: Use $assignments->userData; $assignments->version;
             $topicPartitions = $assignments->topicPartitions;
         }
-        $this->subscription = $subscription;
-        $this->assign($topicPartitions);
+
+        if (empty($topicPartitions)) {
+            throw new EmptyAssignmentException($topics);
+        }
+
+        $this->subscriptionState->assignFromSubscribed($topicPartitions);
+        $this->refreshTopicPartitionOffsets($topicPartitions);
     }
 
     /**
      * Get the current subscription
      *
-     * @return Subscription
+     * @return string
      */
     public function subscription()
     {
-        return $this->subscription;
+        return $this->subscriptionState->getSubscription();
     }
 
     /**
-     * Unsubscribes from topics currently subscribed with subscribe(array $topics).
+     * Unsubscribe from topics currently subscribed with subscribe(array $topics).
      *
      * This also clears any partitions directly assigned through assign(array $topicPartitions).
      */
     public function unsubscribe()
     {
-        if (!empty($this->subscription)) {
+        if ($this->subscriptionState->partitionsAutoAssigned()) {
             $this->getClient()->leaveGroup(
-                $this->coordinator,
+                $this->getCoordinator(),
                 $this->configuration[Config::GROUP_ID],
                 $this->memberId
             );
-            unset($this->subscription);
         }
 
-        $this->assignedTopicPartitions = [];
-        $this->topicPartitionOffsets   = [];
+        $this->subscriptionState->unsubscribe();
+
+        $this->coordinator  = null;
+        $this->memberId     = JoinGroupRequest::DEFAULT_MEMBER_ID;
+        $this->generationId = OffsetCommitRequest::DEFAULT_GENERATION_ID;
     }
 
     /**
@@ -409,22 +414,30 @@ class KafkaConsumer
      */
     protected function heartbeat($heartBeatTimeMs)
     {
+        if (!$this->subscriptionState->partitionsAutoAssigned()) {
+            return;
+        }
+
         try {
             $this->getClient()->heartbeat(
-                $this->coordinator,
+                $this->getCoordinator(),
                 $this->configuration[Config::GROUP_ID],
                 $this->memberId,
                 $this->generationId
             );
         } catch (KafkaException $e) {
             // Re-subscribe to the group in the case of failed heartbeat
-            $this->subscribe($this->subscription->topics);
+            if ($this->subscriptionState->getSubscriptionType() === SubscriptionState::TYPE_AUTO_TOPICS) {
+                $this->subscribe($this->subscriptionState->getSubscription());
+            } elseif ($this->subscriptionState->getSubscriptionType() === SubscriptionState::TYPE_AUTO_PATTERN) {
+                throw new BadMethodCallException('Pattern subscription is not implemented.');
+            }
         }
-        $this->lastHearbeatMs = $heartBeatTimeMs; // Expect 64-bit platform PHP
+        $this->lastHeartbeatMs = $heartBeatTimeMs; // Expect 64-bit platform PHP
     }
 
     /**
-     * Verifies fetched partitions and asks broker for the latest/earlisest offsets or throws an exception
+     * Verifies fetched partitions and asks broker for the latest/earliest offsets or throws an exception
      *
      * @param array $topicPartitionOffsets List of topic partitions
      *
@@ -465,12 +478,13 @@ class KafkaConsumer
     {
         $topicPartitionOffsetsRequest = [];
 
-        $unknownTopics = array_diff_key($topicPartitions, $this->assignedTopicPartitions);
+        $assignment    = $this->assignment();
+        $unknownTopics = array_diff_key($topicPartitions, $assignment);
         if (!empty($unknownTopics)) {
             throw new UnknownTopicOrPartition(compact('unknownTopics'));
         }
         foreach ($topicPartitions as $topic => $partitions) {
-            $unknownPartitions = array_diff($partitions, $this->assignedTopicPartitions[$topic]);
+            $unknownPartitions = array_diff($partitions, $assignment[$topic]);
             if (!empty($unknownPartitions)) {
                 throw new UnknownTopicOrPartition(compact('topic', 'unknownPartitions'));
             }
@@ -486,12 +500,10 @@ class KafkaConsumer
      *
      * @param array $fetchResult Result from FetchResponse->topics
      *
-     * @return array Last offsets, returned from the poll()
+     * @return void
      */
-    protected function fetchResultOffsets(array $fetchResult)
+    protected function updateFetchPositions(array $fetchResult)
     {
-        $result = [];
-
         foreach ($fetchResult as $topic => $partitions) {
             foreach ($partitions as $partitionId => $recordBatch) {
                 if (empty($recordBatch)) {
@@ -499,11 +511,11 @@ class KafkaConsumer
                 }
                 /** @var RecordBatch $lastRecord */
                 $lastRecord = end($recordBatch);
-                $result[$topic][$partitionId] = $lastRecord->offset + 1;
+
+                // original client uses position() method here
+                $this->subscriptionState->seek($topic, $partitionId, $lastRecord->offset + 1);
             }
         }
-
-        return $result;
     }
 
     /**
@@ -594,7 +606,7 @@ class KafkaConsumer
     }
 
     /**
-     * Look for topic and partioions without assigned offset
+     * Look for topic and partitions without assigned offset
      *
      * @param array $topicPartitionOffsets Array of [topic][partition] => offset
      *
@@ -611,5 +623,43 @@ class KafkaConsumer
         }
 
         return $unknownTopicPartitions;
+    }
+
+    /**
+     * Return group coordinator
+     *
+     * @return Node
+     */
+    protected function getCoordinator()
+    {
+        if (!$this->coordinator) {
+            $groupId           = $this->configuration[Config::GROUP_ID];
+            $this->coordinator = $this->getClient()->getGroupCoordinator($groupId);
+        }
+
+        return $this->coordinator;
+    }
+
+    /**
+     * Reads topic-partition offsets and stores them into internal data
+     *
+     * @param array $topicPartitions Topic partitions in from [topic name:string][partition: int] -> no matter
+     *
+     * @return void
+     */
+    private function refreshTopicPartitionOffsets(array $topicPartitions)
+    {
+        $topicPartitionOffsets = $this->getClient()->fetchGroupOffsets(
+            $this->getCoordinator(),
+            $this->configuration[Config::GROUP_ID],
+            $topicPartitions
+        );
+
+        $offsets = $this->autoResetOffsets($topicPartitionOffsets);
+        foreach ($offsets as $topic => $partitions) {
+            foreach ($partitions as $partition => $offset) {
+                $this->subscriptionState->seek($topic, $partition, $offset);
+            }
+        }
     }
 }
