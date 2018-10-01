@@ -6,9 +6,10 @@
 
 namespace Protocol\Kafka\Common;
 
-use Protocol\Kafka;
 use Protocol\Kafka\Error\InvalidTopicException;
+use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\NetworkException;
+use Protocol\Kafka\Error\UnknownError;
 use Protocol\Kafka\Error\UnknownTopicOrPartition;
 use Protocol\Kafka\Record;
 use Protocol\Kafka\Stream;
@@ -50,25 +51,6 @@ final class Cluster
     }
 
     /**
-     * Gets the list of available partitions for this topic
-     *
-     * @param string $topic Name of the topic
-     *
-     * @return array|PartitionMetadata[]
-     */
-    public function availablePartitionsForTopic($topic)
-    {
-        if (!isset($this->topicPartitions[$topic])) {
-            $this->reload();
-            if (!isset($this->topicPartitions[$topic])) {
-                throw new InvalidTopicException(compact('topic'));
-            }
-        }
-
-        return $this->topicPartitions[$topic]->partitions;
-    }
-
-    /**
      * Creates a "bootstrap" cluster using the given list of host/ports
      *
      * @param array $configuration Broker client configuration
@@ -106,7 +88,24 @@ final class Cluster
             throw new UnknownTopicOrPartition(compact('topic', 'partition'));
         }
 
-        $leaderId = $partitions[$partition]->leader;
+        $meta = $partitions[$partition];
+        if ($meta->partitionErrorCode !== KafkaException::NO_ERROR) {
+            throw KafkaException::fromCode($meta->partitionErrorCode, compact('topic', 'partition'));
+        }
+
+        $leaderId = $meta->leader;
+        if (!isset($this->nodes[$leaderId])) {
+            throw new UnknownError(
+                [
+                    'message'         => 'Can not find node for leader',
+                    'topic'           => $topic,
+                    'partition'       => $partition,
+                    'leader'          => $leaderId,
+                    'topicPartitions' => $this->topicPartitions,
+                    'nodes'           => $this->nodes,
+                ]
+            );
+        }
 
         return $this->nodes[$leaderId];
     }
@@ -123,7 +122,7 @@ final class Cluster
         if (!isset($this->nodes[$nodeId])) {
             $this->reload();
             if (!isset($this->nodes[$nodeId])) {
-                throw new Kafka\Error\UnknownError(compact('nodeId') + ['error' => 'Node was not found']);
+                throw new UnknownError(compact('nodeId') + ['error' => 'Node was not found']);
             }
         }
 
@@ -174,13 +173,18 @@ final class Cluster
             }
         }
 
-        return $this->topicPartitions[$topic]->partitions;
+        $meta = $this->topicPartitions[$topic];
+        if ($meta->topicErrorCode !== KafkaException::NO_ERROR) {
+            throw KafkaException::fromCode($meta->topicErrorCode, compact('topic'));
+        }
+
+        return $meta->partitions;
     }
 
     /**
      * Reloads the metadata from the broker and optionally save it in the cache
      *
-     * @throws Kafka\Error\UnknownError If information can not be reloaded
+     * @throws UnknownError If information can not be reloaded
      */
     public function reload()
     {
@@ -205,7 +209,7 @@ final class Cluster
             }
         }
         if (empty($metadata)) {
-            throw new Kafka\Error\UnknownError(
+            throw new UnknownError(
                 [
                     'error' => 'Can not fetch information about cluster metadata',
                     'cause' => $cause
