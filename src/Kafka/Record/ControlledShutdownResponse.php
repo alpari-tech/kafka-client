@@ -6,13 +6,20 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\DTO\ControlledShutdownResponsePartition;
+use Protocol\Kafka\Scheme;
 
 /**
  * Controlled shutdown response
+ *
+ * ControlledShutdown Response (Version: 0) => error_code [partitions_remaining]
+ *   error_code => INT16
+ *   partitions_remaining => topic partition
+ *     topic => STRING
+ *     partition => INT32
  */
-class ControlledShutdownResponse extends AbstractResponse
+class ControlledShutdownResponse extends AbstractResponse implements BinarySchemeInterface
 {
     /**
      * Error code.
@@ -24,33 +31,17 @@ class ControlledShutdownResponse extends AbstractResponse
     /**
      * The topic partitions that the broker still leads.
      *
-     * @var array|string[]
+     * @var ControlledShutdownResponsePartition[]
      */
     public $remainingTopicPartitions = [];
 
-    /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
-     */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme()
     {
-        list(
-            $self->correlationId,
-            $self->errorCode,
-            $topicPartitionsNumber
-        ) = array_values($stream->read('NcorrelationId/nerrorCode/NtopicNumber'));
+        $header = parent::getScheme();
 
-        for ($i=0; $i<$topicPartitionsNumber; $i++) {
-            $topic     = $stream->readString();
-            $partition = $stream->read('Npartition')['partition'];
-
-            $self->remainingTopicPartitions[$topic][] = $partition;
-        }
-
-        return $self;
+        return $header + [
+            'errorCode'                => Scheme::TYPE_INT16,
+            'remainingTopicPartitions' => [ControlledShutdownResponsePartition::class]
+        ];
     }
 }

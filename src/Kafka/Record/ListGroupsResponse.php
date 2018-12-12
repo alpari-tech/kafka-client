@@ -6,13 +6,20 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\DTO\ListGroupResponseProtocol;
+use Protocol\Kafka\Scheme;
 
 /**
  * List groups response
+ *
+ * ListGroups Response (Version: 0) => error_code [groups]
+ *   error_code => INT16
+ *   groups => group_id protocol_type
+ *     group_id => STRING
+ *     protocol_type => STRING
  */
-class ListGroupsResponse extends AbstractResponse
+class ListGroupsResponse extends AbstractResponse implements BinarySchemeInterface
 {
     /**
      * Error code.
@@ -28,29 +35,13 @@ class ListGroupsResponse extends AbstractResponse
      */
     public $groups = [];
 
-    /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
-     */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme()
     {
-        list(
-            $self->correlationId,
-            $self->errorCode,
-            $groupNumber
-        ) = array_values($stream->read('NcorrelationId/nerrorCode/NgroupNumber'));
+        $header = parent::getScheme();
 
-        for ($groupIndex = 0; $groupIndex < $groupNumber; $groupIndex++) {
-            $groupId  = $stream->readString();
-            $protocol = $stream->readString();
-
-            $self->groups[$groupId] = $protocol;
-        }
-
-        return $self;
+        return $header + [
+            'errorCode' => Scheme::TYPE_INT16,
+            'groups'    => ['groupId' => ListGroupResponseProtocol::class]
+        ];
     }
 }

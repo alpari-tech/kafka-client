@@ -6,12 +6,13 @@
 
 namespace Protocol\Kafka\DTO;
 
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 
 /**
  * ApiVersions response data
  */
-class ApiVersionsResponseMetadata
+class ApiVersionsResponseMetadata implements BinarySchemeInterface
 {
     /**
      * Numerical code of API
@@ -34,22 +35,12 @@ class ApiVersionsResponseMetadata
      */
     public $maxVersion;
 
-    /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
-     */
-    public static function unpack(Stream $stream)
+    public static function getScheme()
     {
-        $apiVersionMetadata = new static();
-        list (
-            $apiVersionMetadata->apiKey,
-            $apiVersionMetadata->minVersion,
-            $apiVersionMetadata->maxVersion
-        ) = array_values($stream->read('napiKey/nminVersion/nmaxVersion'));
-
-        return $apiVersionMetadata;
+        return [
+            'apiKey'     => Scheme::TYPE_INT16,
+            'minVersion' => Scheme::TYPE_INT16,
+            'maxVersion' => Scheme::TYPE_INT16,
+        ];
     }
 }

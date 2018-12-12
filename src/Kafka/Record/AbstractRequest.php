@@ -6,12 +6,20 @@
 
 namespace Protocol\Kafka\Record;
 
+use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\Record;
+use Protocol\Kafka\Scheme;
 
 /**
  * Basic class for all requests
+ *
+ * Request Header => api_key api_version correlation_id client_id
+ *   api_key => INT16
+ *   api_version => INT16
+ *   correlation_id => INT32
+ *   client_id => NULLABLE_STRING
  */
-abstract class AbstractRequest extends Record
+abstract class AbstractRequest extends Record implements BinarySchemeInterface
 {
     /**
      * Version of API request, could be overridden in children classes
@@ -61,26 +69,17 @@ abstract class AbstractRequest extends Record
         $this->clientId      = $clientId;
         $this->correlationId = $correlationId ?: self::$counter++;
         $this->apiVersion    = static::VERSION;
-
-        $this->setMessageData($this->packPayload());
+        $this->messageSize   = Scheme::getObjectTypeSize($this) - 4 /* INT32 MessageSize */;
     }
 
-    /**
-     * Implementation of packing the payload
-     *
-     * @return string
-     */
-    protected function packPayload()
+    public static function getScheme()
     {
-        $clientLength = strlen($this->clientId);
-
-        return pack(
-            "nnNna{$clientLength}",
-            $this->apiKey,
-            $this->apiVersion,
-            $this->correlationId,
-            $clientLength,
-            $this->clientId
-        );
+        return [
+            'messageSize'   => Scheme::TYPE_INT32,
+            'apiKey'        => Scheme::TYPE_INT16,
+            'apiVersion'    => Scheme::TYPE_INT16,
+            'correlationId' => Scheme::TYPE_INT32,
+            'clientId'      => Scheme::TYPE_NULLABLE_STRING
+        ];
     }
 }

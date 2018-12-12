@@ -7,6 +7,8 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
+use Protocol\Kafka\DTO\OffsetsRequestTopic;
+use Protocol\Kafka\Scheme;
 
 /**
  * Offsets API
@@ -17,6 +19,14 @@ use Protocol\Kafka;
  *
  * The response contains the starting offset of each segment for the requested partition as well as the "log end
  * offset" i.e. the offset of the next message that would be appended to the given partition.
+ *
+ * ListOffsets Request (Version: 1) => replica_id [topics]
+ *   replica_id => INT32
+ *   topics => topic [partitions]
+ *     topic => STRING
+ *     partitions => partition timestamp
+ *       partition => INT32
+ *       timestamp => INT64
  */
 class OffsetsRequest extends AbstractRequest
 {
@@ -56,29 +66,23 @@ class OffsetsRequest extends AbstractRequest
         $clientId = '',
         $correlationId = 0
     ) {
-        $this->topicPartitions = $topicPartitions;
+        $packedTopicPartitions = [];
+        foreach ($topicPartitions as $topic => $partitions) {
+            $packedTopicPartitions[$topic] = new OffsetsRequestTopic($topic, $partitions);
+        }
+        $this->topicPartitions = $packedTopicPartitions;
         $this->replicaId       = $replicaId;
 
         parent::__construct(Kafka::OFFSETS, $clientId, $correlationId);
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function packPayload()
+    public static function getScheme()
     {
-        $payload     = parent::packPayload();
-        $totalTopics = count($this->topicPartitions);
+        $header = parent::getScheme();
 
-        $payload .= pack('NN', $this->replicaId, $totalTopics);
-        foreach ($this->topicPartitions as $topic => $partitions) {
-            $topicLength = strlen($topic);
-            $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
-            foreach ($partitions as $partitionId => $timeOffset) {
-                $payload .= pack('NJ', $partitionId, $timeOffset);
-            }
-        }
-
-        return $payload;
+        return $header + [
+            'replicaId'       => Scheme::TYPE_INT32,
+            'topicPartitions' => ['topic' => OffsetsRequestTopic::class]
+        ];
     }
 }

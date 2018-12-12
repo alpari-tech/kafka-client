@@ -1,12 +1,15 @@
 <?php
 /**
  * @author Alexander.Lisachenko
- * @date 14.07.2016
+ * @date   14.07.2016
  */
 
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
+use Protocol\Kafka\DTO\FetchRequestTopic;
+use Protocol\Kafka\DTO\FetchRequestTopicPartition;
+use Protocol\Kafka\Scheme;
 
 /**
  * Fetch API
@@ -32,7 +35,7 @@ use Protocol\Kafka;
  * requiring that the partitions be specified in config, though this will not allow dynamic reassignment of partitions
  * should that consumer fail. We hope to address this gap in the next major release.
  *
- * Fetch Request (Version: 4) => replica_id max_wait_time min_bytes max_bytes isolation_level [topics]
+ * Fetch Request (Version: 5) => replica_id max_wait_time min_bytes max_bytes isolation_level [topics]
  *   replica_id => INT32
  *   max_wait_time => INT32
  *   min_bytes => INT32
@@ -40,9 +43,10 @@ use Protocol\Kafka;
  *   isolation_level => INT8
  *   topics => topic [partitions]
  *     topic => STRING
- *     partitions => partition fetch_offset max_bytes
+ *     partitions => partition fetch_offset log_start_offset max_bytes
  *       partition => INT32
  *       fetch_offset => INT64
+ *       log_start_offset => INT64
  *       max_bytes => INT32
  *
  * @deprecated since 0.11.0.0
@@ -52,7 +56,7 @@ class FetchRequest extends AbstractRequest
     /**
      * @inheritDoc
      */
-    const VERSION = 4;
+    const VERSION = 5;
 
     /**
      * With READ_COMMITTED (isolation_level = 1), non-transactional and COMMITTED transactional records are visible.
@@ -145,7 +149,14 @@ class FetchRequest extends AbstractRequest
         $clientId = '',
         $correlationId = 0
     ) {
-        $this->topicPartitions = $topicPartitions;
+        foreach ($topicPartitions as $topic => $partitionOffset) {
+            $partitions = [];
+            foreach ($partitionOffset as $partition => $offset) {
+                $partitions[$partition] = new FetchRequestTopicPartition($partition, $offset, $maxBytes);
+            }
+            $this->topicPartitions[$topic] = new FetchRequestTopic($topic, $partitions);
+        }
+
         $this->maxWaitTime     = $maxWaitTime;
         $this->minBytes        = $minBytes;
         $this->maxBytes        = $maxBytes;
@@ -155,31 +166,17 @@ class FetchRequest extends AbstractRequest
         parent::__construct(Kafka::FETCH, $clientId, $correlationId);
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function packPayload()
+    public static function getScheme()
     {
-        $payload     = parent::packPayload();
-        $totalTopics = count($this->topicPartitions);
+        $header = parent::getScheme();
 
-        $payload .= pack(
-            'NNNNcN',
-            $this->replicaId,
-            $this->maxWaitTime,
-            $this->minBytes,
-            $this->maxBytes,
-            $this->isolationLevel,
-            $totalTopics
-        );
-        foreach ($this->topicPartitions as $topic => $partitions) {
-            $topicLength = strlen($topic);
-            $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
-            foreach ($partitions as $partitionId => $offset) {
-                $payload .= pack('NJN', $partitionId, $offset, $this->maxBytes);
-            }
-        }
-
-        return $payload;
+        return $header + [
+            'replicaId'       => Scheme::TYPE_INT32,
+            'maxWaitTime'     => Scheme::TYPE_INT32,
+            'minBytes'        => Scheme::TYPE_INT32,
+            'maxBytes'        => Scheme::TYPE_INT32,
+            'isolationLevel'  => Scheme::TYPE_INT8,
+            'topicPartitions' => ['topic' => FetchRequestTopic::class]
+        ];
     }
 }

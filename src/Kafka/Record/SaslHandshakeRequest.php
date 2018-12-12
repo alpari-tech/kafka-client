@@ -7,6 +7,7 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
+use Protocol\Kafka\Scheme;
 
 /**
  * This request queries the supported SASL mechanisms on the broker
@@ -27,16 +28,12 @@ class SaslHandshakeRequest extends AbstractRequest
         parent::__construct(Kafka::SASL_HANDSHAKE, $clientId, $correlationId);
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function packPayload()
+    public static function getScheme()
     {
-        $payload         = parent::packPayload();
-        $mechanismLength = strlen($this->mechanism);
+        $header = parent::getScheme();
 
-        $payload .= pack("na{$mechanismLength}", $mechanismLength, $this->mechanism);
-
-        return $payload;
+        return $header + [
+            'mechanism' => Scheme::TYPE_STRING
+        ];
     }
 }

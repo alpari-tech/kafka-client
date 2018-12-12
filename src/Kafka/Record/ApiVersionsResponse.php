@@ -6,22 +6,15 @@
 
 namespace Protocol\Kafka\Record;
 
+use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\DTO\ApiVersionsResponseMetadata;
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\Scheme;
 
 /**
  * Api versions response
  */
-class ApiVersionsResponse extends AbstractResponse
+class ApiVersionsResponse extends AbstractResponse implements BinarySchemeInterface
 {
-
-    /**
-     * API versions supported by the broker.
-     *
-     * @var array|ApiVersionsResponseMetadata[]
-     */
-    public $apiVersions = [];
 
     /**
      * Error code.
@@ -31,27 +24,17 @@ class ApiVersionsResponse extends AbstractResponse
     public $errorCode;
 
     /**
-     * Method to unpack the payload for the record
+     * API versions supported by the broker.
      *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
+     * @var ApiVersionsResponseMetadata[]
      */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public $apiVersions = [];
+
+    public static function getScheme()
     {
-        list(
-            $self->correlationId,
-            $self->errorCode,
-            $versionsNumber
-        ) = array_values($stream->read('NcorrelationId/nerrorCode/NapiVersionsNumber'));
-
-        for ($i=0; $i<$versionsNumber; $i++) {
-            $apiVersionMetadata = ApiVersionsResponseMetadata::unpack($stream);
-
-            $self->apiVersions[$apiVersionMetadata->apiKey] = $apiVersionMetadata;
-        }
-
-        return $self;
+        return parent::getScheme() + [
+            'errorCode'   => Scheme::TYPE_INT16,
+            'apiVersions' => ['apiKey' => ApiVersionsResponseMetadata::class],
+        ];
     }
 }

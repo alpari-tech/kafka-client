@@ -318,4 +318,14 @@ class SocketStream extends AbstractStream
             );
         }
     }
+
+    /**
+     * Checks if stream is empty
+     *
+     * @return bool
+     */
+    public function isEmpty()
+    {
+        return feof($this->streamSocket);
+    }
 }

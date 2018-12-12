@@ -6,12 +6,14 @@
 
 namespace Protocol\Kafka\DTO;
 
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 use Protocol\Kafka\Stream;
 
 /**
  * GroupCoordinator response data
  */
-class GroupCoordinatorResponseMetadata
+class GroupCoordinatorResponseMetadata implements BinarySchemeInterface
 {
     /**
      * The broker id.
@@ -34,26 +36,12 @@ class GroupCoordinatorResponseMetadata
      */
     public $port;
 
-    /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
-     */
-    public static function unpack(Stream $stream)
+    public static function getScheme()
     {
-        $coordinatorMetadata = new static();
-        list(
-            $coordinatorMetadata->nodeId,
-            $hostLength
-        ) = array_values($stream->read("NnodeId/nhostLength"));
-
-        list(
-            $coordinatorMetadata->host,
-            $coordinatorMetadata->port
-        ) = array_values($stream->read("a{$hostLength}host/Nport"));
-
-        return $coordinatorMetadata;
+        return [
+            'nodeId' => Scheme::TYPE_INT32,
+            'host'   => Scheme::TYPE_STRING,
+            'port'   => Scheme::TYPE_INT32
+        ];
     }
 }

@@ -7,9 +7,13 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
+use Protocol\Kafka\Scheme;
 
 /**
  * This request asks for the controlled shutdown of specific broker
+ *
+ * ControlledShutdown Request (Version: 0) => broker_id
+ *   broker_id => INT32
  */
 class ControlledShutdownRequest extends AbstractRequest
 {
@@ -32,15 +36,12 @@ class ControlledShutdownRequest extends AbstractRequest
         parent::__construct(Kafka::CONTROLLED_SHUTDOWN, $clientId, $correlationId);
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function packPayload()
+    public static function getScheme()
     {
-        $payload = parent::packPayload();
+        $header = parent::getScheme();
 
-        $payload .= pack('N', $this->brokerId);
-
-        return $payload;
+        return $header + [
+            'brokerId' => Scheme::TYPE_INT32
+        ];
     }
 }

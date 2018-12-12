@@ -7,6 +7,7 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
+use Protocol\Kafka\Scheme;
 
 /**
  * The offsets for a given consumer group are maintained by a specific broker called the group coordinator. i.e., a
@@ -30,16 +31,12 @@ class GroupCoordinatorRequest extends AbstractRequest
         parent::__construct(Kafka::GROUP_COORDINATOR, $clientId, $correlationId);
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function packPayload()
+    public static function getScheme()
     {
-        $payload     = parent::packPayload();
-        $groupLength = strlen($this->consumerGroup);
+        $header = parent::getScheme();
 
-        $payload .= pack("na{$groupLength}", $groupLength, $this->consumerGroup);
-
-        return $payload;
+        return $header + [
+            'consumerGroup' => Scheme::TYPE_STRING
+        ];
     }
 }

@@ -7,6 +7,7 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka\Record;
+use Protocol\Kafka\Scheme;
 
 /**
  * Basic class for all responses
@@ -19,4 +20,12 @@ abstract class AbstractResponse extends Record
      * @var integer
      */
     public $correlationId;
+
+    public static function getScheme()
+    {
+        return [
+            'messageSize'   => Scheme::TYPE_INT32,
+            'correlationId' => Scheme::TYPE_INT32,
+        ];
+    }
 }

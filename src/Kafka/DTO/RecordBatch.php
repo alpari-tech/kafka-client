@@ -6,9 +6,8 @@
 
 namespace Protocol\Kafka\DTO;
 
-use function microtime;
-use Protocol\Kafka\Common\Utils\ByteUtils;
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 
 /**
  * The record batch structure is common to both the produce and fetch requests.
@@ -72,12 +71,8 @@ use Protocol\Kafka\Stream;
  *
  * @since 0.11.0
  */
-class RecordBatch
+class RecordBatch implements BinarySchemeInterface
 {
-    /**
-     * @see https://github.com/apache/kafka/blob/0.11.0/clients/src/main/java/org/apache/kafka/common/record/DefaultRecordBatch.java
-     */
-    const RECORD_BATCH_OVERHEAD = 49;
 
     /**
      * Denotes the first offset in the RecordBatch.
@@ -227,14 +222,14 @@ class RecordBatch
     public function __construct(
         array $records = [],
         $firstOffset = 0,
-        $partitionLeaderEpoch = 0,
+        $partitionLeaderEpoch = -1,
         $attributes = 0,
         $lastOffsetDelta = 0,
         $firstTimestamp = null,
         $maxTimestamp = null,
         $producerId = -1,
-        $producerEpoch = 0,
-        $firstSequence = 0
+        $producerEpoch = -1,
+        $firstSequence = -1
     ) {
         $milliSeconds = (int) (microtime(true) * 1e3);
 
@@ -250,114 +245,25 @@ class RecordBatch
         $this->producerEpoch        = $producerEpoch;
 
         // calculated fields
-        $this->length = self::sizeInBytes(...$records);
+        $this->length = Scheme::getObjectTypeSize($this) - 12;
     }
 
-    private static function sizeInBytes(Record ...$records)
+    public static function getScheme()
     {
-        if (count($records) === 0) {
-            return 0;
-        }
-
-        $size = self::RECORD_BATCH_OVERHEAD;
-        foreach ($records as $record) {
-            $size += ByteUtils::sizeOfVarint($record->length) + $record->length;
-        }
-
-        return $size;
-    }
-
-    /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
-     */
-    public static function unpack(Stream $stream)
-    {
-        $recordBatch = new static();
-        list(
-            $recordBatch->firstOffset,
-            $recordBatch->length,
-            $recordBatch->partitionLeaderEpoch,
-            $recordBatch->magic,
-            $recordBatch->crc,
-            $recordBatch->attributes,
-            $recordBatch->lastOffsetDelta,
-            $recordBatch->firstTimestamp,
-            $recordBatch->maxTimestamp,
-            $recordBatch->producerId,
-            $recordBatch->producerEpoch,
-            $recordBatch->firstSequence,
-            $recordsNumber
-        ) = array_values($stream->read(
-            'JfirstOffset/' .
-            'Nlength/' .
-            'NpartitionLeaderEpoch/' .
-            'cmagic/' .
-            'Ncrc/' .
-            'nattributes/' .
-            'NlastOffsetDelta/' .
-            'JfirstTimestamp/' .
-            'JmaxTimestamp/' .
-            'JproducerId/' .
-            'nproducerEpoch/' .
-            'NfirstSequence/' .
-            'NrecordsNumber'
-        ));
-
-        for ($index = 0; $index < $recordsNumber; $index ++) {
-            $recordBatch->records[] = Record::unpack($stream);
-        }
-
-        return $recordBatch;
-    }
-
-    public function pack(Stream $stream)
-    {
-        $payload   = $this->packRecordsBody();
-        $this->crc = ByteUtils::crc32c($payload);
-        $stream->write(
-            'JNNcN',
-            $this->firstOffset,
-            $this->length,
-            $this->partitionLeaderEpoch,
-            $this->magic,
-            $this->crc
-        );
-        $stream->writeBuffer($payload);
-    }
-
-    /**
-     * Packs records into the stream, optionally records could be encoded with specific coded
-     *
-     * TODO: implement encoders
-     *
-     * @return string
-     */
-    private function packRecordsBody()
-    {
-        $recordStream = new Stream\StringStream();
-
-        $recordStream->write(
-            'nNJJJnNN',
-            $this->attributes,
-            $this->lastOffsetDelta,
-            $this->firstTimestamp,
-            $this->maxTimestamp,
-            $this->producerId,
-            $this->producerEpoch,
-            $this->firstSequence,
-            count($this->records)
-        );
-
-        foreach ($this->records as $record) {
-            $record->pack($recordStream);
-        }
-        $recordBuffer = $recordStream->getBuffer();
-        // @TODO: Encoding of $recordBuffer with codecs
-
-        return $recordBuffer;
+        return [
+            'firstOffset'          => Scheme::TYPE_INT64,
+            'length'               => Scheme::TYPE_INT32,
+            'partitionLeaderEpoch' => Scheme::TYPE_INT32,
+            'magic'                => Scheme::TYPE_INT8,
+            'crc'                  => Scheme::TYPE_INT32,
+            'attributes'           => Scheme::TYPE_INT16,
+            'lastOffsetDelta'      => Scheme::TYPE_INT32,
+            'firstTimestamp'       => Scheme::TYPE_INT64,
+            'maxTimestamp'         => Scheme::TYPE_INT64,
+            'producerId'           => Scheme::TYPE_INT64,
+            'producerEpoch'        => Scheme::TYPE_INT16,
+            'firstSequence'        => Scheme::TYPE_INT32,
+            'records'              => [Record::class]
+        ];
     }
 }

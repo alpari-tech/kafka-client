@@ -7,6 +7,7 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
+use Protocol\Kafka\Scheme;
 
 /**
  * Heartbeat Request
@@ -14,6 +15,11 @@ use Protocol\Kafka;
  * Once a member has joined and synced, it will begin sending periodic heartbeats to keep itself in the group. If not
  * heartbeat has been received by the coordinator with the configured session timeout, the member will be kicked out of
  * the group.
+ *
+ * Heartbeat Request (Version: 0) => group_id generation_id member_id
+ *   group_id => STRING
+ *   generation_id => INT32
+ *   member_id => STRING
  */
 class HeartbeatRequest extends AbstractRequest
 {
@@ -48,24 +54,14 @@ class HeartbeatRequest extends AbstractRequest
         parent::__construct(Kafka::HEARTBEAT, $clientId, $correlationId);
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function packPayload()
+    public static function getScheme()
     {
-        $payload      = parent::packPayload();
-        $groupLength  = strlen($this->consumerGroup);
-        $memberLength = strlen($this->memberId);
+        $header = parent::getScheme();
 
-        $payload .= pack(
-            "na{$groupLength}Nna{$memberLength}",
-            $groupLength,
-            $this->consumerGroup,
-            $this->generationId,
-            $memberLength,
-            $this->memberId
-        );
-
-        return $payload;
+        return $header + [
+            'consumerGroup' => Scheme::TYPE_STRING,
+            'generationId'  => Scheme::TYPE_INT32,
+            'memberId'      => Scheme::TYPE_STRING
+        ];
     }
 }

@@ -6,12 +6,19 @@
 
 namespace Protocol\Kafka\DTO;
 
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 
 /**
- * Produce response DTO
+ * Produce response partition DTO
+ *
+ * ProduceResponsePartition => partition error_code base_offset log_append_time
+ *   partition => INT32
+ *   error_code => INT16
+ *   base_offset => INT64
+ *   log_append_time => INT64
  */
-class ProduceResponsePartition
+class ProduceResponsePartition implements BinarySchemeInterface
 {
     /**
      * The partition this response entry corresponds to.
@@ -52,22 +59,17 @@ class ProduceResponsePartition
     public $logAppendTime;
 
     /**
-     * Unpacks the DTO from the binary buffer
+     * Returns definition of binary packet for the class or object
      *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
+     * @return array
      */
-    public static function unpack(Stream $stream)
+    public static function getScheme()
     {
-        $partition = new static();
-        list(
-            $partition->partition,
-            $partition->errorCode,
-            $partition->baseOffset,
-            $partition->logAppendTime
-        ) = array_values($stream->read('Npartition/nerrorCode/JbaseOffset/JlogAppendTime'));
-
-        return $partition;
+        return [
+            'partition'     => Scheme::TYPE_INT32,
+            'errorCode'     => Scheme::TYPE_INT16,
+            'baseOffset'    => Scheme::TYPE_INT64,
+            'logAppendTime' => Scheme::TYPE_INT64
+        ];
     }
 }

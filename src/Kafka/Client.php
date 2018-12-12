@@ -10,6 +10,8 @@ use Protocol\Kafka;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\Node;
 use Protocol\Kafka\Consumer\Config as ConsumerConfig;
+use Protocol\Kafka\Consumer\MemberAssignment;
+use Protocol\Kafka\DTO\TopicPartitions;
 use Protocol\Kafka\Error\AllBrokersNotAvailable;
 use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\NetworkException;
@@ -83,8 +85,8 @@ class Client
             return $request;
         }, ProduceResponse::class, function (array $result, ProduceResponse $response) {
             /** @var Kafka\DTO\ProduceResponsePartition[] $partitions */
-            foreach ($response->topics as $topic => $partitions) {
-                foreach ($partitions as $partitionId => $partitionInfo) {
+            foreach ($response->topics as $topic => $produceResponseTopic) {
+                foreach ($produceResponseTopic->partitions as $partitionId => $partitionInfo) {
                     if ($partitionInfo->errorCode !== 0) {
                         throw KafkaException::fromCode($partitionInfo->errorCode, compact('topic', 'partitionId'));
                     }
@@ -138,10 +140,10 @@ class Client
         );
         $request->writeTo($stream);
         $response = OffsetCommitResponse::unpack($stream);
-        foreach ($response->topics as $topic => $partitions) {
-            foreach ($partitions as $partitionId => $errorCode) {
-                if ($errorCode !== 0) {
-                    throw KafkaException::fromCode($errorCode, compact('topic', 'partitionId'));
+        foreach ($response->topics as $topic => $offsetCommitResponseTopic) {
+            foreach ($offsetCommitResponseTopic->partitions as $partitionId => $partition) {
+                if ($partition->errorCode !== 0) {
+                    throw KafkaException::fromCode($partition->errorCode, compact('topic', 'partitionId'));
                 }
             }
         }
@@ -150,9 +152,9 @@ class Client
     /**
      * Fetches the offsets for topic partition for the concrete consumer group
      *
-     * @param Node   $coordinatorNode Current group coordinator for $groupId
-     * @param string $groupId         Name of the group
-     * @param array $topicPartitions  List of topic => partitions for fetching information
+     * @param Node              $coordinatorNode  Current group coordinator for $groupId
+     * @param string            $groupId          Name of the group
+     * @param TopicPartitions[] $topicPartitions  List of topic => partitions for fetching information or null
      *
      * @return array
      *
@@ -165,7 +167,7 @@ class Client
      * @throws Kafka\Error\TopicAuthorizationFailed
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function fetchGroupOffsets(Node $coordinatorNode, $groupId, array $topicPartitions = [])
+    public function fetchGroupOffsets(Node $coordinatorNode, $groupId, array $topicPartitions = null)
     {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
@@ -180,9 +182,8 @@ class Client
             throw KafkaException::fromCode($response->errorCode, compact('groupId'));
         }
         $result = [];
-        foreach ($response->topics as $topic => $partitions) {
-            /** @var Kafka\DTO\OffsetFetchPartition[] $partitions */
-            foreach ($partitions as $partitionId => $partition) {
+        foreach ($response->topics as $topic => $offsetFetchResponseTopic) {
+            foreach ($offsetFetchResponseTopic->partitions as $partitionId => $partition) {
                 $isUnknownTopicPartition = $partition->errorCode === KafkaException::UNKNOWN_TOPIC_OR_PARTITION;
                 if ($partition->errorCode !== 0 && !$isUnknownTopicPartition) {
                     throw KafkaException::fromCode($partition->errorCode, compact('topic', 'partitionId'));
@@ -269,11 +270,11 @@ class Client
     /**
      * Synchronizes group member with the group
      *
-     * @param Node    $coordinatorNode  Current group coordinator for $groupId
-     * @param string  $groupId          Name of the group
-     * @param string  $memberId         Name of the group member
-     * @param integer $generationId     Current generation of consumer
-     * @param array   $groupAssignments Group assignments
+     * @param Node               $coordinatorNode  Current group coordinator for $groupId
+     * @param string             $groupId          Name of the group
+     * @param string             $memberId         Name of the group member
+     * @param integer            $generationId     Current generation of consumer
+     * @param MemberAssignment[] $groupAssignments Group assignments
      *
      * @return SyncGroupResponse
      *
@@ -384,7 +385,7 @@ class Client
      * @param array   $topicPartitionOffsets List of topic partition offsets as start point for fetching
      * @param integer $timeout               Timeout in ms to wait for fetching
      *
-     * @return array
+     * @return Kafka\DTO\RecordBatch[][]
      *
      * @throws Kafka\Error\OffsetOutOfRange
      * @throws Kafka\Error\UnknownTopicOrPartition
@@ -410,12 +411,11 @@ class Client
 
             return $request;
         }, FetchResponse::class, function (array $result, FetchResponse $response) use (&$errors) {
-            foreach ($response->topics as $topic => $partitions) {
-                foreach ($partitions as $partitionId => $responsePartition) {
-                    /** @var Kafka\DTO\FetchResponsePartition $responsePartition */
+            foreach ($response->topics as $topic => $fetchResponseTopic) {
+                foreach ($fetchResponseTopic->partitions as $partitionId => $responsePartition) {
                     $isSucceeded = $responsePartition->errorCode === 0;
                     if ($isSucceeded) {
-                        $result[$topic][$partitionId] = $responsePartition->recordBatch;
+                        $result[$topic][$partitionId] = $responsePartition->getRecordBatches();
                     } else {
                         $error = KafkaException::fromCode(
                             $responsePartition->errorCode,
@@ -460,9 +460,8 @@ class Client
 
             return $request;
         }, OffsetsResponse::class, function (array $result, OffsetsResponse $response) {
-            foreach ($response->topics as $topic => $partitions) {
-                /** @var Kafka\DTO\OffsetsPartition[] $partitions */
-                foreach ($partitions as $partitionId => $partitionMetadata) {
+            foreach ($response->topics as $topic => $offsetsResponsePartitions) {
+                foreach ($offsetsResponsePartitions->partitions as $partitionId => $partitionMetadata) {
                     if ($partitionMetadata->errorCode !== 0) {
                         throw KafkaException::fromCode($partitionMetadata->errorCode, compact('topic', 'partitionId'));
                     }

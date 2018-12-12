@@ -6,12 +6,13 @@
 
 namespace Protocol\Kafka\Common;
 
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 
 /**
  * Topic metadata DTO
  */
-class TopicMetadata
+class TopicMetadata implements BinarySchemeInterface
 {
     use RestorableTrait;
 
@@ -44,29 +45,13 @@ class TopicMetadata
      */
     public $partitions = [];
 
-    /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
-     */
-    public static function unpack(Stream $stream)
+    public static function getScheme()
     {
-        $topic = new static();
-        list($topic->topicErrorCode, $topicLength) = array_values($stream->read('ntopicErrorCode/ntopicLength'));
-        list(
-            $topic->topic,
-            $topic->isInternal,
-            $numberOfPartitions
-        ) = array_values($stream->read("a{$topicLength}topic/cisInternal/NnumberOfPartition"));
-
-        for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
-            $partitionMetadata = PartitionMetadata::unpack($stream);
-
-            $topic->partitions[$partitionMetadata->partitionId] = $partitionMetadata;
-        }
-
-        return $topic;
+        return [
+            'topicErrorCode' => Scheme::TYPE_INT16,
+            'topic'          => Scheme::TYPE_STRING,
+            'isInternal'     => Scheme::TYPE_INT8,
+            'partitions'     => [PartitionMetadata::class]
+        ];
     }
 }

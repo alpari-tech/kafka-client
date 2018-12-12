@@ -20,7 +20,7 @@ abstract class AbstractStream implements Stream
     {
         $stringLength = $this->read('nlength')['length'];
         if ($stringLength === 0xFFFF) {
-            return null;
+            throw new \UnexpectedValueException("Received -1 length for not nullable string");
         }
 
         return $this->read("a{$stringLength}string")['string'];

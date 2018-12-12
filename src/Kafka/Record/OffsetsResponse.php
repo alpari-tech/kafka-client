@@ -6,50 +6,39 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\DTO\OffsetsPartition;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\DTO\OffsetsResponsePartition;
+use Protocol\Kafka\DTO\OffsetsResponseTopic;
 use Protocol\Kafka\Record;
 use Protocol\Kafka\Stream;
 
 /**
- * Produce response object
+ * ListOffset response object
+ *
+ * ListOffsets Response (Version: 1) => [responses]
+ *   responses => topic [partition_responses]
+ *     topic => STRING
+ *     partition_responses => partition error_code timestamp offset
+ *       partition => INT32
+ *       error_code => INT16
+ *       timestamp => INT64
+ *       offset => INT64
  */
-class OffsetsResponse extends AbstractResponse
+class OffsetsResponse extends AbstractResponse implements BinarySchemeInterface
 {
     /**
      * List of broker metadata info
      *
-     * @var array|OffsetsPartition[]
+     * @var OffsetsResponseTopic[]
      */
     public $topics = [];
 
-    /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
-     */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme()
     {
-        list(
-            $self->correlationId,
-            $numberOfTopics,
-        ) = array_values($stream->read('NcorrelationId/NnumberOfTopics'));
+        $header = parent::getScheme();
 
-        for ($topic=0; $topic<$numberOfTopics; $topic++) {
-            $topicLength = $stream->read('ntopicLength')['topicLength'];
-            list(
-                $topicName,
-                $numberOfPartitions
-            ) = array_values($stream->read("a{$topicLength}/NnumberOfPartitions"));
-
-            for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
-                $partitionMetadata = OffsetsPartition::unpack($stream);
-                $self->topics[$topicName][$partitionMetadata->partition] = $partitionMetadata;
-            }
-        }
-
-        return $self;
+        return $header + [
+            'topics' => ['topic' => OffsetsResponseTopic::class]
+        ];
     }
 }

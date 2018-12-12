@@ -10,6 +10,7 @@ use Protocol\Kafka\Client;
 use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\PartitionMetadata;
 use Protocol\Kafka\DTO\Record;
+use Protocol\Kafka\DTO\ProduceRequestTopic;
 use Protocol\Kafka\Error\NotLeaderForPartition;
 use Protocol\Kafka\Error\RetriableException;
 
@@ -63,7 +64,7 @@ class KafkaProducer
     /**
      * Buffer for storing topic-partition-messages
      *
-     * @var array
+     * @var ProduceRequestTopic[]
      */
     private $topicPartitionMessages = [];
 
@@ -86,6 +87,7 @@ class KafkaProducer
     {
         $result           = null;
         $this->currentTry = 0;
+        $exception        = null;
 
         $exceptions = [];
         while ($this->currentTry <= $this->configuration[Config::RETRIES]) {

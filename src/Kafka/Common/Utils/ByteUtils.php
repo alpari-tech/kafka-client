@@ -119,6 +119,35 @@ class ByteUtils
     }
 
     /**
+     * Performs ZigZag encoding of integer value
+     *
+     * @param integer $value Value to encode
+     * @param int $base Base for encoding (32 or 64)
+     *
+     * @return int
+     */
+    public static function encodeZigZag($value, $base = 32)
+    {
+        $value = ($value << 1) ^ ($value >> $base-1);
+
+        return $value;
+    }
+
+    /**
+     * Decodes ZigZag-encoded value
+     *
+     * @param integer $value Encoded value
+     *
+     * @return int Decoded value
+     */
+    public static function decodeZigZag($value)
+    {
+        $value = ($value >> 1) ^ (-($value & 1));
+
+        return $value;
+    }
+
+    /**
      * Compute CRC-32C checksum of the data.
      *
      * @param string $buffer

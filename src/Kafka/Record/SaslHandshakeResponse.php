@@ -6,13 +6,13 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 
 /**
  * SASL handshake response
  */
-class SaslHandshakeResponse extends AbstractResponse
+class SaslHandshakeResponse extends AbstractResponse implements BinarySchemeInterface
 {
 
     /**
@@ -29,29 +29,13 @@ class SaslHandshakeResponse extends AbstractResponse
      */
     public $errorCode;
 
-    /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
-     */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme()
     {
-        list(
-            $self->correlationId,
-            $self->errorCode,
-            $mechanismsNumber
-        ) = array_values($stream->read('NcorrelationId/nerrorCode/NmechanismsNumber'));
+        $header = parent::getScheme();
 
-        for ($i=0; $i<$mechanismsNumber; $i++) {
-            $mechanismLength = $stream->read('nmechanismLength')['mechanismLength'];
-            $mechanism       = $stream->read("a{$mechanismLength}mechanism")['mechanism'];
-
-            $self->enabledMechanisms[] = $mechanism;
-        }
-
-        return $self;
+        return $header + [
+            'errorCode'         => Scheme::TYPE_INT16,
+            'enabledMechanisms' => [Scheme::TYPE_STRING]
+        ];
     }
 }

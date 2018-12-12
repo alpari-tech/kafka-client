@@ -10,8 +10,9 @@ use Protocol\Kafka\Common\Cluster;
 use Protocol\Kafka\Common\Config;
 use Protocol\Kafka\Common\Node;
 use Protocol\Kafka\DTO\ApiVersionsResponseMetadata;
-use Protocol\Kafka\DTO\DescribeGroupMetadata;
-use Protocol\Kafka\DTO\OffsetFetchPartition;
+use Protocol\Kafka\DTO\DescribeGroupResponseMetadata;
+use Protocol\Kafka\DTO\OffsetFetchResponsePartition;
+use Protocol\Kafka\DTO\OffsetFetchResponseTopic;
 use Protocol\Kafka\Error\InvalidGroupId;
 use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\RequestTimedOut;
@@ -60,7 +61,7 @@ class AdminClient
      *
      * @param string $groupId Identifier of group
      *
-     * @return DescribeGroupMetadata
+     * @return DescribeGroupResponseMetadata
      */
     public function describeGroup($groupId)
     {
@@ -202,12 +203,12 @@ class AdminClient
      *
      * @param string $groupId Identifier of group
      *
-     * @return OffsetFetchPartition[]
+     * @return OffsetFetchResponseTopic[]
      */
     public function listGroupOffsets($groupId)
     {
         $coordinator = $this->findCoordinator($groupId);
-        $request     = new OffsetFetchRequest($groupId, [], $this->configuration[Config::CLIENT_ID]);
+        $request     = new OffsetFetchRequest($groupId, null, $this->configuration[Config::CLIENT_ID]);
         $stream      = $coordinator->getConnection($this->configuration);
         $request->writeTo($stream);
         $response = OffsetFetchResponse::unpack($stream);

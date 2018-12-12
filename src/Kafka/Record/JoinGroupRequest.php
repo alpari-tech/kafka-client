@@ -7,6 +7,8 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
+use Protocol\Kafka\DTO\JoinGroupRequestProtocol;
+use Protocol\Kafka\Scheme;
 
 /**
  * Join Group Request
@@ -85,51 +87,27 @@ class JoinGroupRequest extends AbstractRequest
         $this->rebalanceTimeout = $rebalanceTimeout;
         $this->memberId         = $memberId;
         $this->protocolType     = $protocolType;
-        $this->groupProtocols   = $groupProtocols;
+        $packedProtocols        = [];
+        foreach ($groupProtocols as $protocolName => $protocolMetadata) {
+            $packedProtocols[$protocolName] = new JoinGroupRequestProtocol($protocolName, $protocolMetadata);
+        }
+
+        $this->groupProtocols = $packedProtocols;
 
         parent::__construct(Kafka::JOIN_GROUP, $clientId, $correlationId);
     }
 
-    /**
-     * @inheritDoc
-     *
-     * JoinGroup Request (Version: 0) => group_id session_timeout member_id protocol_type [group_protocols]
-     *   group_id => STRING
-     *   session_timeout => INT32
-     *   rebalance_timeout => INT32
-     *   member_id => STRING
-     *   protocol_type => STRING
-     *   group_protocols => protocol_name protocol_metadata
-     *     protocol_name => STRING
-     *     protocol_metadata => BYTES
-     */
-    protected function packPayload()
+    public static function getScheme()
     {
-        $payload        = parent::packPayload();
-        $groupLength    = strlen($this->consumerGroup);
-        $memberLength   = strlen($this->memberId);
-        $protocolLength = strlen($this->protocolType);
+        $header = parent::getScheme();
 
-        $payload .= pack(
-            "na{$groupLength}NNna{$memberLength}na{$protocolLength}N",
-            $groupLength,
-            $this->consumerGroup,
-            $this->sessionTimeout,
-            $this->rebalanceTimeout,
-            $memberLength,
-            $this->memberId,
-            $protocolLength,
-            $this->protocolType,
-            count($this->groupProtocols)
-        );
-
-        foreach ($this->groupProtocols as $protocolName => $protocolMetadata) {
-            $protocolNameLength = strlen($protocolName);
-            $protocolMetaLength = strlen($protocolMetadata);
-            $payload .= pack("na{$protocolNameLength}N", $protocolNameLength, $protocolName, $protocolMetaLength);
-            $payload .= $protocolMetadata;
-        }
-
-        return $payload;
+        return $header + [
+            'consumerGroup'    => Scheme::TYPE_STRING,
+            'sessionTimeout'   => Scheme::TYPE_INT32,
+            'rebalanceTimeout' => Scheme::TYPE_INT32,
+            'memberId'         => Scheme::TYPE_STRING,
+            'protocolType'     => Scheme::TYPE_STRING,
+            'groupProtocols'   => ['protocolName' => JoinGroupRequestProtocol::class]
+        ];
     }
 }

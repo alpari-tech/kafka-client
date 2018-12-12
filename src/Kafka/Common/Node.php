@@ -6,12 +6,14 @@
 
 namespace Protocol\Kafka\Common;
 
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 use Protocol\Kafka\Stream;
 
 /**
  * Information about a Kafka node
  */
-class Node
+class Node implements BinarySchemeInterface
 {
     use RestorableTrait;
 
@@ -51,25 +53,14 @@ class Node
      */
     private static $nodeConnections = [];
 
-    /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
-     */
-    public static function unpack(Stream $stream)
+    public static function getScheme()
     {
-        $brokerMetadata = new static();
-        list($brokerMetadata->nodeId, $hostLength) = array_values($stream->read('NnodeId/nhostLength'));
-        list(
-            $brokerMetadata->host,
-            $brokerMetadata->port
-        ) = array_values($stream->read("a{$hostLength}host/Nport"));
-
-        $brokerMetadata->rack = $stream->readString();
-
-        return $brokerMetadata;
+        return [
+            'nodeId' => Scheme::TYPE_INT32,
+            'host'   => Scheme::TYPE_STRING,
+            'port'   => Scheme::TYPE_INT32,
+            'rack'   => Scheme::TYPE_NULLABLE_STRING,
+        ];
     }
 
     /**

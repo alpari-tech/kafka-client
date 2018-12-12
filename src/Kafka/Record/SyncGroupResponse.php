@@ -6,14 +6,30 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Consumer\MemberAssignment;
+use Protocol\Kafka\Scheme;
 
 /**
  * Sync group response
+ *
+ * SyncGroup Response (Version: 1) => throttle_time_ms error_code member_assignment
+ *   throttle_time_ms => INT32
+ *   error_code => INT16
+ *   member_assignment => BYTES
  */
-class SyncGroupResponse extends AbstractResponse
+class SyncGroupResponse extends AbstractResponse implements BinarySchemeInterface
 {
+
+    /**
+     * Duration in milliseconds for which the request was throttled due to quota violation
+     *
+     * (Zero if the request did not violate any quota)
+     *
+     * @var integer
+     */
+    public $throttleTimeMs;
+
     /**
      * Error code.
      *
@@ -24,31 +40,18 @@ class SyncGroupResponse extends AbstractResponse
     /**
      * Assigned data to the member
      *
-     * @var string
+     * @var MemberAssignment
      */
     public $memberAssignment;
 
-    /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * SyncGroupResponse => ErrorCode MemberAssignment
-     *   ErrorCode => int16
-     *   MemberAssignment => bytes
-     *
-     * @return Record
-     */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme()
     {
-        list(
-            $self->correlationId,
-            $self->errorCode
-        ) = array_values($stream->read('NcorrelationId/nerrorCode'));
+        $header = parent::getScheme();
 
-        $self->memberAssignment = $stream->readByteArray();
-
-        return $self;
+        return $header + [
+            'throttleTimeMs'   => Scheme::TYPE_INT32,
+            'errorCode'        => Scheme::TYPE_INT16,
+            'memberAssignment' => Scheme::TYPE_BYTEARRAY
+        ];
     }
 }

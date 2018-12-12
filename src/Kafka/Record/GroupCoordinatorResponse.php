@@ -6,14 +6,14 @@
 
 namespace Protocol\Kafka\Record;
 
+use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\DTO\GroupCoordinatorResponseMetadata;
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\Scheme;
 
 /**
  * Group coordinator response
  */
-class GroupCoordinatorResponse extends AbstractResponse
+class GroupCoordinatorResponse extends AbstractResponse implements BinarySchemeInterface
 {
     /**
      * Error code.
@@ -29,23 +29,13 @@ class GroupCoordinatorResponse extends AbstractResponse
      */
     public $coordinator;
 
-    /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
-     */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme()
     {
-        list(
-            $self->correlationId,
-            $self->errorCode,
-        ) = array_values($stream->read("NcorrelationId/nerrorCode"));
+        $header = parent::getScheme();
 
-        $self->coordinator = GroupCoordinatorResponseMetadata::unpack($stream);
-
-        return $self;
+        return $header + [
+            'errorCode'   => Scheme::TYPE_INT16,
+            'coordinator' => GroupCoordinatorResponseMetadata::class
+        ];
     }
 }

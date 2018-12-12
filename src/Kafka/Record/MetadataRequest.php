@@ -7,6 +7,7 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
+use Protocol\Kafka\Scheme;
 
 /**
  * This API answers the following questions:
@@ -41,38 +42,19 @@ class MetadataRequest extends AbstractRequest
      */
     protected $topics;
 
-    public function __construct(array $topics = [], $clientId = '', $correlationId = 0)
+    public function __construct(array $topics = null, $clientId = '', $correlationId = 0)
     {
         $this->topics = $topics;
 
         parent::__construct(Kafka::METADATA, $clientId, $correlationId);
     }
 
-    /**
-     * @return array
-     */
-    public function getTopics()
+    public static function getScheme()
     {
-        return explode(' ', $this->topics);
-    }
+        $header = parent::getScheme();
 
-    /**
-     * @inheritDoc
-     */
-    protected function packPayload()
-    {
-        $payload = parent::packPayload();
-
-        $totalTopics = count($this->topics);
-        if ($totalTopics === 0) {
-            $totalTopics = -1; // Since v1 we should use null for special value
-        }
-        $payload .= pack('N', $totalTopics);
-        foreach ($this->topics as $topic) {
-            $length = strlen($topic);
-            $payload .= pack("na{$length}", $length, $topic);
-        }
-
-        return $payload;
+        return $header + [
+            'topics' => [Scheme::TYPE_STRING, Scheme::FLAG_NULLABLE => true]
+        ];
     }
 }

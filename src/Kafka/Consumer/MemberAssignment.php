@@ -6,14 +6,22 @@
 
 namespace Protocol\Kafka\Consumer;
 
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\DTO\TopicPartitions;
+use Protocol\Kafka\Scheme;
 
 /**
  * Consumer Groups: The format of the MemberAssignment field for consumer groups
+ *
+ * MemberAssignment => Version PartitionAssignment
+ *   Version => int16
+ *   PartitionAssignment => [Topic [Partition]]
+ *     Topic => string
+ *     Partition => int32
+ *   UserData => bytes
  */
-class MemberAssignment
+class MemberAssignment implements BinarySchemeInterface
 {
-
     /**
      * This is a version id.
      *
@@ -24,7 +32,7 @@ class MemberAssignment
     /**
      * This property holds assignments of topic partitions for member.
      *
-     * @var array
+     * @var TopicPartitions[]
      */
     public $topicPartitions = [];
 
@@ -39,69 +47,36 @@ class MemberAssignment
      */
     public $userData;
 
-    public static function fromTopicPartitions(array $topicPartitions, $version = 0, $userData = '')
+    /**
+     * MemberAssignment constructor.
+     *
+     * @param array|int[][] $topicPartitions Partition assignments per topic
+     * @param int           $version         Optional version
+     * @param string        $userData        Additional user data
+     */
+    public function __construct(array $topicPartitions = [], $version = 0, $userData = '')
     {
-        $message = new static();
+        $packedTopicAssignment = [];
+        foreach ($topicPartitions as $topic => $partitions) {
+            $packedTopicAssignment[$topic] = new TopicPartitions($topic, $partitions);
+        }
 
-        $message->topicPartitions = $topicPartitions;
-        $message->version         = $version;
-        $message->userData        = $userData;
-
-        return $message;
+        $this->topicPartitions = $packedTopicAssignment;
+        $this->version         = $version;
+        $this->userData        = $userData;
     }
 
     /**
-     * Unpacks the DTO from the binary buffer
+     * Returns definition of binary packet for the class or object
      *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
+     * @return array
      */
-    public static function unpack(Stream $stream)
+    public static function getScheme()
     {
-        $message = new static();
-
-        list(
-            $message->version,
-            $topicPartitionsNumber
-        ) = array_values($stream->read('nversion/NtopicNumber'));
-
-        for ($topicIndex = 0; $topicIndex < $topicPartitionsNumber; $topicIndex++) {
-            $topicName        = $stream->readString();
-            $partitionsNumber = $stream->read('NpartitionsNumber')['partitionsNumber'];
-            $partitions       = array_values($stream->read("N{$partitionsNumber}"));
-
-            $message->topicPartitions[$topicName] = $partitions;
-        }
-        $message->userData = $stream->readByteArray();
-
-        return $message;
-    }
-
-    /**
-     * @return string
-     *
-     * MemberAssignment => Version PartitionAssignment
-     *   Version => int16
-     *   PartitionAssignment => [Topic [Partition]]
-     *     Topic => string
-     *     Partition => int32
-     *   UserData => bytes
-     */
-    public function __toString()
-    {
-        $payload = pack('nN', $this->version, count($this->topicPartitions));
-        foreach ($this->topicPartitions as $topic => $partitions) {
-            $topicLength     = strlen($topic);
-            $partitionsCount = count($partitions);
-            $payload .= pack("na{$topicLength}N", $topicLength, $topic, $partitionsCount);
-            $packArgs = $partitions;
-            array_unshift($packArgs, "N{$partitionsCount}");
-            $payload .= call_user_func_array('pack', $packArgs);
-        }
-        $payload .= pack('N', strlen($this->userData));
-        $payload .= $this->userData;
-
-        return $payload;
+        return [
+            'version'         => Scheme::TYPE_INT16,
+            'topicPartitions' => ['topic' => TopicPartitions::class],
+            'userData'        => Scheme::TYPE_BYTEARRAY,
+        ];
     }
 }

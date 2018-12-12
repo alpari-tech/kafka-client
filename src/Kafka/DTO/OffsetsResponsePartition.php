@@ -6,21 +6,19 @@
 
 namespace Protocol\Kafka\DTO;
 
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 
 /**
  * Offsets response DTO
  *
- * Offsets Response (Version: 1) => [responses]
- *   responses => topic [partition_responses]
- *     topic => STRING
- *     partition_responses => partition error_code timestamp offset
- *       partition => INT32
- *       error_code => INT16
- *       timestamp => INT64
- *       offset => INT64
+ * OffsetsResponsePartition => partition error_code timestamp offset
+ *   partition => INT32
+ *   error_code => INT16
+ *   timestamp => INT64
+ *   offset => INT64
  */
-class OffsetsPartition
+class OffsetsResponsePartition implements BinarySchemeInterface
 {
     /**
      * The partition this response entry corresponds to.
@@ -56,22 +54,17 @@ class OffsetsPartition
     public $offset;
 
     /**
-     * Unpacks the DTO from the binary buffer
+     * Returns definition of binary packet for the class or object
      *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
+     * @return array
      */
-    public static function unpack(Stream $stream)
+    public static function getScheme()
     {
-        $partition = new static();
-        list(
-            $partition->partition,
-            $partition->errorCode,
-            $partition->timestamp,
-            $partition->offset
-        ) = array_values($stream->read('Npartition/nerrorCode/Jtimestamp/Joffset'));
-
-        return $partition;
+        return [
+            'partition' => Scheme::TYPE_INT32,
+            'errorCode' => Scheme::TYPE_INT16,
+            'timestamp' => Scheme::TYPE_INT64,
+            'offset'    => Scheme::TYPE_INT64,
+        ];
     }
 }

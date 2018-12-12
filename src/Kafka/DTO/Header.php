@@ -1,12 +1,13 @@
 <?php
 /**
  * @author Alexander.Lisachenko
- * @date 12.09.2017
+ * @date   12.09.2017
  */
 
 namespace Protocol\Kafka\DTO;
 
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 
 /**
  * Header object contains key-value pair of associated metadata for record.
@@ -18,41 +19,35 @@ use Protocol\Kafka\Stream;
  *   HeaderValue => data
  *
  * @since 0.11.0
- * @see https://cwiki.apache.org/confluence/display/KAFKA/KIP-82+-+Add+Record+Headers
+ * @see   https://cwiki.apache.org/confluence/display/KAFKA/KIP-82+-+Add+Record+Headers
  */
-class Header
+class Header implements BinarySchemeInterface
 {
     /**
-     * Unpacks the DTO from the binary buffer
+     * Item key name
      *
-     * @param Stream $stream Binary buffer
-     *
-     * @return array Key-value pair of header
+     * @var string
      */
-    public static function unpack(Stream $stream)
-    {
-        $headerKeyLength   = $stream->readVarint();
-        $headerKey         = $stream->read("a{$headerKeyLength}key")['key'];
-        $headerValueLength = $stream->readVarint();
-        $headerValue       = $stream->read("a{$headerValueLength}value")['value'];
-
-        return [$headerKey, $headerValue];
-    }
+    public $key;
 
     /**
-     * Packs key-value header pair into the stream
+     * Item arbitrary data
      *
-     * @param Stream $stream Instance of stream
-     * @param string $key    Key name
-     * @param string $value  Value
+     * @var string
      */
-    public static function pack(Stream $stream, $key, $value)
+    public $value;
+
+    public function __construct($key = '', $value = '')
     {
-        $headerKeyLength   = strlen($key);
-        $headerValueLength = strlen($value);
-        $stream->writeVarint($headerKeyLength);
-        $stream->write("a{$headerKeyLength}", $key);
-        $stream->writeVarint($headerValueLength);
-        $stream->write("a{$headerValueLength}", $value);
+        $this->key   = $key;
+        $this->value = $value;
+    }
+
+    public static function getScheme()
+    {
+        return [
+            'key'   => Scheme::TYPE_VARCHAR_ZIGZAG,
+            'value' => Scheme::TYPE_VARCHAR_ZIGZAG,
+        ];
     }
 }

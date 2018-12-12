@@ -6,13 +6,16 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 
 /**
  * Leave group response
+ *
+ * LeaveGroup Response (Version: 0) => error_code
+ *   error_code => INT16
  */
-class LeaveGroupResponse extends AbstractResponse
+class LeaveGroupResponse extends AbstractResponse implements BinarySchemeInterface
 {
     /**
      * Error code.
@@ -21,21 +24,12 @@ class LeaveGroupResponse extends AbstractResponse
      */
     public $errorCode;
 
-    /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
-     */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme()
     {
-        list(
-            $self->correlationId,
-            $self->errorCode
-        ) = array_values($stream->read('NcorrelationId/nerrorCode'));
+        $header = parent::getScheme();
 
-        return $self;
+        return $header + [
+            'errorCode' => Scheme::TYPE_INT16
+        ];
     }
 }

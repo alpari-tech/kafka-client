@@ -74,4 +74,15 @@ class StringStream extends AbstractStream
     {
         return $this->buffer;
     }
+
+
+    /**
+     * Checks if stream is empty
+     *
+     * @return bool
+     */
+    public function isEmpty()
+    {
+        return strlen($this->buffer) === 0;
+    }
 }

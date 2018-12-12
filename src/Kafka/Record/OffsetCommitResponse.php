@@ -6,49 +6,34 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\DTO\OffsetCommitResponseTopic;
 
 /**
  * Offset commit response object
+ *
+ * OffsetCommit Response (Version: 2) => [responses]
+ *   responses => topic [partition_responses]
+ *     topic => STRING
+ *     partition_responses => partition error_code
+ *       partition => INT32
+ *       error_code => INT16
  */
-class OffsetCommitResponse extends AbstractResponse
+class OffsetCommitResponse extends AbstractResponse implements BinarySchemeInterface
 {
     /**
      * List of topics with partition result
      *
-     * @var array
+     * @var OffsetCommitResponseTopic[]
      */
     public $topics = [];
 
-    /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
-     */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme()
     {
-        list(
-            $self->correlationId,
-            $numberOfTopics,
-        ) = array_values($stream->read('NcorrelationId/NnumberOfTopics'));
+        $header = parent::getScheme();
 
-        for ($topic=0; $topic<$numberOfTopics; $topic++) {
-            $topicLength = $stream->read('ntopicLength')['topicLength'];
-            list(
-                $topicName,
-                $numberOfPartitions
-            ) = array_values($stream->read("a{$topicLength}/NnumberOfPartitions"));
-
-            for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
-                list ($partitionId, $partitionErrorCode) = array_values($stream->read('Npartition/nErrorCode'));
-                $self->topics[$topicName][$partitionId] = $partitionErrorCode;
-            }
-        }
-
-        return $self;
+        return $header + [
+            'topics' => ['topic' => OffsetCommitResponseTopic::class]
+        ];
     }
 }
