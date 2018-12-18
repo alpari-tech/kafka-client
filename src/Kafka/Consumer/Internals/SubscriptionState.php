@@ -350,9 +350,9 @@ final class SubscriptionState
         $targetAssignment = [];
         foreach ($assignment as $topic => $topicPartitions) {
             foreach ($topicPartitions->partitions as $partitionId) {
-                $targetAssignment[$topic][$partitionId] = isset($this->assignment[$topic][$partitionId])
-                    ? $this->assignment[$topic][$partitionId]
-                    : ['position' => null, 'isPaused' => false];
+                $assignment = $this->assignment[$topic][$partitionId] ?? ['position' => null, 'isPaused' => false];
+
+                $targetAssignment[$topic][$partitionId] = $assignment;
             }
         }
 

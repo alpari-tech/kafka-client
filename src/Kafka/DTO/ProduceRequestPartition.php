@@ -40,7 +40,7 @@ class ProduceRequestPartition implements BinarySchemeInterface
     public function __construct($partition = 0, RecordBatch $recordBatch = null)
     {
         $this->partition = $partition;
-        $recordBatch     = isset($recordBatch) ? $recordBatch : new RecordBatch();
+        $recordBatch     = $recordBatch ?? new RecordBatch();
 
         $recordBatchStream = new StringStream();
         Scheme::writeObjectToStream($recordBatch, $recordBatchStream);

@@ -171,9 +171,7 @@ class KafkaConsumer
      */
     public function commitSync(array $topicPartitionOffsets = null)
     {
-        $topicPartitionOffsets = $topicPartitionOffsets !== null
-            ? $topicPartitionOffsets
-            : $this->subscriptionState->allConsumed();
+        $topicPartitionOffsets = $topicPartitionOffsets ?? $this->subscriptionState->allConsumed();
 
         if (empty($topicPartitionOffsets)) {
             return;

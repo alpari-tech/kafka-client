@@ -239,8 +239,8 @@ class RecordBatch implements BinarySchemeInterface
         $this->partitionLeaderEpoch = $partitionLeaderEpoch;
         $this->attributes           = $attributes;
         $this->lastOffsetDelta      = $lastOffsetDelta;
-        $this->firstTimestamp       = isset($firstTimestamp) ? $firstTimestamp : $milliSeconds;
-        $this->maxTimestamp         = isset($maxTimestamp) ? $maxTimestamp : $milliSeconds;
+        $this->firstTimestamp       = $firstTimestamp ?? $milliSeconds;
+        $this->maxTimestamp         = $maxTimestamp ?? $milliSeconds;
         $this->producerId           = $producerId;
         $this->producerEpoch        = $producerEpoch;
 

@@ -70,7 +70,7 @@ class AdminClient
         $stream      = $coordinator->getConnection($this->configuration);
         $request->writeTo($stream);
         $response = DescribeGroupsResponse::unpack($stream);
-        $metadata = isset($response->groups[$groupId]) ? $response->groups[$groupId] : null;
+        $metadata = $response->groups[$groupId] ?? null;
 
         if ($metadata === null) {
             throw new InvalidGroupId([
@@ -170,7 +170,7 @@ class AdminClient
         if ($isNegativeResponse ) {
             throw new RequestTimedOut([
                 'error' => 'The consumer group command timed out while waiting for group to initialize'
-            ], isset($e) ? $e : null);
+            ], $e ?? null);
         }
 
         return $this->cluster->nodeById($response->coordinator->nodeId);

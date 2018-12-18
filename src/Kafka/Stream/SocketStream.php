@@ -73,8 +73,8 @@ class SocketStream extends AbstractStream
             throw new InvalidConfiguration("Malformed tcp address: {$tcpAddress}");
         }
         $this->host          = $tcpInfo['host'];
-        $this->port          = isset($tcpInfo['port']) ? $tcpInfo['port'] : 9092;
-        $this->timeout       = isset($connectionTimeout) ? $connectionTimeout : ini_get("default_socket_timeout");
+        $this->port          = $tcpInfo['port'] ?? 9092;
+        $this->timeout       = $connectionTimeout ?? ini_get("default_socket_timeout");
         $this->configuration = $configuration;
     }
 
