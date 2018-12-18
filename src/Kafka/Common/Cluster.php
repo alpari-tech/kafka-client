@@ -250,7 +250,7 @@ final class Cluster
         $cacheFile    = $this->configuration[Config::METADATA_CACHE_FILE];
         if (is_readable($cacheFile)) {
             /** @var Record\MetadataResponse $metadata */
-            list($cachePutTimeMs, $metadata) = include $cacheFile;
+            [$cachePutTimeMs, $metadata] = include $cacheFile;
             if (($milliSeconds - $cachePutTimeMs) < $this->configuration[Config::METADATA_MAX_AGE_MS]) {
                 $this->nodes           = $metadata->brokers;
                 $this->topicPartitions = $metadata->topics;

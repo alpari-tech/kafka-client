@@ -146,7 +146,7 @@ abstract class AbstractStream implements Stream
         };
         $size = 0;
         for ($matchIndex = 0; $matchIndex < $numMatches; $matchIndex ++) {
-            list ($modifier, $repitition) = [$matches[1][$matchIndex], $matches[2][$matchIndex]];
+            [$modifier, $repitition] = [$matches[1][$matchIndex], $matches[2][$matchIndex]];
             if (!isset($tableSize[$modifier])) {
                 throw new \InvalidArgumentException("Unknown modifier specified: $modifier");
             }
