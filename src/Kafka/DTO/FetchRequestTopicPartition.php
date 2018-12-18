@@ -1,10 +1,14 @@
 <?php
-/**
- * Copyright
+/*
+ * This file is part of the Alpari Kafka client.
  *
- * @author Alexander.Lisachenko
- * @date   17.07.2018
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+declare (strict_types=1);
 
 namespace Protocol\Kafka\DTO;
 

@@ -1,8 +1,15 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+declare (strict_types=1);
+
 
 namespace Protocol\Kafka\Record;
 
