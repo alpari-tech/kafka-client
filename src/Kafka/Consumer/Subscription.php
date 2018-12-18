@@ -6,12 +6,20 @@
 
 namespace Protocol\Kafka\Consumer;
 
+use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Scheme;
 use Protocol\Kafka\Stream;
 
 /**
  * Subscription information that is used for the synchronization between consumers
+ *
+ * ProtocolMetadata => Version Subscription UserData
+ *   Version => int16
+ *   Subscription => [Topic]
+ *     Topic => string
+ *   UserData => bytes
  */
-class Subscription
+class Subscription implements BinarySchemeInterface
 {
 
     /**
@@ -39,61 +47,31 @@ class Subscription
      */
     public $userData;
 
-    public static function fromSubscription(array $topics, $version = 0, $userData = '')
+    /**
+     * Subscription constructor.
+     *
+     * @param string[] $topics   List of topics
+     * @param int      $version
+     * @param string   $userData Additional user data
+     */
+    public function __construct(array $topics, $version = 0, $userData = '')
     {
-        $message = new static();
-
-        $message->topics   = $topics;
-        $message->version  = $version;
-        $message->userData = $userData;
-
-        return $message;
+        $this->topics   = $topics;
+        $this->version  = $version;
+        $this->userData = $userData;
     }
 
     /**
-     * Unpacks the DTO from the binary buffer
+     * Returns definition of binary packet for the class or object
      *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
+     * @return array
      */
-    public static function unpack(Stream $stream)
+    public static function getScheme()
     {
-        $message = new static();
-
-        list(
-            $message->version,
-            $topicNumber
-        ) = array_values($stream->read('nversion/NtopicNumber'));
-
-        for ($topicIndex = 0; $topicIndex < $topicNumber; $topicIndex++) {
-            $message->topics[] = $stream->readString();
-        }
-        $message->userData = $stream->readByteArray();
-
-        return $message;
-    }
-
-    /**
-     * @return string
-     *
-     * ProtocolMetadata => Version Subscription UserData
-     *   Version => int16
-     *   Subscription => [Topic]
-     *     Topic => string
-     *   UserData => bytes
-     */
-    public function __toString()
-    {
-        $payload = pack('nN', $this->version, count($this->topics));
-        foreach ($this->topics as $topic) {
-            $topicLength = strlen($topic);
-            $payload .= pack("na{$topicLength}", $topicLength, $topic);
-        }
-        $userDataLength = strlen($this->userData);
-        $payload .= pack('N', $userDataLength);
-        $payload .= $this->userData;
-
-        return $payload;
+        return [
+            'version'  => Scheme::TYPE_INT16,
+            'topics'   => [Scheme::TYPE_STRING],
+            'userData' => Scheme::TYPE_BYTEARRAY
+        ];
     }
 }

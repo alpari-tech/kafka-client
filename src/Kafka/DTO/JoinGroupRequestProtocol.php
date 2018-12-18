@@ -7,7 +7,9 @@
 namespace Protocol\Kafka\DTO;
 
 use Protocol\Kafka\BinarySchemeInterface;
+use Protocol\Kafka\Consumer\Subscription;
 use Protocol\Kafka\Scheme;
+use Protocol\Kafka\Stream\StringStream;
 
 /**
  * Join group request protocol DTO
@@ -35,10 +37,14 @@ class JoinGroupRequestProtocol implements BinarySchemeInterface
     /**
      * Default initializer
      */
-    public function __construct($name, $metadata)
+    public function __construct($name, Subscription $subscription)
     {
+        // TODO: This should be on scheme-level
+        $stringStream = new StringStream();
+        Scheme::writeObjectToStream($subscription, $stringStream);
+
         $this->name     = $name;
-        $this->metadata = $metadata;
+        $this->metadata = $stringStream->getBuffer();
     }
 
     public static function getScheme()
