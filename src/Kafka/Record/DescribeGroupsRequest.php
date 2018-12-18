@@ -36,7 +36,7 @@ class DescribeGroupsRequest extends AbstractRequest
         parent::__construct(Kafka::DESCRIBE_GROUPS, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

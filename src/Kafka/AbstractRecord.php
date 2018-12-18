@@ -6,14 +6,10 @@
 
 namespace Protocol\Kafka;
 
-use Protocol\Kafka;
-use function is_a;
-use RuntimeException;
-
 /**
  * Kafka record class
  */
-class Record
+abstract class AbstractRecord implements BinarySchemeInterface
 {
 
     /**
@@ -35,11 +31,7 @@ class Record
      */
     final public static function unpack(Stream $stream)
     {
-        if (is_a(static::class, BinarySchemeInterface::class, true)) {
-            return Scheme::readObjectFromStream(static::class, $stream);
-        }
-
-        throw new RuntimeException('Implement BinarySchemeInterface for you class ' . static::class);
+        return Scheme::readObjectFromStream(static::class, $stream);
     }
 
     /**
@@ -49,12 +41,6 @@ class Record
      */
     final public function writeTo(Stream $stream)
     {
-        if ($this instanceof BinarySchemeInterface) {
-            Scheme::writeObjectToStream($this, $stream);
-
-            return;
-        }
-
-        throw new RuntimeException('Implement BinarySchemeInterface for you class');
+        Scheme::writeObjectToStream($this, $stream);
     }
 }

@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\DTO\FetchResponseTopic;
 use Protocol\Kafka\Scheme;
 
@@ -29,7 +28,7 @@ use Protocol\Kafka\Scheme;
  *           first_offset => INT64
  *     record_set => RECORDS
  */
-class FetchResponse extends AbstractResponse implements BinarySchemeInterface
+class FetchResponse extends AbstractResponse
 {
 
     /**
@@ -48,7 +47,7 @@ class FetchResponse extends AbstractResponse implements BinarySchemeInterface
      */
     public $topics = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return parent::getScheme() + [
             'throttleTimeMs' => Scheme::TYPE_INT32,

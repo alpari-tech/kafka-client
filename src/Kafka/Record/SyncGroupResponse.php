@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\Consumer\MemberAssignment;
 use Protocol\Kafka\Scheme;
 
@@ -18,7 +17,7 @@ use Protocol\Kafka\Scheme;
  *   error_code => INT16
  *   member_assignment => BYTES
  */
-class SyncGroupResponse extends AbstractResponse implements BinarySchemeInterface
+class SyncGroupResponse extends AbstractResponse
 {
 
     /**
@@ -44,7 +43,7 @@ class SyncGroupResponse extends AbstractResponse implements BinarySchemeInterfac
      */
     public $memberAssignment;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

@@ -76,7 +76,7 @@ class OffsetsRequest extends AbstractRequest
         parent::__construct(Kafka::OFFSETS, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

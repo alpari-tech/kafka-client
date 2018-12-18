@@ -71,7 +71,7 @@ class DescribeGroupResponseMetadata implements BinarySchemeInterface
      *
      * @return array
      */
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'errorCode'    => Scheme::TYPE_INT16,

@@ -62,7 +62,7 @@ class FetchRequestTopicPartition implements BinarySchemeInterface
         $this->maxBytes       = $maxBytes;
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'partition'      => Scheme::TYPE_INT32,

@@ -97,7 +97,7 @@ class JoinGroupRequest extends AbstractRequest
         parent::__construct(Kafka::JOIN_GROUP, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

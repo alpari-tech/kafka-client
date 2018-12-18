@@ -49,7 +49,7 @@ class MetadataRequest extends AbstractRequest
         parent::__construct(Kafka::METADATA, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

@@ -11,7 +11,7 @@ use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\NetworkException;
 use Protocol\Kafka\Error\UnknownError;
 use Protocol\Kafka\Error\UnknownTopicOrPartition;
-use Protocol\Kafka\Record;
+use Protocol\Kafka\AbstractRecord;
 use Protocol\Kafka\Stream;
 
 /**

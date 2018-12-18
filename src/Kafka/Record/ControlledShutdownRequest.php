@@ -36,7 +36,7 @@ class ControlledShutdownRequest extends AbstractRequest
         parent::__construct(Kafka::CONTROLLED_SHUTDOWN, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

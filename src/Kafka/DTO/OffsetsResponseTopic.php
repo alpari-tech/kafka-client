@@ -36,7 +36,7 @@ class OffsetsResponseTopic implements BinarySchemeInterface
      */
     public $partitions;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'topic'      => Scheme::TYPE_STRING,

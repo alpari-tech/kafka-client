@@ -44,7 +44,7 @@ class FetchRequestTopic implements BinarySchemeInterface
         $this->partitions = $partitions;
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'topic'      => Scheme::TYPE_STRING,

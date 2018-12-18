@@ -6,12 +6,8 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\DTO\ProduceResponsePartition;
 use Protocol\Kafka\DTO\ProduceResponseTopic;
-use Protocol\Kafka\Record;
 use Protocol\Kafka\Scheme;
-use Protocol\Kafka\Stream;
 
 /**
  * Produce response object
@@ -26,7 +22,7 @@ use Protocol\Kafka\Stream;
  *       log_append_time => INT64
  *   throttle_time_ms => INT32
  */
-class ProduceResponse extends AbstractResponse implements BinarySchemeInterface
+class ProduceResponse extends AbstractResponse
 {
     /**
      * List of broker metadata info
@@ -43,7 +39,7 @@ class ProduceResponse extends AbstractResponse implements BinarySchemeInterface
      */
     public $throttleTime;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

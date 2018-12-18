@@ -248,7 +248,7 @@ class RecordBatch implements BinarySchemeInterface
         $this->length = Scheme::getObjectTypeSize($this) - 12;
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'firstOffset'          => Scheme::TYPE_INT64,

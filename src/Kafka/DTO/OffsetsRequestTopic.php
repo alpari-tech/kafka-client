@@ -47,7 +47,7 @@ class OffsetsRequestTopic implements BinarySchemeInterface
         $this->partitions = $packedPartitions;
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'topic'      => Scheme::TYPE_STRING,

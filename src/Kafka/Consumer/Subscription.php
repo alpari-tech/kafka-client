@@ -66,7 +66,7 @@ class Subscription implements BinarySchemeInterface
      *
      * @return array
      */
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'version'  => Scheme::TYPE_INT16,

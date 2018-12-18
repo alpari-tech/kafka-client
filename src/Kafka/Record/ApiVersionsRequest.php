@@ -7,7 +7,6 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\BinarySchemeInterface;
 
 /**
  * This request queries the broker about supported API versions for each command

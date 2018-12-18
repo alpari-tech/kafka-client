@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\DTO\ControlledShutdownResponsePartition;
 use Protocol\Kafka\Scheme;
 
@@ -19,7 +18,7 @@ use Protocol\Kafka\Scheme;
  *     topic => STRING
  *     partition => INT32
  */
-class ControlledShutdownResponse extends AbstractResponse implements BinarySchemeInterface
+class ControlledShutdownResponse extends AbstractResponse
 {
     /**
      * Error code.
@@ -35,7 +34,7 @@ class ControlledShutdownResponse extends AbstractResponse implements BinarySchem
      */
     public $remainingTopicPartitions = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

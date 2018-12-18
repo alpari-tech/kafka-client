@@ -112,7 +112,7 @@ class ProduceRequest extends AbstractRequest
         parent::__construct(Kafka::PRODUCE, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

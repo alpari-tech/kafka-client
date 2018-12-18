@@ -49,7 +49,7 @@ class SyncGroupRequestMember implements BinarySchemeInterface
         $this->assignment = $stringBuffer->getBuffer();
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'memberId'   => Scheme::TYPE_STRING,

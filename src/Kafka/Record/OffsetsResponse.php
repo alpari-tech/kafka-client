@@ -6,11 +6,7 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\DTO\OffsetsResponsePartition;
 use Protocol\Kafka\DTO\OffsetsResponseTopic;
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
 
 /**
  * ListOffset response object
@@ -24,7 +20,7 @@ use Protocol\Kafka\Stream;
  *       timestamp => INT64
  *       offset => INT64
  */
-class OffsetsResponse extends AbstractResponse implements BinarySchemeInterface
+class OffsetsResponse extends AbstractResponse
 {
     /**
      * List of broker metadata info
@@ -33,7 +29,7 @@ class OffsetsResponse extends AbstractResponse implements BinarySchemeInterface
      */
     public $topics = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

@@ -47,7 +47,7 @@ class JoinGroupRequestProtocol implements BinarySchemeInterface
         $this->metadata = $stringStream->getBuffer();
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'name'     => Scheme::TYPE_STRING,

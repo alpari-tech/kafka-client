@@ -166,7 +166,7 @@ class FetchRequest extends AbstractRequest
         parent::__construct(Kafka::FETCH, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

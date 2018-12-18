@@ -51,7 +51,7 @@ class PartitionMetadata implements BinarySchemeInterface
      */
     public $isr = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'partitionErrorCode' => Scheme::TYPE_INT16,

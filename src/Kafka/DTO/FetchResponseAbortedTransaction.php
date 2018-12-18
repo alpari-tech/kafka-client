@@ -34,7 +34,7 @@ class FetchResponseAbortedTransaction implements BinarySchemeInterface
      */
     public $firstOffset;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'producerId'  => Scheme::TYPE_INT64,

@@ -29,7 +29,7 @@ class SaslHandshakeResponse extends AbstractResponse implements BinarySchemeInte
      */
     public $errorCode;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

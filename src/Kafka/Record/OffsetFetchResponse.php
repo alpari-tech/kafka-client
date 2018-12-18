@@ -6,12 +6,8 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\DTO\OffsetFetchResponsePartition;
 use Protocol\Kafka\DTO\OffsetFetchResponseTopic;
-use Protocol\Kafka\Record;
 use Protocol\Kafka\Scheme;
-use Protocol\Kafka\Stream;
 
 /**
  * OffsetFetch response object
@@ -26,7 +22,7 @@ use Protocol\Kafka\Stream;
  *     error_code => INT16
  *   error_code => INT16
  */
-class OffsetFetchResponse extends AbstractResponse implements BinarySchemeInterface
+class OffsetFetchResponse extends AbstractResponse
 {
     /**
      * List of topic responses
@@ -44,7 +40,7 @@ class OffsetFetchResponse extends AbstractResponse implements BinarySchemeInterf
      */
     public $errorCode;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

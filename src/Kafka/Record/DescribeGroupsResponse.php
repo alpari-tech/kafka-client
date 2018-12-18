@@ -6,13 +6,12 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\DTO\DescribeGroupResponseMetadata;
 
 /**
  * Describe groups response
  */
-class DescribeGroupsResponse extends AbstractResponse implements BinarySchemeInterface
+class DescribeGroupsResponse extends AbstractResponse
 {
     /**
      * List of groups as keys and group info as values
@@ -21,7 +20,7 @@ class DescribeGroupsResponse extends AbstractResponse implements BinarySchemeInt
      */
     public $groups = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

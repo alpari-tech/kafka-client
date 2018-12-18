@@ -6,14 +6,13 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\DTO\ApiVersionsResponseMetadata;
 use Protocol\Kafka\Scheme;
 
 /**
  * Api versions response
  */
-class ApiVersionsResponse extends AbstractResponse implements BinarySchemeInterface
+class ApiVersionsResponse extends AbstractResponse
 {
 
     /**
@@ -30,7 +29,7 @@ class ApiVersionsResponse extends AbstractResponse implements BinarySchemeInterf
      */
     public $apiVersions = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return parent::getScheme() + [
             'errorCode'   => Scheme::TYPE_INT16,

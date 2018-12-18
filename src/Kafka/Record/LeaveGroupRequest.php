@@ -44,7 +44,7 @@ class LeaveGroupRequest extends AbstractRequest
         parent::__construct(Kafka::LEAVE_GROUP, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

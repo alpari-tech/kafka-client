@@ -32,7 +32,7 @@ class ListGroupResponseProtocol implements BinarySchemeInterface
      */
     public $protocolType;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'groupId'      => Scheme::TYPE_STRING,

@@ -6,11 +6,8 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\DTO\JoinGroupResponseMember;
-use Protocol\Kafka\Record;
 use Protocol\Kafka\Scheme;
-use Protocol\Kafka\Stream;
 
 /**
  * Join group response
@@ -25,7 +22,7 @@ use Protocol\Kafka\Stream;
  *     member_id => STRING
  *     member_metadata => BYTES
  */
-class JoinGroupResponse extends AbstractResponse implements BinarySchemeInterface
+class JoinGroupResponse extends AbstractResponse
 {
     /**
      * Error code.
@@ -69,7 +66,7 @@ class JoinGroupResponse extends AbstractResponse implements BinarySchemeInterfac
      */
     public $members = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

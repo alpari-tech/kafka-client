@@ -113,7 +113,7 @@ class Record implements BinarySchemeInterface
         return $message;
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'length'         => Scheme::TYPE_VARINT_ZIGZAG,

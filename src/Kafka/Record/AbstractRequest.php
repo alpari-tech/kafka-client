@@ -6,8 +6,7 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Record;
+use Protocol\Kafka\AbstractRecord;
 use Protocol\Kafka\Scheme;
 
 /**
@@ -19,7 +18,7 @@ use Protocol\Kafka\Scheme;
  *   correlation_id => INT32
  *   client_id => NULLABLE_STRING
  */
-abstract class AbstractRequest extends Record implements BinarySchemeInterface
+abstract class AbstractRequest extends AbstractRecord
 {
     /**
      * Version of API request, could be overridden in children classes
@@ -72,7 +71,7 @@ abstract class AbstractRequest extends Record implements BinarySchemeInterface
         $this->messageSize   = Scheme::getObjectTypeSize($this) - 4 /* INT32 MessageSize */;
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'messageSize'   => Scheme::TYPE_INT32,

@@ -45,7 +45,7 @@ class TopicMetadata implements BinarySchemeInterface
      */
     public $partitions = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'topicErrorCode' => Scheme::TYPE_INT16,

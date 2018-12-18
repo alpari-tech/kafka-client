@@ -43,7 +43,7 @@ class Header implements BinarySchemeInterface
         $this->value = $value;
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'key'   => Scheme::TYPE_VARCHAR_ZIGZAG,

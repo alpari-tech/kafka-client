@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\DTO\OffsetCommitResponseTopic;
 
 /**
@@ -19,7 +18,7 @@ use Protocol\Kafka\DTO\OffsetCommitResponseTopic;
  *       partition => INT32
  *       error_code => INT16
  */
-class OffsetCommitResponse extends AbstractResponse implements BinarySchemeInterface
+class OffsetCommitResponse extends AbstractResponse
 {
     /**
      * List of topics with partition result
@@ -28,7 +27,7 @@ class OffsetCommitResponse extends AbstractResponse implements BinarySchemeInter
      */
     public $topics = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

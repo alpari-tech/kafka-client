@@ -41,7 +41,7 @@ class JoinGroupResponseMember implements BinarySchemeInterface
         $this->metadata = $metadata;
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'memberId' => Scheme::TYPE_STRING,

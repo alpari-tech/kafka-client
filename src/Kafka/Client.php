@@ -504,7 +504,7 @@ class Client
 
         foreach ($requestByNode as $nodeId => $nodeTopicPartitions)
         {
-            /** @var Record $request */
+            /** @var AbstractRecord $request */
             $request = $nodeRequest($nodeTopicPartitions);
             $stream  = $this->cluster->nodeById($nodeId)->getConnection($this->configuration);
 

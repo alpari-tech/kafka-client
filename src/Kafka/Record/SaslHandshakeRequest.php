@@ -28,7 +28,7 @@ class SaslHandshakeRequest extends AbstractRequest
         parent::__construct(Kafka::SASL_HANDSHAKE, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

@@ -35,7 +35,7 @@ class ApiVersionsResponseMetadata implements BinarySchemeInterface
      */
     public $maxVersion;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'apiKey'     => Scheme::TYPE_INT16,

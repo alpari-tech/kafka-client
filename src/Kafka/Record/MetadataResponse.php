@@ -7,7 +7,6 @@
 namespace Protocol\Kafka\Record;
 
 use Protocol\Kafka;
-use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\Common\Node;
 use Protocol\Kafka\Common\TopicMetadata;
 use Protocol\Kafka\Scheme;
@@ -15,7 +14,7 @@ use Protocol\Kafka\Scheme;
 /**
  * Metadata response object
  */
-class MetadataResponse extends AbstractResponse implements BinarySchemeInterface
+class MetadataResponse extends AbstractResponse
 {
     use Kafka\Common\RestorableTrait;
 
@@ -50,7 +49,7 @@ class MetadataResponse extends AbstractResponse implements BinarySchemeInterface
      */
     public $topics = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

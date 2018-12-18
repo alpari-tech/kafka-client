@@ -24,7 +24,7 @@ class HeartbeatResponse extends AbstractResponse implements BinarySchemeInterfac
      */
     public $errorCode;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

@@ -54,7 +54,7 @@ class HeartbeatRequest extends AbstractRequest
         parent::__construct(Kafka::HEARTBEAT, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

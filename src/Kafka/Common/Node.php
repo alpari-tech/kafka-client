@@ -53,7 +53,7 @@ class Node implements BinarySchemeInterface
      */
     private static $nodeConnections = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'nodeId' => Scheme::TYPE_INT32,

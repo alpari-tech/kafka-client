@@ -37,7 +37,7 @@ class ProduceRequestTopic implements BinarySchemeInterface
         $this->partitions = $partitionData;
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'topic'      => Scheme::TYPE_STRING,

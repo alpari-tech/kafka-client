@@ -16,7 +16,7 @@ use Protocol\Kafka\DTO\OffsetFetchResponseTopic;
 use Protocol\Kafka\Error\InvalidGroupId;
 use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\RequestTimedOut;
-use Protocol\Kafka\Record;
+use Protocol\Kafka\AbstractRecord;
 use Protocol\Kafka\Record\AbstractRequest;
 use Protocol\Kafka\Record\ApiVersionsRequest;
 use Protocol\Kafka\Record\ApiVersionsResponse;
@@ -226,7 +226,7 @@ class AdminClient
      * @param AbstractRequest $request       Instance of request to send
      * @param string          $responseClass Response class name to unpack
      *
-     * @return Record
+     * @return AbstractRecord
      * @throws \RuntimeException
      */
     private function sendAnyNode(AbstractRequest $request, $responseClass)

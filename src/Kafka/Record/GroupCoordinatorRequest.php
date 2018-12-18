@@ -31,7 +31,7 @@ class GroupCoordinatorRequest extends AbstractRequest
         parent::__construct(Kafka::GROUP_COORDINATOR, $clientId, $correlationId);
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

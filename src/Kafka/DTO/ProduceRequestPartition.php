@@ -55,7 +55,7 @@ class ProduceRequestPartition implements BinarySchemeInterface
         $this->recordBatch = $prefix . pack('N', $crc32c) . $body;
     }
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'partition'   => Scheme::TYPE_INT32,

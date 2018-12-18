@@ -36,7 +36,7 @@ class GroupCoordinatorResponseMetadata implements BinarySchemeInterface
      */
     public $port;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         return [
             'nodeId' => Scheme::TYPE_INT32,

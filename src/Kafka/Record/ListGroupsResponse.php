@@ -6,7 +6,6 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\DTO\ListGroupResponseProtocol;
 use Protocol\Kafka\Scheme;
 
@@ -19,7 +18,7 @@ use Protocol\Kafka\Scheme;
  *     group_id => STRING
  *     protocol_type => STRING
  */
-class ListGroupsResponse extends AbstractResponse implements BinarySchemeInterface
+class ListGroupsResponse extends AbstractResponse
 {
     /**
      * Error code.
@@ -35,7 +34,7 @@ class ListGroupsResponse extends AbstractResponse implements BinarySchemeInterfa
      */
     public $groups = [];
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 

@@ -6,14 +6,13 @@
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\DTO\GroupCoordinatorResponseMetadata;
 use Protocol\Kafka\Scheme;
 
 /**
  * Group coordinator response
  */
-class GroupCoordinatorResponse extends AbstractResponse implements BinarySchemeInterface
+class GroupCoordinatorResponse extends AbstractResponse
 {
     /**
      * Error code.
@@ -29,7 +28,7 @@ class GroupCoordinatorResponse extends AbstractResponse implements BinarySchemeI
      */
     public $coordinator;
 
-    public static function getScheme()
+    public static function getScheme(): array
     {
         $header = parent::getScheme();
 
