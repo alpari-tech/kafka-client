@@ -75,7 +75,8 @@ class Scheme
 
             case self::TYPE_STRING:
             case self::TYPE_NULLABLE_STRING:
-                return 2 /* INT16 Size */ + strlen($value);
+                $length = !empty($value) ? strlen($value) : 0;
+                return 2 /* INT16 Size */ + $length;
 
             case self::TYPE_VARINT:
                 return ByteUtils::sizeOfVarint($value);
@@ -94,7 +95,7 @@ class Scheme
                 return ByteUtils::sizeOfVarint($encodedLength);
 
             case self::TYPE_VARCHAR_ZIGZAG:
-                $length        = strlen($value);
+                $length        = !empty($value) ? strlen($value) : 0;
                 $encodedLength = ByteUtils::encodeZigZag($length);
                 return ByteUtils::sizeOfVarint($encodedLength) + $length;
 
@@ -365,7 +366,7 @@ class Scheme
                 return;
 
             case self::TYPE_VARCHAR_ZIGZAG:
-                $dataLength    = strlen($value);
+                $dataLength    = !empty($value) ? strlen($value) : 0;
                 $encodedLength = ByteUtils::encodeZigZag($dataLength);
                 $stream->writeVarint($encodedLength);
                 $stream->writeBuffer($value);

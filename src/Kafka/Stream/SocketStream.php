@@ -81,7 +81,7 @@ class SocketStream extends AbstractStream
         }
         $this->host          = $tcpInfo['host'];
         $this->port          = $tcpInfo['port'] ?? 9092;
-        $this->timeout       = $connectionTimeout ?? ini_get("default_socket_timeout");
+        $this->timeout       = $connectionTimeout ?? 1.0 * ini_get("default_socket_timeout");
         $this->configuration = $configuration;
     }
 

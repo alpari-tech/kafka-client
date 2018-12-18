@@ -17,7 +17,8 @@ use Protocol\Kafka\Error\KafkaException;
 use Protocol\Kafka\Error\NetworkException;
 use Protocol\Kafka\Error\UnknownError;
 use Protocol\Kafka\Error\UnknownTopicOrPartition;
-use Protocol\Kafka\AbstractRecord;
+use Protocol\Kafka\Record\MetadataRequest;
+use Protocol\Kafka\Record\MetadataResponse;
 use Protocol\Kafka\Stream;
 
 /**
@@ -200,10 +201,10 @@ final class Cluster
         foreach ($brokerAddresses as $address) {
             try {
                 $stream  = new Stream\SocketStream($address, $this->configuration);
-                $request = new Record\MetadataRequest();
+                $request = new MetadataRequest();
                 $request->writeTo($stream);
 
-                $metadata = Record\MetadataResponse::unpack($stream);
+                $metadata = MetadataResponse::unpack($stream);
                 break;
             }  catch (NetworkException $e) {
                 // we ignore all network errors and just try the next one address
@@ -255,7 +256,7 @@ final class Cluster
         $milliSeconds = (int)(microtime(true) * 1e3);
         $cacheFile    = $this->configuration[Config::METADATA_CACHE_FILE];
         if (is_readable($cacheFile)) {
-            /** @var Record\MetadataResponse $metadata */
+            /** @var MetadataResponse $metadata */
             [$cachePutTimeMs, $metadata] = include $cacheFile;
             if (($milliSeconds - $cachePutTimeMs) < $this->configuration[Config::METADATA_MAX_AGE_MS]) {
                 $this->nodes           = $metadata->brokers;
