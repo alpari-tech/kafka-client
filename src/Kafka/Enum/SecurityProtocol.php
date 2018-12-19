@@ -17,11 +17,11 @@ namespace Protocol\Kafka\Enum;
  */
 final class SecurityProtocol
 {
-    const PLAINTEXT = 'PLAINTEXT';
+    public const PLAINTEXT = 'PLAINTEXT';
 
-    const SSL = 'SSL';
+    public const SSL = 'SSL';
 
-    const SASL_PLAINTEXT = 'SASL_PLAINTEXT';
+    public const SASL_PLAINTEXT = 'SASL_PLAINTEXT';
 
-    const SASL_SSL = 'SASL_SSL';
+    public const SASL_SSL = 'SASL_SSL';
 }

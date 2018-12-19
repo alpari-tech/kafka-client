@@ -41,6 +41,9 @@ class ControlledShutdownResponse extends AbstractResponse
      */
     public $remainingTopicPartitions = [];
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

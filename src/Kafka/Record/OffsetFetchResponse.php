@@ -47,6 +47,9 @@ class OffsetFetchResponse extends AbstractResponse
      */
     public $errorCode;
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

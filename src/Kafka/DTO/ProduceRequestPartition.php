@@ -13,12 +13,10 @@ declare (strict_types=1);
 
 namespace Protocol\Kafka\DTO;
 
-use function pack;
 use Protocol\Kafka\BinarySchemeInterface;
 use Protocol\Kafka\Common\Utils\ByteUtils;
 use Protocol\Kafka\Scheme;
 use Protocol\Kafka\Stream\StringStream;
-use function substr;
 
 /**
  * Produce request Topic-Partition DTO
@@ -27,8 +25,6 @@ class ProduceRequestPartition implements BinarySchemeInterface
 {
     /**
      * The partition this request entry corresponds to.
-     *
-     * @var integer
      */
     public $partition;
 
@@ -44,7 +40,7 @@ class ProduceRequestPartition implements BinarySchemeInterface
     /**
      * @inheritDoc
      */
-    public function __construct($partition = 0, RecordBatch $recordBatch = null)
+    public function __construct(int $partition = 0, RecordBatch $recordBatch = null)
     {
         $this->partition = $partition;
         $recordBatch     = $recordBatch ?? new RecordBatch();
@@ -62,6 +58,9 @@ class ProduceRequestPartition implements BinarySchemeInterface
         $this->recordBatch = $prefix . pack('N', $crc32c) . $body;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

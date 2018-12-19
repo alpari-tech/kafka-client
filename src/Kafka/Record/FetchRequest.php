@@ -61,23 +61,23 @@ use Protocol\Kafka\Scheme;
 class FetchRequest extends AbstractRequest
 {
     /**
-     * @inheritDoc
-     */
-    const VERSION = 5;
-
-    /**
      * With READ_COMMITTED (isolation_level = 1), non-transactional and COMMITTED transactional records are visible.
      *
      * @see $isolationLevel
      */
-    const READ_COMMITTED = 1;
+    public const READ_COMMITTED = 1;
 
     /**
      * Using READ_UNCOMMITTED (isolation_level = 0) makes all records visible.
      *
      * @see $isolationLevel
      */
-    const READ_UNCOMMITTED = 0;
+    public const READ_UNCOMMITTED = 0;
+
+    /**
+     * @inheritDoc
+     */
+    protected const VERSION = 5;
 
     /**
      * @var array
@@ -148,13 +148,13 @@ class FetchRequest extends AbstractRequest
 
     public function __construct(
         array $topicPartitions,
-        $maxWaitTime,
-        $minBytes,
-        $maxBytes,
-        $isolationLevel = self::READ_UNCOMMITTED,
-        $replicaId = -1,
-        $clientId = '',
-        $correlationId = 0
+        int $maxWaitTime,
+        int $minBytes,
+        int $maxBytes,
+        int $isolationLevel = self::READ_UNCOMMITTED,
+        int $replicaId = -1,
+        string $clientId = '',
+        int $correlationId = 0
     ) {
         foreach ($topicPartitions as $topic => $partitionOffset) {
             $partitions = [];
@@ -164,15 +164,18 @@ class FetchRequest extends AbstractRequest
             $this->topicPartitions[$topic] = new FetchRequestTopic($topic, $partitions);
         }
 
-        $this->maxWaitTime     = $maxWaitTime;
-        $this->minBytes        = $minBytes;
-        $this->maxBytes        = $maxBytes;
-        $this->isolationLevel  = $isolationLevel;
-        $this->replicaId       = $replicaId;
+        $this->maxWaitTime    = $maxWaitTime;
+        $this->minBytes       = $minBytes;
+        $this->maxBytes       = $maxBytes;
+        $this->isolationLevel = $isolationLevel;
+        $this->replicaId      = $replicaId;
 
         parent::__construct(Kafka::FETCH, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

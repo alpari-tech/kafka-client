@@ -12,17 +12,20 @@ declare (strict_types=1);
 
 namespace Protocol\Kafka\Enum;
 
+/**
+ * Possible values for ssl.protocol configuration parameter
+ */
 final class SslProtocol
 {
-    const TLS = 'TLS';
+    public const TLS = 'TLS';
 
-    const TLSv1_1 = 'TLSv1_1';
+    public const TLSv1_1 = 'TLSv1_1';
 
-    const TLSv1_2 = 'TLSv1_2';
+    public const TLSv1_2 = 'TLSv1_2';
 
-    const SSL = 'SSL';
+    public const SSL = 'SSL';
 
-    const SSLv2 = 'SSLv2';
+    public const SSLv2 = 'SSLv2';
 
-    const SSLv3 = 'SSLv3';
+    public const SSLv3 = 'SSLv3';
 }

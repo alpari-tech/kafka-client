@@ -38,40 +38,37 @@ use Protocol\Kafka\Scheme;
 class OffsetsRequest extends AbstractRequest
 {
     /**
-     * @inheritDoc
-     */
-    const VERSION = 1;
-
-    /**
      * Special value for the offset of the next coming message
      */
-    const LATEST = -1;
+    public const LATEST = -1;
 
     /**
      * Special value for receiving the earliest available offset
      */
-    const EARLIEST = -2;
+    public const EARLIEST = -2;
+
+    /**
+     * @inheritDoc
+     */
+    protected const VERSION = 1;
 
     /**
      * @var array
      */
     private $topicPartitions;
 
-
     /**
      * The replica id indicates the node id of the replica initiating this request. Normal client consumers should
      * always specify this as -1 as they have no node id. Other brokers set this to be their own node id. The value -2
      * is accepted to allow a non-broker to issue fetch requests as if it were a replica broker for debugging purposes.
-     *
-     * @var int
      */
     private $replicaId;
 
     public function __construct(
         array $topicPartitions,
-        $replicaId = -1,
-        $clientId = '',
-        $correlationId = 0
+        int $replicaId = -1,
+        string $clientId = '',
+        int $correlationId = 0
     ) {
         $packedTopicPartitions = [];
         foreach ($topicPartitions as $topic => $partitions) {
@@ -83,6 +80,9 @@ class OffsetsRequest extends AbstractRequest
         parent::__construct(Kafka::OFFSETS, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

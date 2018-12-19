@@ -28,26 +28,20 @@ class OffsetCommitRequestPartition implements BinarySchemeInterface
 {
     /**
      * The partition this request entry corresponds to.
-     *
-     * @var integer
      */
     public $partition;
 
     /**
      * The offset assigned to the first message in the message set appended to this partition.
-     *
-     * @var integer
      */
     public $offset;
 
     /**
      * Any associated metadata the client wants to keep.
-     *
-     * @var string
      */
     public $metadata;
 
-    public function __construct($partition, $offset, $metadata = null)
+    public function __construct(int $partition, int $offset, ?string $metadata = null)
     {
         $this->partition = $partition;
         $this->offset    = $offset;
@@ -55,9 +49,7 @@ class OffsetCommitRequestPartition implements BinarySchemeInterface
     }
 
     /**
-     * Returns definition of binary packet for the class or object
-     *
-     * @return array
+     * @inheritdoc
      */
     public static function getScheme(): array
     {

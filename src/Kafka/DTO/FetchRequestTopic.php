@@ -30,8 +30,6 @@ class FetchRequestTopic implements BinarySchemeInterface
 {
     /**
      * Name of the topic for fetching
-     *
-     * @var string
      */
     public $topic;
 
@@ -42,15 +40,15 @@ class FetchRequestTopic implements BinarySchemeInterface
      */
     public $partitions;
 
-    /**
-     * @inheritDoc
-     */
-    public function __construct($topic, array $partitions = [])
+    public function __construct(string $topic, array $partitions = [])
     {
         $this->topic      = $topic;
         $this->partitions = $partitions;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

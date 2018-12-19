@@ -66,9 +66,7 @@ class ProduceResponsePartition implements BinarySchemeInterface
     public $logAppendTime;
 
     /**
-     * Returns definition of binary packet for the class or object
-     *
-     * @return array
+     * @inheritdoc
      */
     public static function getScheme(): array
     {

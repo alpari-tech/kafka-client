@@ -29,20 +29,18 @@ class DescribeGroupsRequest extends AbstractRequest
 {
     /**
      * List of groups to describe
-     *
-     * @var array
      */
     private $groups;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct(array $groups, $clientId = '', $correlationId = 0)
+    public function __construct(array $groups, string $clientId = '', int $correlationId = 0)
     {
         $this->groups = $groups;
         parent::__construct(Kafka::DESCRIBE_GROUPS, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

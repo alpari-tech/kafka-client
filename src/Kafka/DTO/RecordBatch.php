@@ -86,15 +86,11 @@ class RecordBatch implements BinarySchemeInterface
      *
      * The 'offsetDelta' of each Record in the batch would be be computed relative to this FirstOffset.
      * In particular, the offset of each Record in the Batch is its 'OffsetDelta' + 'FirstOffset'.
-     *
-     * @var integer
      */
     public $firstOffset;
 
     /**
      * Size of the record data
-     *
-     * @var integer
      */
     public $length;
 
@@ -106,8 +102,6 @@ class RecordBatch implements BinarySchemeInterface
      * @see https://cwiki.apache.org/confluence/display/KAFKA/KIP-101+-+Alter+Replication+Protocol+to+use+Leader+Epoch+rather+than+High+Watermark+for+Truncation
      *
      * @since 0.11.0
-     *
-     * @var integer
      */
     public $partitionLeaderEpoch = -1;
 
@@ -115,8 +109,6 @@ class RecordBatch implements BinarySchemeInterface
      * The new message format has a Magic value of 2
      *
      * @since 0.11.0
-     *
-     * @var integer
      */
     public $magic = 2;
 
@@ -144,8 +136,6 @@ class RecordBatch implements BinarySchemeInterface
      * this bit set) to applications.
      *
      * @since 0.11.0
-     *
-     * @var integer
      */
     public $attributes;
 
@@ -155,8 +145,6 @@ class RecordBatch implements BinarySchemeInterface
      * This is used by the broker to ensure correct behavior even when Records within a batch are compacted out.
      *
      * @since 0.11.0
-     *
-     * @var integer
      */
     public $lastOffsetDelta;
 
@@ -166,8 +154,6 @@ class RecordBatch implements BinarySchemeInterface
      * The timestamp of each Record in the RecordBatch is its 'TimestampDelta' + 'FirstTimestamp'.
      *
      * @since 0.11.0
-     *
-     * @var integer
      */
     public $firstTimestamp;
 
@@ -177,8 +163,6 @@ class RecordBatch implements BinarySchemeInterface
      * This is used by the broker to ensure the correct behavior even when Records within the batch are compacted out.
      *
      * @since 0.11.0
-     *
-     * @var integer
      */
     public $maxTimestamp;
 
@@ -189,8 +173,6 @@ class RecordBatch implements BinarySchemeInterface
      *
      * @since 0.11.0
      * @see https://cwiki.apache.org/confluence/display/KAFKA/KIP-98+-+Exactly+Once+Delivery+and+Transactional+Messaging
-     *
-     * @var integer
      */
     public $producerId;
 
@@ -201,8 +183,6 @@ class RecordBatch implements BinarySchemeInterface
      *
      * @since 0.11.0
      * @see https://cwiki.apache.org/confluence/display/KAFKA/KIP-98+-+Exactly+Once+Delivery+and+Transactional+Messaging
-     *
-     * @var integer
      */
     public $producerEpoch;
 
@@ -214,8 +194,6 @@ class RecordBatch implements BinarySchemeInterface
      *
      * @since 0.11.0
      * @see https://cwiki.apache.org/confluence/display/KAFKA/KIP-98+-+Exactly+Once+Delivery+and+Transactional+Messaging
-     *
-     * @var integer
      */
     public $firstSequence;
 
@@ -228,15 +206,15 @@ class RecordBatch implements BinarySchemeInterface
 
     public function __construct(
         array $records = [],
-        $firstOffset = 0,
-        $partitionLeaderEpoch = -1,
-        $attributes = 0,
-        $lastOffsetDelta = 0,
-        $firstTimestamp = null,
-        $maxTimestamp = null,
-        $producerId = -1,
-        $producerEpoch = -1,
-        $firstSequence = -1
+        int $firstOffset = 0,
+        int $partitionLeaderEpoch = -1,
+        int $attributes = 0,
+        int $lastOffsetDelta = 0,
+        int $firstTimestamp = null,
+        int $maxTimestamp = null,
+        int $producerId = -1,
+        int $producerEpoch = -1,
+        int $firstSequence = -1
     ) {
         $milliSeconds = (int) (microtime(true) * 1e3);
 
@@ -255,6 +233,9 @@ class RecordBatch implements BinarySchemeInterface
         $this->length = Scheme::getObjectTypeSize($this) - 12;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

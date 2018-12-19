@@ -23,27 +23,27 @@ use Protocol\Kafka\Stream;
 
 /**
  * A representation of a subset of the nodes, topics, and partitions in the Kafka cluster.
+ *
+ * @TODO loadFromCache() method contains unsfafe file inclusion, possible vector for attack
  */
 final class Cluster
 {
     /**
      * List of broker nodes
      *
-     * @var Node[]|array
+     * @var Node[]
      */
     private $nodes = [];
 
     /**
      * Topic partitions
      *
-     * @var TopicMetadata[]|array
+     * @var TopicMetadata[]
      */
     private $topicPartitions = [];
 
     /**
      * Client configuration
-     *
-     * @var array
      */
     private $configuration;
 
@@ -64,7 +64,7 @@ final class Cluster
      *
      * @return Cluster
      */
-    public static function bootstrap(array $configuration)
+    public static function bootstrap(array $configuration): Cluster
     {
         $cluster        = new Cluster($configuration);
         $isCacheEnabled = !empty($configuration[Config::METADATA_CACHE_FILE]);
@@ -83,12 +83,9 @@ final class Cluster
     /**
      * Gets the current leader for the given topic-partition
      *
-     * @param string  $topic     Name of the topic
-     * @param integer $partition Number of the partition
-     *
-     * @return Node
+     * @throws UnknownTopicOrPartition If topic-partition was not found
      */
-    public function leaderFor($topic, $partition)
+    public function leaderFor(string $topic, int $partition): Node
     {
         $partitions = $this->partitionsForTopic($topic);
         if (!isset($partitions[$partition])) {
@@ -119,21 +116,16 @@ final class Cluster
 
     /**
      * Gets the node by the node id (or null if no such node exists)
-     *
-     * @param integer $nodeId Node identifier
-     *
-     * @return null|Node
      */
-    public function nodeById($nodeId)
+    public function nodeById(int $nodeId): ?Node
     {
         if (!isset($this->nodes[$nodeId])) {
+            // Try to reload cluster in the case if configuration was changed
             $this->reload();
-            if (!isset($this->nodes[$nodeId])) {
-                throw new UnknownError(compact('nodeId') + ['error' => 'Node was not found']);
-            }
         }
 
-        return $this->nodes[$nodeId];
+        // Either we have a node (maybe after reload) or just return null
+        return $this->nodes[$nodeId] ?? null;
     }
 
     /**
@@ -141,20 +133,15 @@ final class Cluster
      *
      * @return Node[]
      */
-    public function nodes()
+    public function nodes(): array
     {
         return $this->nodes;
     }
 
     /**
      * Gets the metadata for the specified partition
-     *
-     * @param string  $topic     Name of the topic
-     * @param integer $partition Number of the partition
-     *
-     * @return PartitionMetadata
      */
-    public function partition($topic, $partition)
+    public function partition(string $topic, int $partition): PartitionMetadata
     {
         $partitions = $this->partitionsForTopic($topic);
         if (!isset($partitions[$partition])) {
@@ -165,13 +152,11 @@ final class Cluster
     }
 
     /**
-     * Gets the list of partitions for this topic
-     *
-     * @param string $topic Name of the topic
+     * Gets the list of partitions for specified topic
      *
      * @return PartitionMetadata[]
      */
-    public function partitionsForTopic($topic)
+    public function partitionsForTopic(string $topic): array
     {
         if (!isset($this->topicPartitions[$topic])) {
             $this->reload();
@@ -193,7 +178,7 @@ final class Cluster
      *
      * @throws UnknownError If information can not be reloaded
      */
-    public function reload()
+    public function reload(): void
     {
         $brokerAddresses = $this->configuration[Config::BOOTSTRAP_SERVERS] ?? [];
 
@@ -241,7 +226,7 @@ final class Cluster
      *
      * @return string[]
      */
-    public function topics()
+    public function topics(): array
     {
         return array_keys($this->topicPartitions);
     }
@@ -251,7 +236,7 @@ final class Cluster
      *
      * @return boolean True if metadata was successfully loaded from the cache
      */
-    private function loadFromCache()
+    private function loadFromCache(): bool
     {
         $milliSeconds = (int)(microtime(true) * 1e3);
         $cacheFile    = $this->configuration[Config::METADATA_CACHE_FILE];

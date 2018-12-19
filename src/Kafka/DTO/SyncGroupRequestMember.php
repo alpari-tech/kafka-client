@@ -29,15 +29,14 @@ class SyncGroupRequestMember implements BinarySchemeInterface
 {
     /**
      * Name of the group member
-     *
-     * @var string
      */
     public $memberId;
 
     /**
      * Member-specific assignment
      *
-     * @var string This field should be MemberAssignment instance
+     * @var string
+     * @todo This field should be MemberAssignment instance in scheme
      */
     public $assignment;
 
@@ -47,7 +46,7 @@ class SyncGroupRequestMember implements BinarySchemeInterface
      * @param string $memberId Member identifier
      * @param MemberAssignment $assignment Received assignment
      */
-    public function __construct($memberId, MemberAssignment $assignment)
+    public function __construct(string $memberId, MemberAssignment $assignment)
     {
         $this->memberId = $memberId;
         // TODO: This should be done on scheme-level
@@ -56,6 +55,9 @@ class SyncGroupRequestMember implements BinarySchemeInterface
         $this->assignment = $stringBuffer->getBuffer();
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

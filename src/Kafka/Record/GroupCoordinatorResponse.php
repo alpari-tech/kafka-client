@@ -35,6 +35,9 @@ class GroupCoordinatorResponse extends AbstractResponse
      */
     public $coordinator;
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

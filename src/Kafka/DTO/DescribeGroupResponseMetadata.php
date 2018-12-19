@@ -69,14 +69,12 @@ class DescribeGroupResponseMetadata implements BinarySchemeInterface
     /**
      * Current group members (only provided if the group is not Dead)
      *
-     * @var array
+     * @var DescribeGroupResponseMember[]
      */
     public $members = [];
 
     /**
-     * Returns definition of binary packet for the class or object
-     *
-     * @return array
+     * @inheritdoc
      */
     public static function getScheme(): array
     {

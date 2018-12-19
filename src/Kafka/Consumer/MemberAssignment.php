@@ -31,8 +31,6 @@ class MemberAssignment implements BinarySchemeInterface
 {
     /**
      * This is a version id.
-     *
-     * @var integer
      */
     public $version;
 
@@ -49,8 +47,6 @@ class MemberAssignment implements BinarySchemeInterface
      * For example, in a sticky partitioning implementation, this field can contain the assignment from the previous
      * generation. In a resource-based assignment strategy, it could include the number of cpus on the machine hosting
      * each consumer instance.
-     *
-     * @var string
      */
     public $userData;
 
@@ -61,7 +57,7 @@ class MemberAssignment implements BinarySchemeInterface
      * @param int           $version         Optional version
      * @param string        $userData        Additional user data
      */
-    public function __construct(array $topicPartitions = [], $version = 0, $userData = '')
+    public function __construct(array $topicPartitions = [], int $version = 0, string $userData = '')
     {
         $packedTopicAssignment = [];
         foreach ($topicPartitions as $topic => $partitions) {

@@ -40,22 +40,25 @@ class MetadataRequest extends AbstractRequest
     /**
      * @inheritDoc
      */
-    const VERSION = 2;
+    protected const VERSION = 2;
 
     /**
      * An array of topics to fetch metadata for. If no topics are specified fetch metadata for all topics.
      *
-     * @var string
+     * @var ?array
      */
     protected $topics;
 
-    public function __construct(array $topics = null, $clientId = '', $correlationId = 0)
+    public function __construct(?array $topics = null, string $clientId = '', int $correlationId = 0)
     {
         $this->topics = $topics;
 
         parent::__construct(Kafka::METADATA, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

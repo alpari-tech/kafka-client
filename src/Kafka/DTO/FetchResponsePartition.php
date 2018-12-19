@@ -94,9 +94,7 @@ class FetchResponsePartition implements BinarySchemeInterface
     public $recordBatchBuffer;
 
     /**
-     * Returns definition of binary packet for the class or object
-     *
-     * @return array
+     * @inheritdoc
      */
     public static function getScheme(): array
     {

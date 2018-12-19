@@ -41,12 +41,10 @@ class OffsetFetchRequest extends AbstractRequest
     /**
      * @inheritDoc
      */
-    const VERSION = 2;
+    protected const VERSION = 2;
 
     /**
      * The consumer group id.
-     *
-     * @var string
      */
     protected $consumerGroup;
 
@@ -58,19 +56,26 @@ class OffsetFetchRequest extends AbstractRequest
     /**
      * OffsetFetchRequest constructor.
      *
-     * @param string            $consumerGroup   Name of the consumer group
-     * @param TopicPartitions[] $topicPartitions List of topic => partitions to fetch
-     * @param string            $clientId        Unique client identifier
-     * @param int               $correlationId   Correlated request ID
+     * @param string                 $consumerGroup   Name of the consumer group
+     * @param TopicPartitions[]|null $topicPartitions List of topic => partitions to fetch or null for all topics
+     * @param string                 $clientId        Unique client identifier
+     * @param int                    $correlationId   Correlated request ID
      */
-    public function __construct($consumerGroup, array $topicPartitions = null, $clientId = '', $correlationId = 0)
-    {
+    public function __construct(
+        string $consumerGroup,
+        array $topicPartitions = null,
+        string $clientId = '',
+        int $correlationId = 0
+    ) {
         $this->consumerGroup   = $consumerGroup;
         $this->topicPartitions = $topicPartitions;
 
         parent::__construct(Kafka::OFFSET_FETCH, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

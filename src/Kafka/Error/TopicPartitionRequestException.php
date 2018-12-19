@@ -57,7 +57,7 @@ class TopicPartitionRequestException extends \RuntimeException implements Server
      *
      * @return array [topic][partition] => partition result
      */
-    public function getPartialResult()
+    public function getPartialResult(): array
     {
         return $this->partialResult;
     }
@@ -67,7 +67,7 @@ class TopicPartitionRequestException extends \RuntimeException implements Server
      *
      * @return Exception[][] [topic][partition] => exception
      */
-    public function getExceptions()
+    public function getExceptions(): array
     {
         return $this->exceptions;
     }

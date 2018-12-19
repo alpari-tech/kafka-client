@@ -47,14 +47,14 @@ class PartitionMetadata implements BinarySchemeInterface
     /**
      * The set of all nodes that host this partition.
      *
-     * @var array|integer[]
+     * @var integer[]
      */
     public $replicas = [];
 
     /**
      * The set of nodes that are in sync with the leader for this partition.
      *
-     * @var array|integer[]
+     * @var integer[]
      */
     public $isr = [];
 

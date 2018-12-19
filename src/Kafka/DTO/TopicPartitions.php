@@ -28,31 +28,27 @@ class TopicPartitions implements BinarySchemeInterface
 
     /**
      * Name of the topic to assign
-     *
-     * @var string
      */
     public $topic;
 
     /**
      * List of partitions from the topic to assign
      *
-     * @var array
+     * @var integer[]
      */
     public $partitions = [];
 
     /**
      * @inheritDoc
      */
-    public function __construct($topic, array $partitions)
+    public function __construct(string $topic, array $partitions)
     {
         $this->topic      = $topic;
         $this->partitions = $partitions;
     }
 
     /**
-     * Returns definition of binary packet for the class or object
-     *
-     * @return array
+     * @inheritdoc
      */
     public static function getScheme(): array
     {

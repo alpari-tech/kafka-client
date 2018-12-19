@@ -20,15 +20,15 @@ final class OffsetResetStrategy
     /**
      * Fetch the earliest available offset
      */
-    const EARLIEST = 'earliest';
+    public const EARLIEST = 'earliest';
 
     /**
      * Fetch the latest available offset for topic partition
      */
-    const LATEST = 'latest';
+    public const LATEST = 'latest';
 
     /**
      * Do not fetch offset and throw an exception if offset is not available
      */
-    const NONE = 'none';
+    public const NONE = 'none';
 }

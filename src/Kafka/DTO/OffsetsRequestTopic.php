@@ -29,8 +29,6 @@ class OffsetsRequestTopic implements BinarySchemeInterface
 {
     /**
      * Name of the topic
-     *
-     * @var string
      */
     public $topic;
 
@@ -41,10 +39,7 @@ class OffsetsRequestTopic implements BinarySchemeInterface
      */
     public $partitions;
 
-    /**
-     * @inheritDoc
-     */
-    public function __construct($topic, array $partitions)
+    public function __construct(string $topic, array $partitions)
     {
         $packedPartitions = [];
         $this->topic      = $topic;
@@ -54,6 +49,9 @@ class OffsetsRequestTopic implements BinarySchemeInterface
         $this->partitions = $packedPartitions;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

@@ -60,8 +60,6 @@ class Client
 
     /**
      * Client configuration
-     *
-     * @var array
      */
     private $configuration;
 
@@ -76,9 +74,9 @@ class Client
      *
      * @param array $topicPartitionMessages List of messages for each topic and partition
      *
-     * @return ProduceResponse
+     * @return Kafka\DTO\ProduceResponsePartition[][]
      */
-    public function produce(array $topicPartitionMessages)
+    public function produce(array $topicPartitionMessages): array
     {
         $result = $this->clusterRequest($topicPartitionMessages, function (array $nodeTopicPartitionMessages) {
             $request = new ProduceRequest(
@@ -129,13 +127,12 @@ class Client
      */
     public function commitGroupOffsets(
         Node $coordinatorNode,
-        $groupId,
-        $memberId,
-        $generationId,
+        string $groupId,
+        string $memberId,
+        int $generationId,
         array $topicPartitionOffsets,
-        $retentionTimeMs
-    )
-    {
+        int $retentionTimeMs
+    ): void {
         $stream  = $coordinatorNode->getConnection($this->configuration);
         $request = new OffsetCommitRequest(
             $groupId,
@@ -174,7 +171,7 @@ class Client
      * @throws Kafka\Error\TopicAuthorizationFailed
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function fetchGroupOffsets(Node $coordinatorNode, $groupId, array $topicPartitions = null)
+    public function fetchGroupOffsets(Node $coordinatorNode, string $groupId, ?array $topicPartitions = null): array
     {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
@@ -221,8 +218,13 @@ class Client
      * @throws Kafka\Error\InvalidSessionTimeout
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function joinGroup(Node $coordinatorNode, $groupId, $memberId, $protocolType, array $groupProtocols)
-    {
+    public function joinGroup(
+        Node $coordinatorNode,
+        string $groupId,
+        string $memberId,
+        string $protocolType,
+        array $groupProtocols
+    ): JoinGroupResponse {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
         $request = new JoinGroupRequest(
@@ -257,7 +259,7 @@ class Client
      * @throws Kafka\Error\UnknownMemberId
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function leaveGroup(Node $coordinatorNode, $groupId, $memberId)
+    public function leaveGroup(Node $coordinatorNode, string $groupId, string $memberId): void
     {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
@@ -292,8 +294,13 @@ class Client
      * @throws Kafka\Error\RebalanceInProgress
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function syncGroup(Node $coordinatorNode, $groupId, $memberId, $generationId, array $groupAssignments = [])
-    {
+    public function syncGroup(
+        Node $coordinatorNode,
+        string $groupId,
+        string $memberId,
+        int $generationId,
+        array $groupAssignments = []
+    ): SyncGroupResponse {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
         $request = new SyncGroupRequest(
@@ -328,7 +335,7 @@ class Client
      * @throws Kafka\Error\RebalanceInProgress
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function heartbeat(Node $coordinatorNode, $groupId, $memberId, $generationId)
+    public function heartbeat(Node $coordinatorNode, string $groupId, string $memberId, int $generationId): void
     {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
@@ -349,14 +356,10 @@ class Client
     /**
      * Discovers the group coordinator node for the group
      *
-     * @param string $groupId Name of the group
-     *
-     * @return Node
-     *
      * @throws Kafka\Error\GroupCoordinatorNotAvailable
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function getGroupCoordinator($groupId)
+    public function getGroupCoordinator(string $groupId): Node
     {
         $clusterNodes = $this->cluster->nodes();
         $failures     = [];
@@ -400,7 +403,7 @@ class Client
      * @throws Kafka\Error\ReplicaNotAvailable
      * @throws Kafka\Error\UnknownError
      */
-    public function fetch(array $topicPartitionOffsets, $timeout)
+    public function fetch(array $topicPartitionOffsets, int $timeout): array
     {
         $timeout = min($this->configuration[ConsumerConfig::FETCH_MAX_WAIT_MS], $timeout);
         $errors  = [];
@@ -456,7 +459,7 @@ class Client
      * @throws Kafka\Error\NotLeaderForPartition
      * @throws Kafka\Error\UnknownError
      */
-    public function fetchTopicPartitionOffsets(array $topicPartitions)
+    public function fetchTopicPartitionOffsets(array $topicPartitions): array
     {
         $result = $this->clusterRequest($topicPartitions, function (array $nodeTopicRequest) {
             $request = new OffsetsRequest(
@@ -485,9 +488,9 @@ class Client
     private function clusterRequest(
         array $topicPartitionsRequest,
         \Closure $nodeRequest,
-        $responseClass,
+        string $responseClass,
         \Closure $responseAggregator,
-        $timeout = null
+        ?int $timeout = null
     ) {
         $requestByNode = [];
 

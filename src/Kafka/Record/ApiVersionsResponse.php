@@ -36,6 +36,9 @@ class ApiVersionsResponse extends AbstractResponse
      */
     public $apiVersions = [];
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return parent::getScheme() + [

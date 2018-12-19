@@ -23,8 +23,6 @@ class ProduceRequestTopic implements BinarySchemeInterface
 {
     /**
      * The name of the topic to produce to
-     *
-     * @var string
      */
     public $topic;
 
@@ -38,12 +36,15 @@ class ProduceRequestTopic implements BinarySchemeInterface
     /**
      * @inheritDoc
      */
-    public function __construct($topic = '', array $partitionData = [])
+    public function __construct(string $topic, array $partitionData)
     {
         $this->topic      = $topic;
         $this->partitions = $partitionData;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

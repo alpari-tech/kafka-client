@@ -23,18 +23,19 @@ class SaslHandshakeRequest extends AbstractRequest
 {
     /**
      * SASL Mechanism chosen by the client.
-     *
-     * @var string
      */
     private $mechanism;
 
-    public function __construct($mechanism, $clientId = '', $correlationId = 0)
+    public function __construct(string $mechanism, string $clientId = '', int $correlationId = 0)
     {
         $this->mechanism = $mechanism;
 
         parent::__construct(Kafka::SASL_HANDSHAKE, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

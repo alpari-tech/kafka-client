@@ -27,27 +27,23 @@ class JoinGroupResponseMember implements BinarySchemeInterface
 {
     /**
      * Name of the group member
-     *
-     * @var string
      */
     public $memberId;
 
     /**
      * Member-specific metadata
-     *
-     * @var string
      */
     public $metadata;
 
-    /**
-     * Default initializer
-     */
-    public function __construct($memberId, $metadata)
+    public function __construct(string $memberId, string $metadata)
     {
         $this->memberId = $memberId;
         $this->metadata = $metadata;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

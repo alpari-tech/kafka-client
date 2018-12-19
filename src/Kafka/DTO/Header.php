@@ -32,24 +32,29 @@ class Header implements BinarySchemeInterface
 {
     /**
      * Item key name
-     *
-     * @var string
      */
     public $key;
 
     /**
      * Item arbitrary data
-     *
-     * @var string
      */
     public $value;
 
-    public function __construct($key = '', $value = '')
+    /**
+     * Header constructor.
+     *
+     * @param string $key   Item key name
+     * @param string $value Item arbitrary data
+     */
+    public function __construct(string $key = '', string $value = '')
     {
         $this->key   = $key;
         $this->value = $value;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

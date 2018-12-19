@@ -39,26 +39,23 @@ use Protocol\Kafka\Scheme;
 class OffsetCommitRequest extends AbstractRequest
 {
     /**
-     * @inheritDoc
-     */
-    const VERSION = 2;
-
-    /**
      * Generation id for unsubscribed consumer
      */
-    const DEFAULT_GENERATION_ID = -1;
+    public const DEFAULT_GENERATION_ID = -1;
+
+    /**
+     * @inheritDoc
+     */
+    protected const VERSION = 2;
 
     /**
      * The consumer group id.
-     *
-     * @var string
      */
     private $consumerGroup;
 
     /**
      * The generation of the group.
      *
-     * @var int
      * @since Version 1 of protocol
      */
     private $generationId;
@@ -66,7 +63,6 @@ class OffsetCommitRequest extends AbstractRequest
     /**
      * The member id assigned by the group coordinator.
      *
-     * @var string
      * @since Version 1 of protocol
      */
     private $memberName;
@@ -74,7 +70,6 @@ class OffsetCommitRequest extends AbstractRequest
     /**
      * Time period in ms to retain the offset.
      *
-     * @var int
      * @since Version 2 of protocol
      */
     private $retentionTime;
@@ -85,13 +80,13 @@ class OffsetCommitRequest extends AbstractRequest
     private $topicPartitions;
 
     public function __construct(
-        $consumerGroup,
-        $generationId,
-        $memberName,
-        $retentionTime,
+        string $consumerGroup,
+        int $generationId,
+        string $memberName,
+        int $retentionTime,
         array $topicPartitions,
-        $clientId = '',
-        $correlationId = 0
+        string $clientId = '',
+        int $correlationId = 0
     ) {
 
         $this->consumerGroup   = $consumerGroup;
@@ -107,6 +102,9 @@ class OffsetCommitRequest extends AbstractRequest
         parent::__construct(Kafka::OFFSET_COMMIT, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

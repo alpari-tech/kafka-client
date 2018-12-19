@@ -36,6 +36,9 @@ class OffsetsResponse extends AbstractResponse
      */
     public $topics = [];
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

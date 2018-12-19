@@ -30,13 +30,20 @@ abstract class AbstractRecord implements BinarySchemeInterface
     protected $messageSize = 0;
 
     /**
+     * A user-supplied integer value that will be passed back with the response (INT32)
+     *
+     * @var integer
+     */
+    protected $correlationId;
+
+    /**
      * Unpacks the message from the binary data buffer
      *
      * @param Stream $stream Binary stream buffer
      *
      * @return static
      */
-    final public static function unpack(Stream $stream)
+    final public static function unpack(Stream $stream): self
     {
         return Scheme::readObjectFromStream(static::class, $stream);
     }
@@ -46,7 +53,7 @@ abstract class AbstractRecord implements BinarySchemeInterface
      *
      * @param Stream $stream Binary stream buffer
      */
-    final public function writeTo(Stream $stream)
+    final public function writeTo(Stream $stream): void
     {
         Scheme::writeObjectToStream($this, $stream);
     }

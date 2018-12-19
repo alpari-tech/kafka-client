@@ -37,10 +37,13 @@ class ListGroupsResponse extends AbstractResponse
     /**
      * List of groups as keys and current protocols as values
      *
-     * @var array
+     * @var ListGroupResponseProtocol[]
      */
     public $groups = [];
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

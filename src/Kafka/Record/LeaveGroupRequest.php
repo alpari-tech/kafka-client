@@ -31,19 +31,15 @@ class LeaveGroupRequest extends AbstractRequest
 {
     /**
      * The consumer group id.
-     *
-     * @var string
      */
     private $consumerGroup;
 
     /**
      * The member id assigned by the group coordinator.
-     *
-     * @var string
      */
     private $memberId;
 
-    public function __construct($consumerGroup, $memberId, $clientId = '', $correlationId = 0)
+    public function __construct(string $consumerGroup, string $memberId, string $clientId = '', int $correlationId = 0)
     {
         $this->consumerGroup = $consumerGroup;
         $this->memberId      = $memberId;
@@ -51,6 +47,9 @@ class LeaveGroupRequest extends AbstractRequest
         parent::__construct(Kafka::LEAVE_GROUP, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

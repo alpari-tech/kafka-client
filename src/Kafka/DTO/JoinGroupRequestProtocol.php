@@ -37,14 +37,12 @@ class JoinGroupRequestProtocol implements BinarySchemeInterface
     /**
      * Protocol-specific metadata
      *
+     * @todo Update scheme to use Subscription instance directly
      * @var string
      */
     public $metadata;
 
-    /**
-     * Default initializer
-     */
-    public function __construct($name, Subscription $subscription)
+    public function __construct(string $name, Subscription $subscription)
     {
         // TODO: This should be on scheme-level
         $stringStream = new StringStream();
@@ -54,6 +52,9 @@ class JoinGroupRequestProtocol implements BinarySchemeInterface
         $this->metadata = $stringStream->getBuffer();
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

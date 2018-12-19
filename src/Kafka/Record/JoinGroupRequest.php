@@ -28,47 +28,37 @@ use Protocol\Kafka\Scheme;
 class JoinGroupRequest extends AbstractRequest
 {
     /**
-     * @inheritDoc
-     */
-    const VERSION = 1;
-
-    /**
      * Member id for self-assigned consumer
      */
-    const DEFAULT_MEMBER_ID = "";
+    public const DEFAULT_MEMBER_ID = '';
+
+    /**
+     * @inheritDoc
+     */
+    protected const VERSION = 1;
 
     /**
      * The consumer group id.
-     *
-     * @var string
      */
     private $consumerGroup;
 
     /**
      * The coordinator considers the consumer dead if it receives no heartbeat after this timeout in ms.
-     *
-     * @var int
      */
     private $sessionTimeout;
 
     /**
      * The maximum time that the coordinator will wait for each member to rejoin when rebalancing the group
-     *
-     * @var int
      */
     private $rebalanceTimeout;
 
     /**
      * The member id assigned by the group coordinator.
-     *
-     * @var string
      */
     private $memberId;
 
     /**
      * Unique name for class of protocols implemented by group
-     *
-     * @var string
      */
     private $protocolType;
 
@@ -80,14 +70,14 @@ class JoinGroupRequest extends AbstractRequest
     private $groupProtocols;
 
     public function __construct(
-        $consumerGroup,
-        $sessionTimeout,
-        $rebalanceTimeout,
-        $memberId,
-        $protocolType,
+        string $consumerGroup,
+        int $sessionTimeout,
+        int $rebalanceTimeout,
+        string $memberId,
+        string $protocolType,
         array $groupProtocols,
-        $clientId = '',
-        $correlationId = 0
+        string $clientId = '',
+        int $correlationId = 0
     ) {
         $this->consumerGroup    = $consumerGroup;
         $this->sessionTimeout   = $sessionTimeout;
@@ -104,6 +94,9 @@ class JoinGroupRequest extends AbstractRequest
         parent::__construct(Kafka::JOIN_GROUP, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

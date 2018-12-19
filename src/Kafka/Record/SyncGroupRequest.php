@@ -38,35 +38,29 @@ class SyncGroupRequest extends AbstractRequest
     /**
      * @inheritDoc
      */
-    const VERSION = 1;
+    protected const VERSION = 1;
 
     /**
      * The consumer group id.
-     *
-     * @var string
      */
     private $consumerGroup;
 
     /**
      * The generation of the group.
-     *
-     * @var int
      */
     private $generationId;
 
     /**
      * The member id assigned by the group coordinator.
-     *
-     * @var string
      */
     private $memberId;
 
     /**
      * List of group member assignments
      *
-     * @var array
+     * @var SyncGroupRequestMember[]
      */
-    private $groupAssignments;
+    private $groupAssignments = [];
 
     /**
      * SyncGroupRequest constructor.
@@ -79,25 +73,28 @@ class SyncGroupRequest extends AbstractRequest
      * @param int                $correlationId    Correlated request ID
      */
     public function __construct(
-        $consumerGroup,
-        $generationId,
-        $memberId = null,
+        string $consumerGroup,
+        int $generationId,
+        ?string $memberId = null,
         array $groupAssignments = [],
-        $clientId = '',
-        $correlationId = 0
+        string $clientId = '',
+        int $correlationId = 0
     ) {
         $this->consumerGroup    = $consumerGroup;
         $this->generationId     = $generationId;
         $this->memberId         = $memberId;
         $packedGroupAssignments = [];
-        foreach ($groupAssignments as $memberId => $memberAssignment) {
-            $packedGroupAssignments[$memberId] = new SyncGroupRequestMember($memberId, $memberAssignment);
+        foreach ($groupAssignments as $groupMemberId => $memberAssignment) {
+            $packedGroupAssignments[$groupMemberId] = new SyncGroupRequestMember($groupMemberId, $memberAssignment);
         }
         $this->groupAssignments = $packedGroupAssignments;
 
         parent::__construct(Kafka::SYNC_GROUP, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

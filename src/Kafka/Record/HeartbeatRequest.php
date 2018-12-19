@@ -32,28 +32,26 @@ class HeartbeatRequest extends AbstractRequest
 {
     /**
      * The consumer group id.
-     *
-     * @var string
      */
     private $consumerGroup;
 
     /**
      * The generation of the group.
-     *
-     * @var int
      */
     private $generationId;
 
     /**
      * The member id assigned by the group coordinator.
-     *
-     * @var string
      */
     private $memberId;
 
-
-    public function __construct($consumerGroup, $generationId, $memberId, $clientId = '', $correlationId = 0)
-    {
+    public function __construct(
+        string $consumerGroup,
+        int $generationId,
+        string $memberId,
+        string $clientId = '',
+        int $correlationId = 0
+    ) {
         $this->consumerGroup = $consumerGroup;
         $this->generationId  = $generationId;
         $this->memberId      = $memberId;
@@ -61,6 +59,9 @@ class HeartbeatRequest extends AbstractRequest
         parent::__construct(Kafka::HEARTBEAT, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

@@ -27,34 +27,28 @@ class OffsetsRequestPartition implements BinarySchemeInterface
 {
     /**
      * Topic partition id
-     *
-     * @var integer
      */
     public $partition;
 
     /**
      * The target timestamp for the partition.
-     *
-     * @var integer
      */
     public $timestamp;
 
     /**
-     * Default constructor
+     * OffsetsRequestPartition constructor.
      *
-     * @param integer $partition
-     * @param integer $timestamp
+     * @param int $partition Topic partition id
+     * @param int $timestamp The target timestamp for the partition.
      */
-    public function __construct($partition, $timestamp)
+    public function __construct(int $partition, int $timestamp)
     {
         $this->partition = $partition;
         $this->timestamp = $timestamp;
     }
 
     /**
-     * Returns definition of binary packet for the class or object
-     *
-     * @return array
+     * @inheritdoc
      */
     public static function getScheme(): array
     {

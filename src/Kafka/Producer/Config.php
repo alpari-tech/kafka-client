@@ -22,8 +22,6 @@ final class Config extends GeneralConfig
 {
     /**
      * Default configuration for producer (should be applied on top of default config)
-     *
-     * @var array
      */
     protected static $producerConfiguration = [
         Config::PARTITIONER_CLASS => DefaultPartitioner::class,
@@ -55,12 +53,12 @@ final class Config extends GeneralConfig
      * guarantees that the record will not be lost as long as at least one in-sync replica remains alive. This is the
      * strongest available guarantee.
      */
-    const ACKS = 'acks';
+    public const ACKS = 'acks';
 
     /**
      * Partitioner class that implements the Partitioner interface.
      */
-    const PARTITIONER_CLASS = 'partitioner.class';
+    public const PARTITIONER_CLASS = 'partitioner.class';
 
     /**
      * Setting a value greater than zero will cause the client to resend any record whose send fails with a potentially
@@ -71,7 +69,7 @@ final class Config extends GeneralConfig
      * ordering of records because if two batches are sent to a single partition, and the first fails and is retried
      * but the second succeeds, then the records in the second batch may appear first.
      */
-    const RETRIES = 'retries';
+    public const RETRIES = 'retries';
 
     /**
      * The producer will attempt to batch records together into fewer requests whenever multiple records are being sent
@@ -86,7 +84,7 @@ final class Config extends GeneralConfig
      * batching entirely). A very large batch size may use memory a bit more wastefully as we will always allocate a
      * buffer of the specified batch size in anticipation of additional records.
      */
-    const BATCH_SIZE = 'batch.size';
+    public const BATCH_SIZE = 'batch.size';
 
     /**
      * The configuration controls the maximum amount of time the server will wait for acknowledgments from followers to
@@ -94,7 +92,7 @@ final class Config extends GeneralConfig
      * number of acknowledgments are not met when the timeout elapses an error will be returned. This timeout is
      * measured on the server side and does not include the network latency of the request.
      */
-    const TIMEOUT_MS = 'timeout.ms';
+    public const TIMEOUT_MS = 'timeout.ms';
 
     /**
      * The TransactionalId to use for transactional delivery.
@@ -105,18 +103,16 @@ final class Config extends GeneralConfig
      * enable.idempotence must be enabled if a TransactionalId is configured. The default is empty, which means
      * transactions cannot be used.
      */
-    const TRANSACTIONAL_ID = 'transactional.id';
+    public const TRANSACTIONAL_ID = 'transactional.id';
 
-    const COMPRESSION_TYPE          = 'compression.type';
-    const LINGER_MS                 = 'linger.ms';
-    const MAX_REQUEST_SIZE          = 'max.request.size';
+    public const COMPRESSION_TYPE = 'compression.type';
+    public const LINGER_MS        = 'linger.ms';
+    public const MAX_REQUEST_SIZE = 'max.request.size';
 
     /**
      * Returns default configuration for producer
-     *
-     * @return array
      */
-    public static function getDefaultConfiguration()
+    public static function getDefaultConfiguration(): array
     {
         return self::$producerConfiguration + parent::$generalConfiguration;
     }

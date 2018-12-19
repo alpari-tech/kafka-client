@@ -19,7 +19,7 @@ class ByteUtils
     /**
      * Table for CRC32C computation
      */
-    const CRC_TABLE = [
+    private const CRC_TABLE = [
         0x00000000, 0xf26b8303, 0xe13b70f7, 0x1350f3f4,
         0xc79a971f, 0x35f1141c, 0x26a1e7e8, 0xd4ca64eb,
         0x8ad958cf, 0x78b2dbcc, 0x6be22838, 0x9989ab3b,
@@ -86,20 +86,17 @@ class ByteUtils
         0xbe2da0a5, 0x4c4623a6, 0x5f16d052, 0xad7d5351
     ];
 
-    const CRC_MASK = 0xFFFFFFFF;
-
+    private const CRC_MASK = 0xFFFFFFFF;
 
     /**
-     * Number of bytes needed to encode a long in variable-length format.
-     *
-     * @param int $value The signed value
+     * Returns number of bytes needed to encode a long in variable-length format.
      */
-    public static function sizeOfVarlong($value)
+    public static function sizeOfVarlong(int $value): int
     {
         $v = ($value << 1) ^ ($value >> 63);
         $bytes = 1;
         while (($v & 0xffffffffffffff80) !== 0) {
-            $bytes += 1;
+            ++$bytes;
             $v >>= 7;
         }
 
@@ -107,30 +104,23 @@ class ByteUtils
     }
 
     /**
-     * Number of bytes needed to encode an integer in variable-length format.
-     *
-     * @param int $value The signed value
+     * Return number of bytes needed to encode an integer in variable-length format.
      */
-    public static function sizeOfVarint($value)
+    public static function sizeOfVarint(int $value): int
     {
         $v = ($value << 1) ^ ($value >> 31);
         $bytes = 1;
-        while (($v & 0xffffff80) != 0) {
-            $bytes += 1;
+        while (($v & 0xffffff80) !== 0) {
+            ++$bytes;
             $v >>= 7;
         }
         return $bytes;
     }
 
     /**
-     * Performs ZigZag encoding of integer value
-     *
-     * @param integer $value Value to encode
-     * @param int $base Base for encoding (32 or 64)
-     *
-     * @return int
+     * Performs ZigZag encoding of integer value in specific base (32 or 64)
      */
-    public static function encodeZigZag($value, $base = 32)
+    public static function encodeZigZag(int $value, int $base = 32): int
     {
         $value = ($value << 1) ^ ($value >> $base-1);
 
@@ -139,12 +129,8 @@ class ByteUtils
 
     /**
      * Decodes ZigZag-encoded value
-     *
-     * @param integer $value Encoded value
-     *
-     * @return int Decoded value
      */
-    public static function decodeZigZag($value)
+    public static function decodeZigZag(int $value): int
     {
         $value = ($value >> 1) ^ (-($value & 1));
 
@@ -152,15 +138,9 @@ class ByteUtils
     }
 
     /**
-     * Compute CRC-32C checksum of the data.
-     *
-     * @param string $buffer
-     *
-     * @return int CRC-32C checksum of data as long.
-     *
-     * Implementation of CRC-32C checksumming as in rfc3720 section B.4.
+     * Compute CRC-32C checksum of the data as in rfc3720 section B.4.
      */
-    public static function crc32c($buffer, $initial = 0)
+    public static function crc32c(string $buffer, int $initial = 0): int
     {
         $length = strlen($buffer);
         $crc    = $initial ^ self::CRC_MASK;

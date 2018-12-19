@@ -73,6 +73,9 @@ class JoinGroupResponse extends AbstractResponse
      */
     public $members = [];
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

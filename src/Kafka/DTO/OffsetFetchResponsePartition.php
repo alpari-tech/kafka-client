@@ -59,9 +59,7 @@ class OffsetFetchResponsePartition implements BinarySchemeInterface
     public $errorCode;
 
     /**
-     * Returns definition of binary packet for the class or object
-     *
-     * @return array
+     * @inheritdoc
      */
     public static function getScheme(): array
     {

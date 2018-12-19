@@ -39,6 +39,9 @@ class ListGroupResponseProtocol implements BinarySchemeInterface
      */
     public $protocolType;
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

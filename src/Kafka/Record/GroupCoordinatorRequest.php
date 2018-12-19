@@ -26,18 +26,19 @@ class GroupCoordinatorRequest extends AbstractRequest
 {
     /**
      * The consumer group id.
-     *
-     * @var string
      */
     private $consumerGroup;
 
-    public function __construct($consumerGroup, $clientId = '', $correlationId = 0)
+    public function __construct(string $consumerGroup, string $clientId = '', int $correlationId = 0)
     {
-        $this->consumerGroup   = $consumerGroup;
+        $this->consumerGroup = $consumerGroup;
 
         parent::__construct(Kafka::GROUP_COORDINATOR, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

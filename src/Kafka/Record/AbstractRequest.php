@@ -29,47 +29,30 @@ abstract class AbstractRequest extends AbstractRecord
 {
     /**
      * Version of API request, could be overridden in children classes
-     *
-     * @var int
      */
-    const VERSION = 0;
+    protected const VERSION = 0;
 
     /**
      * The id of the request type. (INT16)
-     *
-     * @var integer
      */
     protected $apiKey;
 
     /**
      * The version of the API. (INT16)
-     *
-     * @var integer
      */
     protected $apiVersion;
 
     /**
-     * A user-supplied integer value that will be passed back with the response (INT32)
-     *
-     * @var integer
-     */
-    protected $correlationId;
-
-    /**
      * A user specified identifier for the client making the request.
-     *
-     * @var string
      */
     protected $clientId;
 
     /**
      * Global request counter, ideally this should be stored somewhere in the shared config to survive between requests
-     *
-     * @var int
      */
     private static $counter = 0;
 
-    public function __construct($apiKey, $clientId = '', $correlationId = 0)
+    public function __construct(int $apiKey, string $clientId = '', int $correlationId = 0)
     {
         $this->apiKey        = $apiKey;
         $this->clientId      = $clientId;
@@ -78,6 +61,9 @@ abstract class AbstractRequest extends AbstractRecord
         $this->messageSize   = Scheme::getObjectTypeSize($this) - 4 /* INT32 MessageSize */;
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

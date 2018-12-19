@@ -49,6 +49,9 @@ class FetchResponseTopic implements BinarySchemeInterface
      */
     public $partitions;
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         return [

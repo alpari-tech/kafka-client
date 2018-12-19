@@ -13,7 +13,6 @@ declare (strict_types=1);
 
 namespace Protocol\Kafka\Record;
 
-use Protocol\Kafka\Consumer\MemberAssignment;
 use Protocol\Kafka\Scheme;
 
 /**
@@ -26,7 +25,6 @@ use Protocol\Kafka\Scheme;
  */
 class SyncGroupResponse extends AbstractResponse
 {
-
     /**
      * Duration in milliseconds for which the request was throttled due to quota violation
      *
@@ -46,10 +44,14 @@ class SyncGroupResponse extends AbstractResponse
     /**
      * Assigned data to the member
      *
-     * @var MemberAssignment
+     * @todo This should be implemented on scheme-level as MemberAssignment
+     * @var string
      */
     public $memberAssignment;
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

@@ -27,7 +27,7 @@ class DefaultPartitioner implements PartitionerInterface
     /**
      * @var int
      */
-    private static $counter = null;
+    private static $counter;
 
     /**
      * Compute the partition for the given record.
@@ -39,7 +39,7 @@ class DefaultPartitioner implements PartitionerInterface
      *
      * @return integer
      */
-    public function partition($topic, $key, $value, Cluster $cluster)
+    public function partition(string $topic, ?string $key, ?string $value, Cluster $cluster): int
     {
         $partitions      = $cluster->partitionsForTopic($topic);
         $totalPartitions = count($partitions);

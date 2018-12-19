@@ -27,22 +27,23 @@ class ControlledShutdownRequest extends AbstractRequest
     /**
      * @inheritDoc
      */
-    const VERSION = 1;
+    protected const VERSION = 1;
 
     /**
      * Broker identifier to shutdown
-     *
-     * @var integer
      */
     private $brokerId;
 
-    public function __construct($brokerId, $clientId = '', $correlationId = 0)
+    public function __construct(int $brokerId, string $clientId = '', int $correlationId = 0)
     {
         $this->brokerId = $brokerId;
 
         parent::__construct(Kafka::CONTROLLED_SHUTDOWN, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

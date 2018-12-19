@@ -31,6 +31,9 @@ class LeaveGroupResponse extends AbstractResponse implements BinarySchemeInterfa
      */
     public $errorCode;
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

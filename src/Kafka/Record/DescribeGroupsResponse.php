@@ -22,11 +22,12 @@ class DescribeGroupsResponse extends AbstractResponse
 {
     /**
      * List of groups as keys and group info as values
-     *
-     * @var array
      */
     public $groups = [];
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

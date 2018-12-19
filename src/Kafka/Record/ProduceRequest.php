@@ -43,29 +43,26 @@ class ProduceRequest extends AbstractRequest
     /**
      * @inheritDoc
      */
-    const VERSION = 3;
+    protected const VERSION = 3;
 
     /**
      * The transactional ID of the producer.
      *
-     * This is used to authorize transaction produce requests. This can be null for non-transactional producers.
+     * This is used to authorize transaction produce requests.
+     * This can be null for non-transactional producers.
      *
-     * @var string
+     * @var string|null
      */
     private $transactionalId;
 
     /**
      * The number of acknowledgments the producer requires the leader to have received before considering a request
      * complete. Allowed values: 0 for no acknowledgments, 1 for only the leader and -1 for the full ISR.
-     *
-     * @var integer
      */
     private $requiredAcks;
 
     /**
      * The time to await a response in ms.
-     *
-     * @var integer
      */
     private $timeout;
 
@@ -94,11 +91,11 @@ class ProduceRequest extends AbstractRequest
      */
     public function __construct(
         array $topicMessages = [],
-        $requiredAcks = 1,
-        $transactionalId = null,
-        $timeout = 0,
-        $clientId = '',
-        $correlationId = 0
+        int $requiredAcks = 1,
+        ?string $transactionalId = null,
+        int $timeout = 0,
+        string $clientId = '',
+        int $correlationId = 0
     ) {
 
         foreach ($topicMessages as $topic => $partitionMessages) {
@@ -119,6 +116,9 @@ class ProduceRequest extends AbstractRequest
         parent::__construct(Kafka::PRODUCE, $clientId, $correlationId);
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();

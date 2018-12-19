@@ -46,6 +46,9 @@ class ProduceResponse extends AbstractResponse
      */
     public $throttleTime;
 
+    /**
+     * @inheritdoc
+     */
     public static function getScheme(): array
     {
         $header = parent::getScheme();
