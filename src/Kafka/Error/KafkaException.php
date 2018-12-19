@@ -10,7 +10,7 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Error;
+namespace Alpari\Kafka\Error;
 
 use Exception;
 use ReflectionObject;
@@ -113,7 +113,7 @@ abstract class KafkaException extends RuntimeException
      *
      * @var array
      */
-    private $context = [];
+    private $context;
 
     /**
      * Creates an instance of exception by error code

@@ -11,9 +11,9 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\DTO\DescribeGroupResponseMetadata;
+use Alpari\Kafka\DTO\DescribeGroupResponseMetadata;
 
 /**
  * Describe groups response

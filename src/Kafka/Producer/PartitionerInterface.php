@@ -11,9 +11,9 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Producer;
+namespace Alpari\Kafka\Producer;
 
-use Protocol\Kafka\Common\Cluster;
+use Alpari\Kafka\Common\Cluster;
 
 /**
  * Partitioner Interface is responsible to compute a partition for the topic producer

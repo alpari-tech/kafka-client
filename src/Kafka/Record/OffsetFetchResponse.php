@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\DTO\OffsetFetchResponseTopic;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\DTO\OffsetFetchResponseTopic;
+use Alpari\Kafka\Scheme;
 
 /**
  * OffsetFetch response object

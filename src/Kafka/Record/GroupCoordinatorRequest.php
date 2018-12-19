@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka;
+use Alpari\Kafka\Scheme;
 
 /**
  * The offsets for a given consumer group are maintained by a specific broker called the group coordinator. i.e., a

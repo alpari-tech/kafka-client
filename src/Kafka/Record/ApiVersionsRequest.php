@@ -11,9 +11,9 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka;
+use Alpari\Kafka;
 
 /**
  * This request queries the broker about supported API versions for each command

@@ -11,11 +11,11 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka;
-use Protocol\Kafka\DTO\TopicPartitions;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka;
+use Alpari\Kafka\DTO\TopicPartitions;
+use Alpari\Kafka\Scheme;
 
 /**
  * This API describes the valid offset range available for a set of topic-partitions.

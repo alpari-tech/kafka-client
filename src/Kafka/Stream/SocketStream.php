@@ -11,13 +11,13 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Stream;
+namespace Alpari\Kafka\Stream;
 
-use Protocol\Kafka\Common\Config;
-use Protocol\Kafka\Enum\SecurityProtocol;
-use Protocol\Kafka\Enum\SslProtocol;
-use Protocol\Kafka\Error\InvalidConfiguration;
-use Protocol\Kafka\Error\NetworkException;
+use Alpari\Kafka\Common\Config;
+use Alpari\Kafka\Enum\SecurityProtocol;
+use Alpari\Kafka\Enum\SslProtocol;
+use Alpari\Kafka\Error\InvalidConfiguration;
+use Alpari\Kafka\Error\NetworkException;
 
 /**
  * Implementation of simple socket stream
@@ -81,7 +81,7 @@ class SocketStream extends AbstractStream
         }
         $this->host          = $tcpInfo['host'];
         $this->port          = $tcpInfo['port'] ?? 9092;
-        $this->timeout       = $connectionTimeout ?? 1.0 * ini_get("default_socket_timeout");
+        $this->timeout       = $connectionTimeout ?? 1.0 * ini_get('default_socket_timeout');
         $this->configuration = $configuration;
     }
 

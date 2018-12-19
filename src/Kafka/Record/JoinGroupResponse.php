@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\DTO\JoinGroupResponseMember;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\DTO\JoinGroupResponseMember;
+use Alpari\Kafka\Scheme;
 
 /**
  * Join group response

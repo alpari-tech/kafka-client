@@ -11,12 +11,12 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\DTO;
+namespace Alpari\Kafka\DTO;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Consumer\MemberAssignment;
-use Protocol\Kafka\Scheme;
-use Protocol\Kafka\Stream\StringStream;
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Consumer\MemberAssignment;
+use Alpari\Kafka\Scheme;
+use Alpari\Kafka\Stream\StringStream;
 
 /**
  * SyncGroupRequest group member assignment

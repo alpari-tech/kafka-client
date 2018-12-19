@@ -11,12 +11,11 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\DTO;
+namespace Alpari\Kafka\DTO;
 
-use Generator;
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Scheme;
-use Protocol\Kafka\Stream\StringStream;
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
+use Alpari\Kafka\Stream\StringStream;
 
 /**
  * Fetch response topic partition header
@@ -116,7 +115,7 @@ class FetchResponsePartition implements BinarySchemeInterface
      * TODO: is this possible somehow to do this on Scheme level?
      * @return RecordBatch[]
      */
-    public function getRecordBatches()
+    public function getRecordBatches(): array
     {
         $recordBatches = [];
         // TODO: Avoid creation of temporary string buffer, this should be implemented in reader directly

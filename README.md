@@ -1,16 +1,16 @@
 PHP Native Apache Kafka Client 
 -----------------
 
-`gtt/kafka-client` is a PHP library implementation of the Apache Kafka protocol, containing both Producer and Consumer support. It was designed to be as close to PHP as possible, keeping API and config as close to the original ones as possible.
+`alpari/kafka-client` is a PHP library implementation of the Apache Kafka protocol, containing both Producer and Consumer support. It was designed to be as close to PHP as possible, keeping API and config as close to the original ones as possible.
 
 
 Installation
 ------------
 
-`gtt/kafka-client` can be installed with composer. Installation is quite easy, just ask the Composer to download the library with its dependencies by running the command:
+`alpari/kafka-client` can be installed with composer. Installation is quite easy, just ask the Composer to download the library with its dependencies by running the command:
 
 ``` bash
-$ composer require gtt/kafka-client
+$ composer require alpari/kafka-client
 ```
 
 This library contains several branches, each branch contains support for specfic version of Apache Kafka, see mapping below:
@@ -27,9 +27,9 @@ The Producer API allows applications to send streams of data to topics in the Ka
 Example showing how to use the producer is given below:
 
 ```php
-use Protocol\Kafka\DTO\Message;
-use Protocol\Kafka\Producer\Config;
-use Protocol\Kafka\Producer\KafkaProducer;
+use Alpari\Kafka\DTO\Message;
+use Alpari\Kafka\Producer\Config;
+use Alpari\Kafka\Producer\KafkaProducer;
 
 include __DIR__ . '/vendor/autoload.php';
 
@@ -41,7 +41,7 @@ $result = $producer->send('test', Message::fromValue('foo'));
 
 Only required option is `Config::BOOTSTRAP_SERVERS` which should describe list of Kafka servers used to bootstrap connections to Kafka.
 
-For additional options, please see `Protocol\Kafka\Producer\Config` constants description and [producer configuration]. 
+For additional options, please see `Alpari\Kafka\Producer\Config` constants description and [producer configuration]. 
 
 
 Consumer API
@@ -52,9 +52,9 @@ The Consumer API allows applications to read streams of data from topics in the 
 Example showing how to use the consumer is given below.
 
 ```php
-use Protocol\Kafka;
-use Protocol\Kafka\Consumer\Config;
-use Protocol\Kafka\Consumer\KafkaConsumer;
+use Alpari\Kafka;
+use Alpari\Kafka\Consumer\Config;
+use Alpari\Kafka\Consumer\KafkaConsumer;
 
 $consumer = new KafkaConsumer([
     Config::BOOTSTRAP_SERVERS       => ['tcp://localhost'],

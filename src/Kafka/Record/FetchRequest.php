@@ -11,12 +11,12 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka;
-use Protocol\Kafka\DTO\FetchRequestTopic;
-use Protocol\Kafka\DTO\FetchRequestTopicPartition;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka;
+use Alpari\Kafka\DTO\FetchRequestTopic;
+use Alpari\Kafka\DTO\FetchRequestTopicPartition;
+use Alpari\Kafka\Scheme;
 
 /**
  * Fetch API

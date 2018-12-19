@@ -11,11 +11,11 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Consumer;
+namespace Alpari\Kafka\Consumer;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\DTO\TopicPartitions;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\DTO\TopicPartitions;
+use Alpari\Kafka\Scheme;
 
 /**
  * Consumer Groups: The format of the MemberAssignment field for consumer groups

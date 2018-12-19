@@ -11,7 +11,7 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Stream;
+namespace Alpari\Kafka\Stream;
 
 class StringStream extends AbstractStream
 {

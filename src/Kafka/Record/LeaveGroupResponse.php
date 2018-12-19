@@ -11,10 +11,9 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\Scheme;
 
 /**
  * Leave group response
@@ -22,7 +21,7 @@ use Protocol\Kafka\Scheme;
  * LeaveGroup Response (Version: 0) => error_code
  *   error_code => INT16
  */
-class LeaveGroupResponse extends AbstractResponse implements BinarySchemeInterface
+class LeaveGroupResponse extends AbstractResponse
 {
     /**
      * Error code.

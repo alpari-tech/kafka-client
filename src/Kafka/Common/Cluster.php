@@ -10,16 +10,16 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Common;
+namespace Alpari\Kafka\Common;
 
-use Protocol\Kafka\Error\InvalidTopicException;
-use Protocol\Kafka\Error\KafkaException;
-use Protocol\Kafka\Error\NetworkException;
-use Protocol\Kafka\Error\UnknownError;
-use Protocol\Kafka\Error\UnknownTopicOrPartition;
-use Protocol\Kafka\Record\MetadataRequest;
-use Protocol\Kafka\Record\MetadataResponse;
-use Protocol\Kafka\Stream;
+use Alpari\Kafka\Error\InvalidTopicException;
+use Alpari\Kafka\Error\KafkaException;
+use Alpari\Kafka\Error\NetworkException;
+use Alpari\Kafka\Error\UnknownError;
+use Alpari\Kafka\Error\UnknownTopicOrPartition;
+use Alpari\Kafka\Record\MetadataRequest;
+use Alpari\Kafka\Record\MetadataResponse;
+use Alpari\Kafka\Stream;
 
 /**
  * A representation of a subset of the nodes, topics, and partitions in the Kafka cluster.

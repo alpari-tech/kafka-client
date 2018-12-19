@@ -11,9 +11,9 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Producer;
+namespace Alpari\Kafka\Producer;
 
-use Protocol\Kafka\Common\Config as GeneralConfig;
+use Alpari\Kafka\Common\Config as GeneralConfig;
 
 /**
  * Producer config enumeration class

@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\DTO;
+namespace Alpari\Kafka\DTO;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
 
 /**
  * OffsetsResponseTopic DTO

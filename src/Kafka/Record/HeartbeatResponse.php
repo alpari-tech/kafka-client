@@ -11,10 +11,9 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\Scheme;
 
 /**
  * Heartbeat response
@@ -22,7 +21,7 @@ use Protocol\Kafka\Scheme;
  * Heartbeat Response (Version: 0) => error_code
  *   error_code => INT16
  */
-class HeartbeatResponse extends AbstractResponse implements BinarySchemeInterface
+class HeartbeatResponse extends AbstractResponse
 {
     /**
      * Error code.

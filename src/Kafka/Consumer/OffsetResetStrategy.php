@@ -10,7 +10,7 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Consumer;
+namespace Alpari\Kafka\Consumer;
 
 /**
  * Enumeration of offset reset strategies

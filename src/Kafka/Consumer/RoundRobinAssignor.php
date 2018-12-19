@@ -10,12 +10,12 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Consumer;
+namespace Alpari\Kafka\Consumer;
 
-use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\DTO\JoinGroupResponseMember;
-use Protocol\Kafka\Scheme;
-use Protocol\Kafka\Stream\StringStream;
+use Alpari\Kafka\Common\Cluster;
+use Alpari\Kafka\DTO\JoinGroupResponseMember;
+use Alpari\Kafka\Scheme;
+use Alpari\Kafka\Stream\StringStream;
 
 /**
  * The roundrobin assignor lays out all the available partitions and all the available consumers.

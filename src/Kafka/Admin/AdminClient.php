@@ -11,33 +11,32 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Admin;
+namespace Alpari\Kafka\Admin;
 
-use Protocol\Kafka\AbstractRecord;
-use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\Common\Config;
-use Protocol\Kafka\Common\Node;
-use Protocol\Kafka\DTO\ApiVersionsResponseMetadata;
-use Protocol\Kafka\DTO\DescribeGroupResponseMetadata;
-use Protocol\Kafka\DTO\ListGroupResponseProtocol;
-use Protocol\Kafka\DTO\OffsetFetchResponseTopic;
-use Protocol\Kafka\Error\InvalidGroupId;
-use Protocol\Kafka\Error\KafkaException;
-use Protocol\Kafka\Error\NotCoordinatorForGroup;
-use Protocol\Kafka\Error\RequestTimedOut;
-use Protocol\Kafka\Record\AbstractRequest;
-use Protocol\Kafka\Record\ApiVersionsRequest;
-use Protocol\Kafka\Record\ApiVersionsResponse;
-use Protocol\Kafka\Record\DescribeGroupsRequest;
-use Protocol\Kafka\Record\DescribeGroupsResponse;
-use Protocol\Kafka\Record\GroupCoordinatorRequest;
-use Protocol\Kafka\Record\GroupCoordinatorResponse;
-use Protocol\Kafka\Record\ListGroupsRequest;
-use Protocol\Kafka\Record\ListGroupsResponse;
-use Protocol\Kafka\Record\MetadataRequest;
-use Protocol\Kafka\Record\MetadataResponse;
-use Protocol\Kafka\Record\OffsetFetchRequest;
-use Protocol\Kafka\Record\OffsetFetchResponse;
+use Alpari\Kafka\AbstractRecord;
+use Alpari\Kafka\Common\Cluster;
+use Alpari\Kafka\Common\Config;
+use Alpari\Kafka\Common\Node;
+use Alpari\Kafka\DTO\DescribeGroupResponseMetadata;
+use Alpari\Kafka\DTO\ListGroupResponseProtocol;
+use Alpari\Kafka\DTO\OffsetFetchResponseTopic;
+use Alpari\Kafka\Error\InvalidGroupId;
+use Alpari\Kafka\Error\KafkaException;
+use Alpari\Kafka\Error\NotCoordinatorForGroup;
+use Alpari\Kafka\Error\RequestTimedOut;
+use Alpari\Kafka\Record\AbstractRequest;
+use Alpari\Kafka\Record\ApiVersionsRequest;
+use Alpari\Kafka\Record\ApiVersionsResponse;
+use Alpari\Kafka\Record\DescribeGroupsRequest;
+use Alpari\Kafka\Record\DescribeGroupsResponse;
+use Alpari\Kafka\Record\GroupCoordinatorRequest;
+use Alpari\Kafka\Record\GroupCoordinatorResponse;
+use Alpari\Kafka\Record\ListGroupsRequest;
+use Alpari\Kafka\Record\ListGroupsResponse;
+use Alpari\Kafka\Record\MetadataRequest;
+use Alpari\Kafka\Record\MetadataResponse;
+use Alpari\Kafka\Record\OffsetFetchRequest;
+use Alpari\Kafka\Record\OffsetFetchResponse;
 
 /**
  * Kafka low-level administrative client
@@ -114,9 +113,11 @@ class AdminClient
 
 
     /**
-     * @return array|
+     * Lists all available groups
+     *
+     * @return array|ListGroupResponseProtocol[]
      */
-    public function listAllGroups()
+    public function listAllGroups(): array
     {
         $result = [];
         foreach ($this->findAllBrokers() as $brokerNode) {

@@ -11,9 +11,9 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\DTO\OffsetCommitResponseTopic;
+use Alpari\Kafka\DTO\OffsetCommitResponseTopic;
 
 /**
  * Offset commit response object

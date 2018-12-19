@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\DTO\ApiVersionsResponseMetadata;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\DTO\ApiVersionsResponseMetadata;
+use Alpari\Kafka\Scheme;
 
 /**
  * Api versions response

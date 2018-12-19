@@ -10,7 +10,7 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Error;
+namespace Alpari\Kafka\Error;
 
 use Exception;
 use RuntimeException;

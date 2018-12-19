@@ -11,15 +11,14 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\Scheme;
 
 /**
  * SASL handshake response
  */
-class SaslHandshakeResponse extends AbstractResponse implements BinarySchemeInterface
+class SaslHandshakeResponse extends AbstractResponse
 {
 
     /**

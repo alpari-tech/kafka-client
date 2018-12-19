@@ -10,10 +10,10 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Consumer;
+namespace Alpari\Kafka\Consumer;
 
-use Protocol\Kafka\Common\Config as GeneralConfig;
-use Protocol\Kafka\Record\FetchRequest;
+use Alpari\Kafka\Common\Config as GeneralConfig;
+use Alpari\Kafka\Record\FetchRequest;
 
 /**
  * Consumer config enumeration class

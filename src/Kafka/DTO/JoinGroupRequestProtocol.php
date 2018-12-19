@@ -11,12 +11,12 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\DTO;
+namespace Alpari\Kafka\DTO;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Consumer\Subscription;
-use Protocol\Kafka\Scheme;
-use Protocol\Kafka\Stream\StringStream;
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Consumer\Subscription;
+use Alpari\Kafka\Scheme;
+use Alpari\Kafka\Stream\StringStream;
 
 /**
  * Join group request protocol DTO
@@ -35,7 +35,7 @@ class JoinGroupRequestProtocol implements BinarySchemeInterface
     public $name;
 
     /**
-     * Protocol-specific metadata
+     * Alpari-specific metadata
      *
      * @todo Update scheme to use Subscription instance directly
      * @var string

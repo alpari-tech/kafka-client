@@ -11,12 +11,12 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\DTO;
+namespace Alpari\Kafka\DTO;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Common\Utils\ByteUtils;
-use Protocol\Kafka\Scheme;
-use Protocol\Kafka\Stream\StringStream;
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Common\Utils\ByteUtils;
+use Alpari\Kafka\Scheme;
+use Alpari\Kafka\Stream\StringStream;
 
 /**
  * Produce request Topic-Partition DTO

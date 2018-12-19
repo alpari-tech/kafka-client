@@ -10,7 +10,7 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka;
+namespace Alpari\Kafka;
 
 interface BinarySchemeInterface
 {

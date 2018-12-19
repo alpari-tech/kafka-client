@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\DTO\ProduceResponseTopic;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\DTO\ProduceResponseTopic;
+use Alpari\Kafka\Scheme;
 
 /**
  * Produce response object

@@ -10,27 +10,27 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Consumer;
+namespace Alpari\Kafka\Consumer;
 
+use Alpari\Kafka\Client;
+use Alpari\Kafka\Common\Cluster;
+use Alpari\Kafka\Common\Node;
+use Alpari\Kafka\Common\PartitionMetadata;
+use Alpari\Kafka\Consumer\Internals\SubscriptionState;
+use Alpari\Kafka\DTO\RecordBatch;
+use Alpari\Kafka\DTO\TopicPartitions;
+use Alpari\Kafka\Error\EmptyAssignmentException;
+use Alpari\Kafka\Error\KafkaException;
+use Alpari\Kafka\Error\OffsetOutOfRange;
+use Alpari\Kafka\Error\TopicPartitionRequestException;
+use Alpari\Kafka\Error\UnknownTopicOrPartition;
+use Alpari\Kafka\Record\JoinGroupRequest;
+use Alpari\Kafka\Record\OffsetCommitRequest;
+use Alpari\Kafka\Record\OffsetsRequest;
+use Alpari\Kafka\Scheme;
+use Alpari\Kafka\Stream;
 use BadMethodCallException;
 use InvalidArgumentException;
-use Protocol\Kafka\Client;
-use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\Common\Node;
-use Protocol\Kafka\Common\PartitionMetadata;
-use Protocol\Kafka\Consumer\Internals\SubscriptionState;
-use Protocol\Kafka\DTO\RecordBatch;
-use Protocol\Kafka\DTO\TopicPartitions;
-use Protocol\Kafka\Error\EmptyAssignmentException;
-use Protocol\Kafka\Error\KafkaException;
-use Protocol\Kafka\Error\OffsetOutOfRange;
-use Protocol\Kafka\Error\TopicPartitionRequestException;
-use Protocol\Kafka\Error\UnknownTopicOrPartition;
-use Protocol\Kafka\Record\JoinGroupRequest;
-use Protocol\Kafka\Record\OffsetCommitRequest;
-use Protocol\Kafka\Record\OffsetsRequest;
-use Protocol\Kafka\Scheme;
-use Protocol\Kafka\Stream;
 
 /**
  * A Kafka client that consumes records from a Kafka cluster.
@@ -40,7 +40,7 @@ class KafkaConsumer
     /**
      * The producer configs
      */
-    private $configuration = [];
+    private $configuration;
 
     /**
      * Kafka cluster configuration
@@ -237,7 +237,8 @@ class KafkaConsumer
         $this->updateFetchPositions($result);
 
         if ($this->configuration[Config::ENABLE_AUTO_COMMIT]) {
-            if (($milliSeconds - $this->lastAutoCommitMs) > $this->configuration[Config::AUTO_COMMIT_INTERVAL_MS]) {
+            $elapsedInterval = $milliSeconds - $this->lastAutoCommitMs;
+            if ($elapsedInterval > $this->configuration[Config::AUTO_COMMIT_INTERVAL_MS]) {
                 $this->commitSync();
                 $this->lastAutoCommitMs = $milliSeconds;
             }

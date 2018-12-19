@@ -11,9 +11,9 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Stream;
+namespace Alpari\Kafka\Stream;
 
-use Protocol\Kafka\Stream;
+use Alpari\Kafka\Stream;
 
 abstract class AbstractStream implements Stream
 {
@@ -138,7 +138,7 @@ abstract class AbstractStream implements Stream
         $numMatches = preg_match_all('/(?:\/|^)(\w)(\d*)/', $format, $matches);
         if(empty($numMatches)) {
             throw new \InvalidArgumentException("Unknown format specified: {$format}");
-        };
+        }
         $size = 0;
         for ($matchIndex = 0; $matchIndex < $numMatches; $matchIndex ++) {
             [$modifier, $repitition] = [$matches[1][$matchIndex], $matches[2][$matchIndex]];

@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\DTO\ControlledShutdownResponsePartition;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\DTO\ControlledShutdownResponsePartition;
+use Alpari\Kafka\Scheme;
 
 /**
  * Controlled shutdown response

@@ -11,12 +11,12 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka;
-use Protocol\Kafka\Consumer\MemberAssignment;
-use Protocol\Kafka\DTO\SyncGroupRequestMember;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka;
+use Alpari\Kafka\Consumer\MemberAssignment;
+use Alpari\Kafka\DTO\SyncGroupRequestMember;
+use Alpari\Kafka\Scheme;
 
 /**
  * SyncGroup Request
@@ -60,7 +60,7 @@ class SyncGroupRequest extends AbstractRequest
      *
      * @var SyncGroupRequestMember[]
      */
-    private $groupAssignments = [];
+    private $groupAssignments;
 
     /**
      * SyncGroupRequest constructor.

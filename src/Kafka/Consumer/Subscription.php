@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Consumer;
+namespace Alpari\Kafka\Consumer;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
 
 /**
  * Subscription information that is used for the synchronization between consumers

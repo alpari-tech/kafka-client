@@ -11,15 +11,15 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Producer;
+namespace Alpari\Kafka\Producer;
 
-use Protocol\Kafka\Client;
-use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\Common\PartitionMetadata;
-use Protocol\Kafka\DTO\Record;
-use Protocol\Kafka\DTO\ProduceRequestTopic;
-use Protocol\Kafka\Error\NotLeaderForPartition;
-use Protocol\Kafka\Error\RetriableException;
+use Alpari\Kafka\Client;
+use Alpari\Kafka\Common\Cluster;
+use Alpari\Kafka\Common\PartitionMetadata;
+use Alpari\Kafka\DTO\ProduceRequestTopic;
+use Alpari\Kafka\DTO\Record;
+use Alpari\Kafka\Error\NotLeaderForPartition;
+use Alpari\Kafka\Error\RetriableException;
 
 /**
  * A Kafka client that publishes records to the Kafka cluster.
@@ -52,7 +52,7 @@ class KafkaProducer
      *
      * @var PartitionerInterface
      */
-    private $partitioner = null;
+    private $partitioner;
 
     /**
      * Current iteration of sending data
@@ -122,7 +122,7 @@ class KafkaProducer
             $index           = 1;
             foreach ($exceptions as $msg => $count) {
                 $message .= "$index. $msg ($count / $totalExceptions)\n";
-                $index   += 1;
+                ++$index;
             }
             throw new \RuntimeException("Can not deliver messages to the broker:\n$message");
         }

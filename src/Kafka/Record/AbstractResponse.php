@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka\AbstractRecord;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\AbstractRecord;
+use Alpari\Kafka\Scheme;
 
 /**
  * Basic class for all responses

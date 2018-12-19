@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\DTO;
+namespace Alpari\Kafka\DTO;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
 
 /**
  * The record batch structure is common to both the produce and fetch requests.
@@ -99,7 +99,7 @@ class RecordBatch implements BinarySchemeInterface
      * loss of data when there are leader changes with log truncation. Client developers do not need to worry about
      * setting this value.
      *
-     * @see https://cwiki.apache.org/confluence/display/KAFKA/KIP-101+-+Alter+Replication+Protocol+to+use+Leader+Epoch+rather+than+High+Watermark+for+Truncation
+     * @see https://cwiki.apache.org/confluence/display/KAFKA/KIP-101+-+Alter+Replication+Alpari+to+use+Leader+Epoch+rather+than+High+Watermark+for+Truncation
      *
      * @since 0.11.0
      */

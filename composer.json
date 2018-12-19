@@ -1,5 +1,5 @@
 {
-    "name": "gtt/kafka-client",
+    "name": "alpari/kafka-client",
     "description": "Implementation of Kafka Client in PHP",
     "type": "library",
     "license": "MIT",
@@ -11,7 +11,7 @@
     ],
     "autoload": {
         "psr-4" : {
-            "Protocol\\" : "src/"
+            "Alpari\\" : "src/"
         }
     },
     "require": {

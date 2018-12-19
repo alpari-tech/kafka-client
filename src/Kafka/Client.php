@@ -11,40 +11,40 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka;
+namespace Alpari\Kafka;
 
-use Protocol\Kafka;
-use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\Common\Node;
-use Protocol\Kafka\Consumer\Config as ConsumerConfig;
-use Protocol\Kafka\Consumer\MemberAssignment;
-use Protocol\Kafka\DTO\TopicPartitions;
-use Protocol\Kafka\Error\AllBrokersNotAvailable;
-use Protocol\Kafka\Error\KafkaException;
-use Protocol\Kafka\Error\NetworkException;
-use Protocol\Kafka\Error\TopicPartitionRequestException;
-use Protocol\Kafka\Producer\Config as ProducerConfig;
-use Protocol\Kafka\Record\FetchRequest;
-use Protocol\Kafka\Record\FetchResponse;
-use Protocol\Kafka\Record\GroupCoordinatorRequest;
-use Protocol\Kafka\Record\GroupCoordinatorResponse;
-use Protocol\Kafka\Record\HeartbeatRequest;
-use Protocol\Kafka\Record\HeartbeatResponse;
-use Protocol\Kafka\Record\JoinGroupRequest;
-use Protocol\Kafka\Record\JoinGroupResponse;
-use Protocol\Kafka\Record\LeaveGroupRequest;
-use Protocol\Kafka\Record\LeaveGroupResponse;
-use Protocol\Kafka\Record\OffsetCommitRequest;
-use Protocol\Kafka\Record\OffsetCommitResponse;
-use Protocol\Kafka\Record\OffsetFetchRequest;
-use Protocol\Kafka\Record\OffsetFetchResponse;
-use Protocol\Kafka\Record\OffsetsRequest;
-use Protocol\Kafka\Record\OffsetsResponse;
-use Protocol\Kafka\Record\ProduceRequest;
-use Protocol\Kafka\Record\ProduceResponse;
-use Protocol\Kafka\Record\SyncGroupRequest;
-use Protocol\Kafka\Record\SyncGroupResponse;
-use Protocol\Kafka\Stream\SocketStream;
+use Alpari\Kafka;
+use Alpari\Kafka\Common\Cluster;
+use Alpari\Kafka\Common\Node;
+use Alpari\Kafka\Consumer\Config as ConsumerConfig;
+use Alpari\Kafka\Consumer\MemberAssignment;
+use Alpari\Kafka\DTO\TopicPartitions;
+use Alpari\Kafka\Error\AllBrokersNotAvailable;
+use Alpari\Kafka\Error\KafkaException;
+use Alpari\Kafka\Error\NetworkException;
+use Alpari\Kafka\Error\TopicPartitionRequestException;
+use Alpari\Kafka\Producer\Config as ProducerConfig;
+use Alpari\Kafka\Record\FetchRequest;
+use Alpari\Kafka\Record\FetchResponse;
+use Alpari\Kafka\Record\GroupCoordinatorRequest;
+use Alpari\Kafka\Record\GroupCoordinatorResponse;
+use Alpari\Kafka\Record\HeartbeatRequest;
+use Alpari\Kafka\Record\HeartbeatResponse;
+use Alpari\Kafka\Record\JoinGroupRequest;
+use Alpari\Kafka\Record\JoinGroupResponse;
+use Alpari\Kafka\Record\LeaveGroupRequest;
+use Alpari\Kafka\Record\LeaveGroupResponse;
+use Alpari\Kafka\Record\OffsetCommitRequest;
+use Alpari\Kafka\Record\OffsetCommitResponse;
+use Alpari\Kafka\Record\OffsetFetchRequest;
+use Alpari\Kafka\Record\OffsetFetchResponse;
+use Alpari\Kafka\Record\OffsetsRequest;
+use Alpari\Kafka\Record\OffsetsResponse;
+use Alpari\Kafka\Record\ProduceRequest;
+use Alpari\Kafka\Record\ProduceResponse;
+use Alpari\Kafka\Record\SyncGroupRequest;
+use Alpari\Kafka\Record\SyncGroupResponse;
+use Alpari\Kafka\Stream\SocketStream;
 
 /**
  * Kafka low-level client
@@ -535,7 +535,7 @@ class Client
             $writeSelect = $exceptSelect = null;
             if (stream_select($readSelect, $writeSelect, $exceptSelect, intdiv($timeout, 1000), $timeout % 1000) > 0) {
                 foreach ($readSelect as $resourceToRead) {
-                    $nodeId             = array_search($resourceToRead, $readNodeSockets);
+                    $nodeId             = array_search($resourceToRead, $readNodeSockets, true);
                     $connection         = $this->cluster->nodeById($nodeId)->getConnection($this->configuration);
                     $responses[$nodeId] = $responseClass::unpack($connection);
                 }

@@ -10,10 +10,10 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Common;
+namespace Alpari\Kafka\Common;
 
-use Protocol\Kafka\Enum\SecurityProtocol;
-use Protocol\Kafka\Enum\SslProtocol;
+use Alpari\Kafka\Enum\SecurityProtocol;
+use Alpari\Kafka\Enum\SslProtocol;
 
 /**
  * General config, suitable for both producer and consumer

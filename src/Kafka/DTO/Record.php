@@ -11,10 +11,10 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\DTO;
+namespace Alpari\Kafka\DTO;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
 
 /**
  * A record in kafka is a key-value pair with a small amount of associated metadata.
@@ -113,7 +113,7 @@ class Record implements BinarySchemeInterface
         $this->timestampDelta = $timestampDelta;
         $this->offsetDelta    = $offsetDelta;
 
-        $this->length = Scheme::getObjectTypeSize($this) - 1; /* Varint 0 length always equal to 1 */;
+        $this->length = Scheme::getObjectTypeSize($this) - 1; /* Varint 0 length always equal to 1 */
     }
 
     /**

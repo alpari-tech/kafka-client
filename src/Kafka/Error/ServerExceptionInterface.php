@@ -10,7 +10,7 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Error;
+namespace Alpari\Kafka\Error;
 
 /**
  * Interface ServerExceptionInterface. All exceptions implementing this interface are come from kafka broker.

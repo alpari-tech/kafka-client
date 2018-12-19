@@ -10,7 +10,7 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Enum;
+namespace Alpari\Kafka\Enum;
 
 /**
  * Possible values for security.protocol configuration parameter

@@ -11,13 +11,13 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka;
-use Protocol\Kafka\DTO\ProduceRequestPartition;
-use Protocol\Kafka\DTO\ProduceRequestTopic;
-use Protocol\Kafka\DTO\RecordBatch;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka;
+use Alpari\Kafka\DTO\ProduceRequestPartition;
+use Alpari\Kafka\DTO\ProduceRequestTopic;
+use Alpari\Kafka\DTO\RecordBatch;
+use Alpari\Kafka\Scheme;
 
 /**
  * The produce API

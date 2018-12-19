@@ -10,15 +10,15 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka;
+namespace Alpari\Kafka;
 
+use Alpari\Kafka\Common\Utils\ByteUtils;
+use ReflectionClass;
+use RuntimeException;
 use function current;
 use function is_array;
 use function is_string;
 use function key;
-use Protocol\Kafka\Common\Utils\ByteUtils;
-use ReflectionClass;
-use RuntimeException;
 use function strlen;
 
 /**
@@ -194,9 +194,9 @@ class Scheme
         if (is_array($schemeType)) {
             $arrayItemType = current($schemeType);
             $arrayKeyName  = key($schemeType);
-            $isVarArray    = !empty($schemeType[Scheme::FLAG_VARARRAY]);
-            $isNullable    = !empty($schemeType[Scheme::FLAG_NULLABLE]);
-            $sizeType      = $isVarArray ? Scheme::TYPE_VARINT : Scheme::TYPE_INT32;
+            $isVarArray    = !empty($schemeType[self::FLAG_VARARRAY]);
+            $isNullable    = !empty($schemeType[self::FLAG_NULLABLE]);
+            $sizeType      = $isVarArray ? self::TYPE_VARINT : self::TYPE_INT32;
             $arraySize     = self::readSingleType($sizeType, $stream, "{$path}[size]");
             // Special handling of null value type
             if ($arraySize === -1 && $isNullable) {
@@ -228,14 +228,14 @@ class Scheme
             case self::TYPE_INT16:
                 $value = $stream->read('nINT16')['INT16'];
                 if ($value & 0x8000) {
-                    $value = $value - 0x10000;
+                    $value -= 0x10000;
                 }
                 return $value;
 
             case self::TYPE_INT32:
                 $value = $stream->read('NINT32')['INT32'];
                 if ($value & 0x80000000) {
-                    $value = $value - 0x100000000;
+                    $value -= 0x100000000;
                 }
                 return $value;
 
@@ -298,13 +298,13 @@ class Scheme
         // Let's check for the complex type mapping
         if (is_array($schemeType)) {
             $arrayItemType = current($schemeType);
-            $isVarArray    = !empty($schemeType[Scheme::FLAG_VARARRAY]);
-            $isNullable    = !empty($schemeType[Scheme::FLAG_NULLABLE]);
-            $sizeType      = $isVarArray ? Scheme::TYPE_VARINT : Scheme::TYPE_INT32;
+            $isVarArray    = !empty($schemeType[self::FLAG_VARARRAY]);
+            $isNullable    = !empty($schemeType[self::FLAG_NULLABLE]);
+            $sizeType      = $isVarArray ? self::TYPE_VARINT : self::TYPE_INT32;
             // Special handling of null arrays
             if ($value === null) {
                 if (!$isNullable) {
-                    throw new \UnexpectedValueException("Received null value for not nullable array");
+                    throw new \UnexpectedValueException('Received null value for not nullable array');
                 }
                 self::writeSingleType($sizeType, -1, $stream);
                 return;

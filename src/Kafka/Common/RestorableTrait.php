@@ -11,7 +11,7 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Common;
+namespace Alpari\Kafka\Common;
 
 /**
  * Simple implementation for classes that can be restored after var_export

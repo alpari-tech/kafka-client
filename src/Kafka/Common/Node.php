@@ -11,11 +11,11 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Common;
+namespace Alpari\Kafka\Common;
 
-use Protocol\Kafka\BinarySchemeInterface;
-use Protocol\Kafka\Scheme;
-use Protocol\Kafka\Stream;
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
+use Alpari\Kafka\Stream;
 
 /**
  * Information about a Kafka node

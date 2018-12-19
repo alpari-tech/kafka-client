@@ -10,7 +10,7 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Common\Utils;
+namespace Alpari\Kafka\Common\Utils;
 
 use function strlen;
 

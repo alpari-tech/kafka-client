@@ -10,9 +10,9 @@
 
 declare (strict_types=1);
 
-namespace Protocol\Kafka\Consumer;
+namespace Alpari\Kafka\Consumer;
 
-use Protocol\Kafka\Common\Cluster;
+use Alpari\Kafka\Common\Cluster;
 
 /**
  * This interface is used to define custom partition assignment for use in KafkaConsumer.

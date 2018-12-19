@@ -11,11 +11,11 @@
 declare (strict_types=1);
 
 
-namespace Protocol\Kafka\Record;
+namespace Alpari\Kafka\Record;
 
-use Protocol\Kafka;
-use Protocol\Kafka\DTO\OffsetCommitRequestTopic;
-use Protocol\Kafka\Scheme;
+use Alpari\Kafka;
+use Alpari\Kafka\DTO\OffsetCommitRequestTopic;
+use Alpari\Kafka\Scheme;
 
 /**
  * OffsetCommit
