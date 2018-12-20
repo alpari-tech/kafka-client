@@ -73,11 +73,13 @@ class Client
      * Produce messages to the specific topic partition
      *
      * @param array $topicPartitionMessages List of messages for each topic and partition
+     * @throws TopicPartitionRequestException If produce was completed partially on specific partitions
      *
      * @return Kafka\DTO\ProduceResponsePartition[][]
      */
     public function produce(array $topicPartitionMessages): array
     {
+        $errors = [];
         $result = $this->clusterRequest($topicPartitionMessages, function (array $nodeTopicPartitionMessages) {
             $request = new ProduceRequest(
                 $nodeTopicPartitionMessages,
@@ -88,18 +90,29 @@ class Client
             );
 
             return $request;
-        }, ProduceResponse::class, function (array $result, ProduceResponse $response) {
+        }, ProduceResponse::class, function (array $result, ProduceResponse $response) use (&$errors) {
             /** @var Kafka\DTO\ProduceResponsePartition[] $partitions */
             foreach ($response->topics as $topic => $produceResponseTopic) {
                 foreach ($produceResponseTopic->partitions as $partitionId => $partitionInfo) {
-                    if ($partitionInfo->errorCode !== 0) {
-                        throw KafkaException::fromCode($partitionInfo->errorCode, compact('topic', 'partitionId'));
+                    $isSucceeded = $partitionInfo->errorCode === 0;
+                    if ($isSucceeded) {
+                        $result[$topic][$partitionId] = $partitionInfo;
+                    } else {
+                        $error = KafkaException::fromCode(
+                            $partitionInfo->errorCode,
+                            compact('topic', 'partitionId')
+                        );
+
+                        $errors[$topic][$partitionId] = $error;
                     }
-                    $result[$topic][$partitionId] = $partitionInfo;
                 }
             }
             return $result;
         });
+
+        if (!empty($errors)) {
+            throw new TopicPartitionRequestException($result, $errors);
+        }
 
         return $result;
     }
