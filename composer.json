@@ -15,7 +15,8 @@
         }
     },
     "require": {
-        "php": "~7.1"
+        "php": "~7.1",
+        "react/promise": "^2.7"
     },
     "extra": {
         "branch-alias": {
