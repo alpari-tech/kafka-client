@@ -1,12 +1,21 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
+use Alpari\Kafka\DTO\TopicPartitions;
+use Alpari\Kafka\Scheme;
 
 /**
  * This API describes the valid offset range available for a set of topic-partitions.
@@ -17,29 +26,47 @@ use Protocol\Kafka;
  * The response contains the starting offset of each segment for the requested partition as well as the "log end
  * offset" i.e. the offset of the next message that would be appended to the given partition.
  *
- * Since v2 if no topics (null input for list of topics) are provided, the offset information of all topics (or topic partitions) associated with the group is returned
+ * Since v2 if no topics (null input for list of topics) are provided, the offset information of all topics (or topic
+ * partitions) associated with the group is returned
+ *
+ * OffsetFetch Request (Version: 2) => group_id [topics]
+ *   group_id => STRING
+ *   topics => topic [partitions]
+ *     topic => STRING
+ *     partitions => partition
+ *       partition => INT32
  */
 class OffsetFetchRequest extends AbstractRequest
 {
     /**
      * @inheritDoc
      */
-    const VERSION = 2;
+    protected const VERSION = 2;
 
     /**
      * The consumer group id.
-     *
-     * @var string
      */
-    private $consumerGroup;
+    protected $consumerGroup;
 
     /**
-     * @var array
+     * @var TopicPartitions[]|null
      */
-    private $topicPartitions;
+    protected $topicPartitions;
 
-    public function __construct($consumerGroup, array $topicPartitions = [], $clientId = '', $correlationId = 0)
-    {
+    /**
+     * OffsetFetchRequest constructor.
+     *
+     * @param string                 $consumerGroup   Name of the consumer group
+     * @param TopicPartitions[]|null $topicPartitions List of topic => partitions to fetch or null for all topics
+     * @param string                 $clientId        Unique client identifier
+     * @param int                    $correlationId   Correlated request ID
+     */
+    public function __construct(
+        string $consumerGroup,
+        array $topicPartitions = null,
+        string $clientId = '',
+        int $correlationId = 0
+    ) {
         $this->consumerGroup   = $consumerGroup;
         $this->topicPartitions = $topicPartitions;
 
@@ -47,23 +74,15 @@ class OffsetFetchRequest extends AbstractRequest
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function packPayload()
+    public static function getScheme(): array
     {
-        $payload     = parent::packPayload();
-        $groupLength = strlen($this->consumerGroup);
-        $totalTopics = count($this->topicPartitions) ?: -1;
+        $header = parent::getScheme();
 
-        $payload .= pack("na{$groupLength}N", $groupLength, $this->consumerGroup, $totalTopics);
-        foreach ($this->topicPartitions as $topic => $partitions) {
-            $topicLength = strlen($topic);
-            $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
-            $packArgs = $partitions;
-            array_unshift($packArgs, 'N*');
-            $payload .= call_user_func_array('pack', $packArgs);
-        }
-
-        return $payload;
+        return $header + [
+            'consumerGroup'   => Scheme::TYPE_STRING,
+            'topicPartitions' => ['topic' => TopicPartitions::class, Scheme::FLAG_NULLABLE => true]
+        ];
     }
 }

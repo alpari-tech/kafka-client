@@ -1,17 +1,26 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Common;
+declare (strict_types=1);
 
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Common;
+
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
+use Alpari\Kafka\Stream;
 
 /**
  * Information about a Kafka node
  */
-class Node
+class Node implements BinarySchemeInterface
 {
     use RestorableTrait;
 
@@ -46,40 +55,28 @@ class Node
 
     /**
      * Cached list of connections
-     *
-     * @var array
      */
     private static $nodeConnections = [];
 
-    /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
-     */
-    public static function unpack(Stream $stream)
+    public static function getScheme(): array
     {
-        $brokerMetadata = new static();
-        list($brokerMetadata->nodeId, $hostLength) = array_values($stream->read('NnodeId/nhostLength'));
-        list(
-            $brokerMetadata->host,
-            $brokerMetadata->port
-        ) = array_values($stream->read("a{$hostLength}host/Nport"));
-
-        $brokerMetadata->rack = $stream->readString();
-
-        return $brokerMetadata;
+        return [
+            'nodeId' => Scheme::TYPE_INT32,
+            'host'   => Scheme::TYPE_STRING,
+            'port'   => Scheme::TYPE_INT32,
+            'rack'   => Scheme::TYPE_NULLABLE_STRING,
+        ];
     }
 
     /**
      * Returns a connection to this node.
      *
      * @param array $configuration Client configuration
+     * @todo Move this method outside this class
      *
      * @return Stream
      */
-    public function getConnection(array $configuration)
+    public function getConnection(array $configuration): Stream
     {
         if (!isset(self::$nodeConnections[$this->host][$this->port])) {
             $connection = new Stream\SocketStream("tcp://{$this->host}:{$this->port}", $configuration);

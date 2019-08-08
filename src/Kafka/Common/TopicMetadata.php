@@ -1,17 +1,25 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Common;
+declare (strict_types=1);
 
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Common;
+
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
 
 /**
  * Topic metadata DTO
  */
-class TopicMetadata
+class TopicMetadata implements BinarySchemeInterface
 {
     use RestorableTrait;
 
@@ -40,33 +48,17 @@ class TopicMetadata
     /**
      * Metadata for each partition of the topic.
      *
-     * @var PartitionMetadata[]|array
+     * @var PartitionMetadata[]
      */
     public $partitions = [];
 
-    /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
-     */
-    public static function unpack(Stream $stream)
+    public static function getScheme(): array
     {
-        $topic = new static();
-        list($topic->topicErrorCode, $topicLength) = array_values($stream->read('ntopicErrorCode/ntopicLength'));
-        list(
-            $topic->topic,
-            $topic->isInternal,
-            $numberOfPartitions
-        ) = array_values($stream->read("a{$topicLength}topic/cisInternal/NnumberOfPartition"));
-
-        for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
-            $partitionMetadata = PartitionMetadata::unpack($stream);
-
-            $topic->partitions[$partitionMetadata->partitionId] = $partitionMetadata;
-        }
-
-        return $topic;
+        return [
+            'topicErrorCode' => Scheme::TYPE_INT16,
+            'topic'          => Scheme::TYPE_STRING,
+            'isInternal'     => Scheme::TYPE_INT8,
+            'partitions'     => [PartitionMetadata::class]
+        ];
     }
 }

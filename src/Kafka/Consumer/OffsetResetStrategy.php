@@ -1,10 +1,16 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date   29.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Consumer;
+declare (strict_types=1);
+
+namespace Alpari\Kafka\Consumer;
 
 /**
  * Enumeration of offset reset strategies
@@ -14,15 +20,15 @@ final class OffsetResetStrategy
     /**
      * Fetch the earliest available offset
      */
-    const EARLIEST = 'earliest';
+    public const EARLIEST = 'earliest';
 
     /**
      * Fetch the latest available offset for topic partition
      */
-    const LATEST = 'latest';
+    public const LATEST = 'latest';
 
     /**
      * Do not fetch offset and throw an exception if offset is not available
      */
-    const NONE = 'none';
+    public const NONE = 'none';
 }

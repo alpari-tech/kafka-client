@@ -1,12 +1,19 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date   29.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Producer;
+declare (strict_types=1);
 
-use Protocol\Kafka\Common\Cluster;
+
+namespace Alpari\Kafka\Producer;
+
+use Alpari\Kafka\Common\Cluster;
 
 /**
  * The default partitioning strategy:
@@ -20,7 +27,7 @@ class DefaultPartitioner implements PartitionerInterface
     /**
      * @var int
      */
-    private static $counter = null;
+    private static $counter;
 
     /**
      * Compute the partition for the given record.
@@ -32,7 +39,7 @@ class DefaultPartitioner implements PartitionerInterface
      *
      * @return integer
      */
-    public function partition($topic, $key, $value, Cluster $cluster)
+    public function partition(string $topic, ?string $key, ?string $value, Cluster $cluster): int
     {
         $partitions      = $cluster->partitionsForTopic($topic);
         $totalPartitions = count($partitions);

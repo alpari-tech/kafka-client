@@ -1,17 +1,39 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 15.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka\DTO\FetchResponsePartition;
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka\DTO\FetchResponseTopic;
+use Alpari\Kafka\Scheme;
 
 /**
  * Fetch response object
+ *
+ * Fetch Response (Version: 5) => throttle_time_ms [responses]
+ *   throttle_time_ms => INT32
+ *   responses => topic [partition_responses]
+ *     topic => STRING
+ *     partition_responses => partition_header record_set
+ *       partition_header => partition error_code high_watermark last_stable_offset log_start_offset [aborted_transactions]
+ *         partition => INT32
+ *         error_code => INT16
+ *         high_watermark => INT64
+ *         last_stable_offset => INT64
+ *         log_start_offset => INT64
+ *         aborted_transactions => producer_id first_offset
+ *           producer_id => INT64
+ *           first_offset => INT64
+ *     record_set => RECORDS
  */
 class FetchResponse extends AbstractResponse
 {
@@ -28,39 +50,18 @@ class FetchResponse extends AbstractResponse
     /**
      * List of fetch responses
      *
-     * @var array|FetchResponsePartition[]
+     * @var FetchResponseTopic[]
      */
     public $topics = [];
 
     /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
+     * @inheritdoc
      */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme(): array
     {
-        list(
-            $self->correlationId,
-            $self->throttleTimeMs,
-            $numberOfTopics,
-        ) = array_values($stream->read('NcorrelationId/NthrottleTimeMs/NnumberOfTopics'));
-
-        for ($topic=0; $topic<$numberOfTopics; $topic++) {
-            $topicLength = $stream->read('ntopicLength')['topicLength'];
-            list(
-                $topicName,
-                $numberOfPartitions
-            ) = array_values($stream->read("a{$topicLength}/NnumberOfPartitions"));
-
-            for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
-                $topicMetadata = FetchResponsePartition::unpack($stream);
-                $self->topics[$topicName][$topicMetadata->partition] = $topicMetadata;
-            }
-        }
-
-        return $self;
+        return parent::getScheme() + [
+            'throttleTimeMs' => Scheme::TYPE_INT32,
+            'topics'         => ['topic' => FetchResponseTopic::class],
+        ];
     }
 }

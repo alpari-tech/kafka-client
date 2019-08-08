@@ -1,8 +1,20 @@
 <?php
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-namespace Protocol\Kafka\Error;
+declare (strict_types=1);
+
+namespace Alpari\Kafka\Error;
 
 use Exception;
+use ReflectionObject;
+use RuntimeException;
 
 /**
  * Kafka uses numeric codes to indicate what problem occurred on the server.
@@ -10,47 +22,47 @@ use Exception;
  * These can be translated by the client into exceptions or whatever the appropriate error handling mechanism in the
  * client language.
  */
-abstract class KafkaException extends \RuntimeException
+abstract class KafkaException extends RuntimeException
 {
-    const UNKNOWN = -1;
+    public const UNKNOWN = -1;
 
-    const NO_ERROR = 0;
+    public const NO_ERROR = 0;
 
-    const OFFSET_OUT_OF_RANGE              = 1;
-    const CORRUPT_MESSAGE                  = 2;
-    const UNKNOWN_TOPIC_OR_PARTITION       = 3;
-    const INVALID_FETCH_SIZE               = 4;
-    const LEADER_NOT_AVAILABLE             = 5;
-    const NOT_LEADER_FOR_PARTITION         = 6;
-    const REQUEST_TIMED_OUT                = 7;
-    const BROKER_NOT_AVAILABLE             = 8;
-    const REPLICA_NOT_AVAILABLE            = 9;
-    const MESSAGE_TOO_LARGE                = 10;
-    const STALE_CONTROLLER_EPOCH           = 11;
-    const OFFSET_METADATA_TOO_LARGE        = 12;
-    const NETWORK_EXCEPTION                = 13;
-    const GROUP_LOAD_IN_PROGRESS           = 14;
-    const GROUP_COORDINATOR_NOT_AVAILABLE  = 15;
-    const NOT_COORDINATOR_FOR_GROUP        = 16;
-    const INVALID_TOPIC_EXCEPTION          = 17;
-    const RECORD_LIST_TOO_LARGE            = 18;
-    const NOT_ENOUGH_REPLICAS              = 19;
-    const NOT_ENOUGH_REPLICAS_AFTER_APPEND = 20;
-    const INVALID_REQUIRED_ACKS            = 21;
-    const ILLEGAL_GENERATION               = 22;
-    const INCONSISTENT_GROUP_PROTOCOL      = 23;
-    const INVALID_GROUP_ID                 = 24;
-    const UNKNOWN_MEMBER_ID                = 25;
-    const INVALID_SESSION_TIMEOUT          = 26;
-    const REBALANCE_IN_PROGRESS            = 27;
-    const INVALID_COMMIT_OFFSET_SIZE       = 28;
-    const TOPIC_AUTHORIZATION_FAILED       = 29;
-    const GROUP_AUTHORIZATION_FAILED       = 30;
-    const CLUSTER_AUTHORIZATION_FAILED     = 31;
-    const INVALID_TIMESTAMP                = 32;
-    const UNSUPPORTED_SASL_MECHANISM       = 33;
-    const ILLEGAL_SASL_STATE               = 34;
-    const UNSUPPORTED_VERSION              = 35;
+    public const OFFSET_OUT_OF_RANGE              = 1;
+    public const CORRUPT_MESSAGE                  = 2;
+    public const UNKNOWN_TOPIC_OR_PARTITION       = 3;
+    public const INVALID_FETCH_SIZE               = 4;
+    public const LEADER_NOT_AVAILABLE             = 5;
+    public const NOT_LEADER_FOR_PARTITION         = 6;
+    public const REQUEST_TIMED_OUT                = 7;
+    public const BROKER_NOT_AVAILABLE             = 8;
+    public const REPLICA_NOT_AVAILABLE            = 9;
+    public const MESSAGE_TOO_LARGE                = 10;
+    public const STALE_CONTROLLER_EPOCH           = 11;
+    public const OFFSET_METADATA_TOO_LARGE        = 12;
+    public const NETWORK_EXCEPTION                = 13;
+    public const GROUP_LOAD_IN_PROGRESS           = 14;
+    public const GROUP_COORDINATOR_NOT_AVAILABLE  = 15;
+    public const NOT_COORDINATOR_FOR_GROUP        = 16;
+    public const INVALID_TOPIC_EXCEPTION          = 17;
+    public const RECORD_LIST_TOO_LARGE            = 18;
+    public const NOT_ENOUGH_REPLICAS              = 19;
+    public const NOT_ENOUGH_REPLICAS_AFTER_APPEND = 20;
+    public const INVALID_REQUIRED_ACKS            = 21;
+    public const ILLEGAL_GENERATION               = 22;
+    public const INCONSISTENT_GROUP_PROTOCOL      = 23;
+    public const INVALID_GROUP_ID                 = 24;
+    public const UNKNOWN_MEMBER_ID                = 25;
+    public const INVALID_SESSION_TIMEOUT          = 26;
+    public const REBALANCE_IN_PROGRESS            = 27;
+    public const INVALID_COMMIT_OFFSET_SIZE       = 28;
+    public const TOPIC_AUTHORIZATION_FAILED       = 29;
+    public const GROUP_AUTHORIZATION_FAILED       = 30;
+    public const CLUSTER_AUTHORIZATION_FAILED     = 31;
+    public const INVALID_TIMESTAMP                = 32;
+    public const UNSUPPORTED_SASL_MECHANISM       = 33;
+    public const ILLEGAL_SASL_STATE               = 34;
+    public const UNSUPPORTED_VERSION              = 35;
 
     /**
      * Mapping from the codes to class names
@@ -101,7 +113,7 @@ abstract class KafkaException extends \RuntimeException
      *
      * @var array
      */
-    private $context = [];
+    private $context;
 
     /**
      * Creates an instance of exception by error code
@@ -112,7 +124,7 @@ abstract class KafkaException extends \RuntimeException
      *
      * @return KafkaException
      */
-    final public static function fromCode($errorCode, array $context, Exception $previous = null)
+    final public static function fromCode(int $errorCode, array $context, Exception $previous = null): KafkaException
     {
         if (!isset(self::$codeToClassMap[$errorCode])) {
             $exception = new UnknownError(['errorCode' => $errorCode] + $context, $previous);
@@ -127,23 +139,21 @@ abstract class KafkaException extends \RuntimeException
     /**
      * @inheritDoc
      */
-    public function __construct(array $context = [], $code, Exception $previous = null)
+    public function __construct(array $context, int $code, Exception $previous = null)
     {
         $this->context = $context;
-        $docBlock = (new \ReflectionObject($this))->getDocComment();
+        $docBlock = (new ReflectionObject($this))->getDocComment();
         $docBlock = preg_replace('/^\s*\/?\*+\/?/m', '', $docBlock);
         $docBlock = preg_replace('/\s{2,}/', '', $docBlock);
 
-        $message = $docBlock . PHP_EOL . "Context: " . json_encode($context);
+        $message = $docBlock . PHP_EOL . 'Context: ' . json_encode($context);
         parent::__construct($message, $code, $previous);
     }
 
     /**
      * Returns the context for this exception
-     *
-     * @return array
      */
-    public function getContext()
+    public function getContext(): array
     {
         return $this->context;
     }

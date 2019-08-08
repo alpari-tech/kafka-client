@@ -1,14 +1,20 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 15.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka\DTO\OffsetFetchPartition;
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka\DTO\OffsetFetchResponseTopic;
+use Alpari\Kafka\Scheme;
 
 /**
  * OffsetFetch response object
@@ -26,9 +32,9 @@ use Protocol\Kafka\Stream;
 class OffsetFetchResponse extends AbstractResponse
 {
     /**
-     * List of broker metadata info
+     * List of topic responses
      *
-     * @var array|OffsetFetchPartition[]
+     * @var OffsetFetchResponseTopic[]
      */
     public $topics = [];
 
@@ -42,34 +48,15 @@ class OffsetFetchResponse extends AbstractResponse
     public $errorCode;
 
     /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
+     * @inheritdoc
      */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme(): array
     {
-        list(
-            $self->correlationId,
-            $numberOfTopics,
-        ) = array_values($stream->read('NcorrelationId/NnumberOfTopics'));
+        $header = parent::getScheme();
 
-        for ($topic=0; $topic<$numberOfTopics; $topic++) {
-            $topicLength = $stream->read('ntopicLength')['topicLength'];
-            list(
-                $topicName,
-                $numberOfPartitions
-            ) = array_values($stream->read("a{$topicLength}/NnumberOfPartitions"));
-
-            for ($partition = 0; $partition < $numberOfPartitions; $partition++) {
-                $topicMetadata = OffsetFetchPartition::unpack($stream);
-                $self->topics[$topicName][$topicMetadata->partition] = $topicMetadata;
-            }
-        }
-        $self->errorCode = $stream->read('nerrorCode')['errorCode'];
-
-        return $self;
+        return $header + [
+            'topics' => ['topic' => OffsetFetchResponseTopic::class],
+            'errorCode' => Scheme::TYPE_INT16,
+        ];
     }
 }

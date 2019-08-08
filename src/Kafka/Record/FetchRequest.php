@@ -1,12 +1,22 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
+use Alpari\Kafka\DTO\FetchRequestTopic;
+use Alpari\Kafka\DTO\FetchRequestTopicPartition;
+use Alpari\Kafka\Scheme;
 
 /**
  * Fetch API
@@ -31,13 +41,43 @@ use Protocol\Kafka;
  * moved to the server side and accessed more conveniently. A simple consumer client can be implemented by simply
  * requiring that the partitions be specified in config, though this will not allow dynamic reassignment of partitions
  * should that consumer fail. We hope to address this gap in the next major release.
+ *
+ * Fetch Request (Version: 5) => replica_id max_wait_time min_bytes max_bytes isolation_level [topics]
+ *   replica_id => INT32
+ *   max_wait_time => INT32
+ *   min_bytes => INT32
+ *   max_bytes => INT32
+ *   isolation_level => INT8
+ *   topics => topic [partitions]
+ *     topic => STRING
+ *     partitions => partition fetch_offset log_start_offset max_bytes
+ *       partition => INT32
+ *       fetch_offset => INT64
+ *       log_start_offset => INT64
+ *       max_bytes => INT32
+ *
+ * @deprecated since 0.11.0.0
  */
 class FetchRequest extends AbstractRequest
 {
     /**
+     * With READ_COMMITTED (isolation_level = 1), non-transactional and COMMITTED transactional records are visible.
+     *
+     * @see $isolationLevel
+     */
+    public const READ_COMMITTED = 1;
+
+    /**
+     * Using READ_UNCOMMITTED (isolation_level = 0) makes all records visible.
+     *
+     * @see $isolationLevel
+     */
+    public const READ_UNCOMMITTED = 0;
+
+    /**
      * @inheritDoc
      */
-    const VERSION = 3;
+    protected const VERSION = 5;
 
     /**
      * @var array
@@ -68,6 +108,22 @@ class FetchRequest extends AbstractRequest
     private $minBytes;
 
     /**
+     * This setting controls the visibility of transactional records.
+     *
+     * Using READ_UNCOMMITTED (isolation_level = 0) makes all records visible.
+     * With READ_COMMITTED (isolation_level = 1), non-transactional and COMMITTED transactional records are visible.
+     *
+     * To be more concrete, READ_COMMITTED returns all data from offsets smaller than the current LSO (last stable
+     * offset), and enables the inclusion of the list of aborted transactions in the result, which allows consumers to
+     * discard ABORTED transactional records
+     *
+     * @since 0.11.0.0
+     *
+     * @var integer
+     */
+    private $isolationLevel;
+
+    /**
      * Maximum bytes to accumulate in the response.
      *
      * Note that this is not an absolute maximum, if the first message in the first non-empty partition of the
@@ -92,46 +148,45 @@ class FetchRequest extends AbstractRequest
 
     public function __construct(
         array $topicPartitions,
-        $maxWaitTime,
-        $minBytes,
-        $maxBytes,
-        $replicaId = -1,
-        $clientId = '',
-        $correlationId = 0
+        int $maxWaitTime,
+        int $minBytes,
+        int $maxBytes,
+        int $isolationLevel = self::READ_UNCOMMITTED,
+        int $replicaId = -1,
+        string $clientId = '',
+        int $correlationId = 0
     ) {
-        $this->topicPartitions = $topicPartitions;
-        $this->maxWaitTime     = $maxWaitTime;
-        $this->minBytes        = $minBytes;
-        $this->maxBytes        = $maxBytes;
-        $this->replicaId       = $replicaId;
+        foreach ($topicPartitions as $topic => $partitionOffset) {
+            $partitions = [];
+            foreach ($partitionOffset as $partition => $offset) {
+                $partitions[$partition] = new FetchRequestTopicPartition($partition, $offset, $maxBytes);
+            }
+            $this->topicPartitions[$topic] = new FetchRequestTopic($topic, $partitions);
+        }
+
+        $this->maxWaitTime    = $maxWaitTime;
+        $this->minBytes       = $minBytes;
+        $this->maxBytes       = $maxBytes;
+        $this->isolationLevel = $isolationLevel;
+        $this->replicaId      = $replicaId;
 
         parent::__construct(Kafka::FETCH, $clientId, $correlationId);
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function packPayload()
+    public static function getScheme(): array
     {
-        $payload     = parent::packPayload();
-        $totalTopics = count($this->topicPartitions);
+        $header = parent::getScheme();
 
-        $payload .= pack(
-            'NNNNN',
-            $this->replicaId,
-            $this->maxWaitTime,
-            $this->minBytes,
-            $this->maxBytes,
-            $totalTopics
-        );
-        foreach ($this->topicPartitions as $topic => $partitions) {
-            $topicLength = strlen($topic);
-            $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
-            foreach ($partitions as $partitionId => $offset) {
-                $payload .= pack('NJN', $partitionId, $offset, $this->maxBytes);
-            }
-        }
-
-        return $payload;
+        return $header + [
+            'replicaId'       => Scheme::TYPE_INT32,
+            'maxWaitTime'     => Scheme::TYPE_INT32,
+            'minBytes'        => Scheme::TYPE_INT32,
+            'maxBytes'        => Scheme::TYPE_INT32,
+            'isolationLevel'  => Scheme::TYPE_INT8,
+            'topicPartitions' => ['topic' => FetchRequestTopic::class]
+        ];
     }
 }

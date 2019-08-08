@@ -1,22 +1,34 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka\Record;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka\AbstractRecord;
+use Alpari\Kafka\Scheme;
 
 /**
  * Basic class for all responses
  */
-abstract class AbstractResponse extends Record
+abstract class AbstractResponse extends AbstractRecord
 {
     /**
-     * A user-supplied integer value that will be passed back with the response (INT32)
-     *
-     * @var integer
+     * @inheritdoc
      */
-    public $correlationId;
+    public static function getScheme(): array
+    {
+        return [
+            'messageSize'   => Scheme::TYPE_INT32,
+            'correlationId' => Scheme::TYPE_INT32,
+        ];
+    }
 }

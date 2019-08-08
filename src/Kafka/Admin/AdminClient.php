@@ -1,34 +1,42 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 13.09.2017
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Admin;
+declare (strict_types=1);
 
-use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\Common\Config;
-use Protocol\Kafka\Common\Node;
-use Protocol\Kafka\DTO\ApiVersionsResponseMetadata;
-use Protocol\Kafka\DTO\DescribeGroupMetadata;
-use Protocol\Kafka\DTO\OffsetFetchPartition;
-use Protocol\Kafka\Error\InvalidGroupId;
-use Protocol\Kafka\Error\KafkaException;
-use Protocol\Kafka\Error\RequestTimedOut;
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Record\AbstractRequest;
-use Protocol\Kafka\Record\ApiVersionsRequest;
-use Protocol\Kafka\Record\ApiVersionsResponse;
-use Protocol\Kafka\Record\DescribeGroupsRequest;
-use Protocol\Kafka\Record\DescribeGroupsResponse;
-use Protocol\Kafka\Record\GroupCoordinatorRequest;
-use Protocol\Kafka\Record\GroupCoordinatorResponse;
-use Protocol\Kafka\Record\ListGroupsRequest;
-use Protocol\Kafka\Record\ListGroupsResponse;
-use Protocol\Kafka\Record\MetadataRequest;
-use Protocol\Kafka\Record\MetadataResponse;
-use Protocol\Kafka\Record\OffsetFetchRequest;
-use Protocol\Kafka\Record\OffsetFetchResponse;
+
+namespace Alpari\Kafka\Admin;
+
+use Alpari\Kafka\AbstractRecord;
+use Alpari\Kafka\Common\Cluster;
+use Alpari\Kafka\Common\Config;
+use Alpari\Kafka\Common\Node;
+use Alpari\Kafka\DTO\DescribeGroupResponseMetadata;
+use Alpari\Kafka\DTO\ListGroupResponseProtocol;
+use Alpari\Kafka\DTO\OffsetFetchResponseTopic;
+use Alpari\Kafka\Error\InvalidGroupId;
+use Alpari\Kafka\Error\KafkaException;
+use Alpari\Kafka\Error\NotCoordinatorForGroup;
+use Alpari\Kafka\Error\RequestTimedOut;
+use Alpari\Kafka\Record\AbstractRequest;
+use Alpari\Kafka\Record\ApiVersionsRequest;
+use Alpari\Kafka\Record\ApiVersionsResponse;
+use Alpari\Kafka\Record\DescribeGroupsRequest;
+use Alpari\Kafka\Record\DescribeGroupsResponse;
+use Alpari\Kafka\Record\GroupCoordinatorRequest;
+use Alpari\Kafka\Record\GroupCoordinatorResponse;
+use Alpari\Kafka\Record\ListGroupsRequest;
+use Alpari\Kafka\Record\ListGroupsResponse;
+use Alpari\Kafka\Record\MetadataRequest;
+use Alpari\Kafka\Record\MetadataResponse;
+use Alpari\Kafka\Record\OffsetFetchRequest;
+use Alpari\Kafka\Record\OffsetFetchResponse;
 
 /**
  * Kafka low-level administrative client
@@ -37,15 +45,11 @@ class AdminClient
 {
     /**
      * Cluster configuration
-     *
-     * @var Cluster
      */
     private $cluster;
 
     /**
      * Client configuration
-     *
-     * @var array
      */
     private $configuration;
 
@@ -57,19 +61,15 @@ class AdminClient
 
     /**
      * Describes group of consumers by name
-     *
-     * @param string $groupId Identifier of group
-     *
-     * @return DescribeGroupMetadata
      */
-    public function describeGroup($groupId)
+    public function describeGroup(string $groupId): DescribeGroupResponseMetadata
     {
         $coordinator = $this->findCoordinator($groupId);
         $request     = new DescribeGroupsRequest([$groupId], $this->configuration[Config::CLIENT_ID]);
         $stream      = $coordinator->getConnection($this->configuration);
         $request->writeTo($stream);
         $response = DescribeGroupsResponse::unpack($stream);
-        $metadata = isset($response->groups[$groupId]) ? $response->groups[$groupId] : null;
+        $metadata = $response->groups[$groupId] ?? null;
 
         if ($metadata === null) {
             throw new InvalidGroupId([
@@ -81,13 +81,9 @@ class AdminClient
     }
 
     /**
-     * Performs an API Versions request
-     *
-     * @param Node $node Node for querying versions
-     *
-     * @return ApiVersionsResponseMetadata[]
+     * Performs an API Versions request on given cluster node
      */
-    public function getApiVersions(Node $node)
+    public function getApiVersions(Node $node): array
     {
         $stream  = $node->getConnection($this->configuration);
         $request = new ApiVersionsRequest($this->configuration[Config::CLIENT_ID]);
@@ -104,9 +100,9 @@ class AdminClient
     /**
      * Returns all broker nodes
      *
-     * @return array|Node[]
+     * @return Node[]
      */
-    public function findAllBrokers()
+    public function findAllBrokers(): array
     {
         $request  = new MetadataRequest();
         /** @var MetadataResponse $response */
@@ -117,9 +113,11 @@ class AdminClient
 
 
     /**
-     * @return array|
+     * Lists all available groups
+     *
+     * @return array|ListGroupResponseProtocol[]
      */
-    public function listAllGroups()
+    public function listAllGroups(): array
     {
         $result = [];
         foreach ($this->findAllBrokers() as $brokerNode) {
@@ -142,10 +140,11 @@ class AdminClient
      * @param string $groupId   Name of the group
      * @param int    $timeoutMs Timeout for looking coordinator
      *
-     * @return null|Node
-     * @throws RequestTimedOut
+     * @throws RequestTimedOut If command was timed out
+     *
+     * @return Node
      */
-    public function findCoordinator($groupId, $timeoutMs = 0)
+    public function findCoordinator(string $groupId, int $timeoutMs = 0): Node
     {
         $request = new GroupCoordinatorRequest($groupId, $this->configuration[Config::CLIENT_ID]);
 
@@ -154,7 +153,7 @@ class AdminClient
             try {
                 /** @var GroupCoordinatorResponse $response */
                 $response = $this->sendAnyNode($request, GroupCoordinatorResponse::class);
-            } catch (\Exception $e) {
+            } catch (\Exception $internalException) {
                 $response = null;
             }
             $isNegativeResponse = $response === null
@@ -169,10 +168,17 @@ class AdminClient
         if ($isNegativeResponse ) {
             throw new RequestTimedOut([
                 'error' => 'The consumer group command timed out while waiting for group to initialize'
-            ], isset($e) ? $e : null);
+            ], $internalException ?? null);
         }
 
-        return $this->cluster->nodeById($response->coordinator->nodeId);
+        $node = $this->cluster->nodeById($response->coordinator->nodeId);
+        if ($node === null) {
+            throw new NotCoordinatorForGroup([
+                'error' => "No coordinator for the group {$groupId}"
+            ]);
+        }
+
+        return $node;
     }
 
     /**
@@ -180,10 +186,11 @@ class AdminClient
      *
      * @param Node $node
      *
-     * @return array
      * @throws KafkaException
+     *
+     * @return ListGroupResponseProtocol[]
      */
-    public function listGroups(Node $node)
+    public function listGroups(Node $node): array
     {
         $stream  = $node->getConnection($this->configuration);
         $request = new ListGroupsRequest($this->configuration[Config::CLIENT_ID]);
@@ -202,12 +209,12 @@ class AdminClient
      *
      * @param string $groupId Identifier of group
      *
-     * @return OffsetFetchPartition[]
+     * @return OffsetFetchResponseTopic[]
      */
-    public function listGroupOffsets($groupId)
+    public function listGroupOffsets(string $groupId): array
     {
         $coordinator = $this->findCoordinator($groupId);
-        $request     = new OffsetFetchRequest($groupId, [], $this->configuration[Config::CLIENT_ID]);
+        $request     = new OffsetFetchRequest($groupId, null, $this->configuration[Config::CLIENT_ID]);
         $stream      = $coordinator->getConnection($this->configuration);
         $request->writeTo($stream);
         $response = OffsetFetchResponse::unpack($stream);
@@ -225,10 +232,10 @@ class AdminClient
      * @param AbstractRequest $request       Instance of request to send
      * @param string          $responseClass Response class name to unpack
      *
-     * @return Record
+     * @return AbstractRecord
      * @throws \RuntimeException
      */
-    private function sendAnyNode(AbstractRequest $request, $responseClass)
+    private function sendAnyNode(AbstractRequest $request, string $responseClass): AbstractRecord
     {
         foreach ($this->cluster->nodes() as $node) {
             try {

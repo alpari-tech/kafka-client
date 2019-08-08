@@ -1,6 +1,16 @@
 <?php
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-namespace Protocol\Kafka\Error;
+declare (strict_types=1);
+
+namespace Alpari\Kafka\Error;
 
 use Exception;
 use RuntimeException;
@@ -34,7 +44,7 @@ class EmptyAssignmentException extends RuntimeException implements ClientExcepti
      *
      * @return string[]
      */
-    public function getRequestedTopics()
+    public function getRequestedTopics(): array
     {
         return $this->requestedTopics;
     }

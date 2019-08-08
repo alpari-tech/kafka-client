@@ -1,12 +1,20 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
+use Alpari\Kafka\Scheme;
 
 /**
  * The offsets for a given consumer group are maintained by a specific broker called the group coordinator. i.e., a
@@ -18,28 +26,25 @@ class GroupCoordinatorRequest extends AbstractRequest
 {
     /**
      * The consumer group id.
-     *
-     * @var string
      */
     private $consumerGroup;
 
-    public function __construct($consumerGroup, $clientId = '', $correlationId = 0)
+    public function __construct(string $consumerGroup, string $clientId = '', int $correlationId = 0)
     {
-        $this->consumerGroup   = $consumerGroup;
+        $this->consumerGroup = $consumerGroup;
 
         parent::__construct(Kafka::GROUP_COORDINATOR, $clientId, $correlationId);
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function packPayload()
+    public static function getScheme(): array
     {
-        $payload     = parent::packPayload();
-        $groupLength = strlen($this->consumerGroup);
+        $header = parent::getScheme();
 
-        $payload .= pack("na{$groupLength}", $groupLength, $this->consumerGroup);
-
-        return $payload;
+        return $header + [
+            'consumerGroup' => Scheme::TYPE_STRING
+        ];
     }
 }

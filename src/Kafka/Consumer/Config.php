@@ -1,12 +1,19 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date   01.08.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Consumer;
+declare (strict_types=1);
 
-use Protocol\Kafka\Common\Config as GeneralConfig;
+namespace Alpari\Kafka\Consumer;
+
+use Alpari\Kafka\Common\Config as GeneralConfig;
+use Alpari\Kafka\Record\FetchRequest;
 
 /**
  * Consumer config enumeration class
@@ -33,6 +40,7 @@ final class Config extends GeneralConfig
         Config::ENABLE_AUTO_COMMIT            => true,
         Config::AUTO_COMMIT_INTERVAL_MS       => 0, // Commit always after each poll()
         Config::OFFSET_RETENTION_MS           => -1, // Use broker retention time for offsets
+        Config::ISOLATION_LEVEL               => FetchRequest::READ_UNCOMMITTED
     ];
 
     /**
@@ -41,13 +49,13 @@ final class Config extends GeneralConfig
      * This property is required if the consumer uses either the group management functionality by using
      * subscribe(topic) or the Kafka-based offset management strategy.
      */
-    const GROUP_ID = 'group.id';
+    public const GROUP_ID = 'group.id';
 
     /**
      * The class name of the partition assignment strategy that the client will use to distribute partition ownership
      * amongst consumer instances when group management is used
      */
-    const PARTITION_ASSIGNMENT_STRATEGY = 'partition.assignment.strategy';
+    public const PARTITION_ASSIGNMENT_STRATEGY = 'partition.assignment.strategy';
 
     /**
      * The timeout used to detect failures when using Kafka's group management facilities.
@@ -61,7 +69,7 @@ final class Config extends GeneralConfig
      * in the allowable range as configured in the broker configuration by group.min.session.timeout.ms and
      * group.max.session.timeout.ms
      */
-    const SESSION_TIMEOUT_MS = 'session.timeout.ms';
+    public const SESSION_TIMEOUT_MS = 'session.timeout.ms';
 
     /**
      * The maximum allowed time for each worker to join the group once a rebalance has begun.
@@ -70,7 +78,7 @@ final class Config extends GeneralConfig
      * offsets. If the timeout is exceeded, then the worker will be removed from the group, which will cause offset
      * commit failures.
      */
-    const REBALANCE_TIMEOUT_MS = 'rebalance.timeout.ms';
+    public const REBALANCE_TIMEOUT_MS = 'rebalance.timeout.ms';
 
     /**
      * The minimum amount of data the server should return for a fetch request.
@@ -81,13 +89,13 @@ final class Config extends GeneralConfig
      * will cause the server to wait for larger amounts of data to accumulate which can improve server throughput a bit
      * at the cost of some additional latency.
      */
-    const FETCH_MIN_BYTES = 'fetch.min.bytes';
+    public const FETCH_MIN_BYTES = 'fetch.min.bytes';
 
     /**
      * The maximum amount of time the server will block before answering the fetch request if there isn't sufficient
      * data to immediately satisfy the requirement given by fetch.min.bytes.
      */
-    const FETCH_MAX_WAIT_MS = 'fetch.max.wait.ms';
+    public const FETCH_MAX_WAIT_MS = 'fetch.max.wait.ms';
 
     /**
      * The maximum amount of data per-partition the server will return.
@@ -96,7 +104,7 @@ final class Config extends GeneralConfig
      * producer to send messages larger than the consumer can fetch. If that happens, the consumer can get stuck trying
      * to fetch a large message on a certain partition.
      */
-    const MAX_PARTITION_FETCH_BYTES = 'max.partition.fetch.bytes';
+    public const MAX_PARTITION_FETCH_BYTES = 'max.partition.fetch.bytes';
 
     /**
      * What to do when there is no initial offset in Kafka or if the current offset does not exist any more on the
@@ -107,7 +115,7 @@ final class Config extends GeneralConfig
      * none: throw exception to the consumer if no previous offset is found for the consumer's group
      * anything else: throw exception to the consumer.
      */
-    const AUTO_OFFSET_RESET = 'auto.offset.reset';
+    public const AUTO_OFFSET_RESET = 'auto.offset.reset';
 
     /**
      * The expected time between heartbeats to the consumer coordinator when using Kafka's group management facilities.
@@ -117,37 +125,52 @@ final class Config extends GeneralConfig
      * set no higher than 1/3 of that value. It can be adjusted even lower to control the expected time for normal
      * rebalances.
      */
-    const HEARTBEAT_INTERVAL_MS = 'heartbeat.interval.ms';
+    public const HEARTBEAT_INTERVAL_MS = 'heartbeat.interval.ms';
 
     /**
      * If true the consumer's offset will be periodically committed after poll() operation.
      */
-    const ENABLE_AUTO_COMMIT = 'enable.auto.commit';
+    public const ENABLE_AUTO_COMMIT = 'enable.auto.commit';
 
     /**
      * The frequency in milliseconds that the consumer offsets are auto-committed to Kafka if enable.auto.commit is set
      * to true.
      */
-    const AUTO_COMMIT_INTERVAL_MS = 'auto.commit.interval.ms';
+    public const AUTO_COMMIT_INTERVAL_MS = 'auto.commit.interval.ms';
 
     /**
      * This option controls the retention time for topic offset storage, set to -1 to use broker retention time setting
      */
-    const OFFSET_RETENTION_MS = 'offset.retention.ms';
+    public const OFFSET_RETENTION_MS = 'offset.retention.ms';
 
+    /**
+     *Controls how to read messages written transactionally.
+     *
+     * If set to read_committed, Consumer->poll() will only return transactional messages which have been committed.
+     *
+     * If set to read_uncommitted' (the default), Consumer->poll() will return all messages, even transactional
+     * messages which have been aborted. Non-transactional messages will be returned unconditionally in either mode.
+     *
+     * Messages will always be returned in offset order. Hence, in read_committed mode, Consumer->poll() will only
+     * return messages up to the last stable offset (LSO), which is the one less than the offset of the first open
+     * transaction. In particular any messages appearing after messages belonging to ongoing transactions will be
+     * withheld until the relevant transaction has been completed. As a result, read_committed consumers will not be
+     * able to read up to the high watermark when there are in flight transactions.
+     *
+     * Further, when in read_committed the seekToEnd method will return the LSO
+     */
+    public const ISOLATION_LEVEL = 'isolation.level';
 
-    const KEY_DESERIALIZER              = 'key.deserializer';
-    const VALUE_DESERIALIZER            = 'value.deserializer';
-    const EXCLUDE_INTERNAL_TOPICS       = 'exclude.internal.topics';
-    const MAX_POLL_RECORDS              = 'max.poll.records';
-    const CHECK_CRCS                    = 'check.crcs';
+    public const KEY_DESERIALIZER        = 'key.deserializer';
+    public const VALUE_DESERIALIZER      = 'value.deserializer';
+    public const EXCLUDE_INTERNAL_TOPICS = 'exclude.internal.topics';
+    public const MAX_POLL_RECORDS        = 'max.poll.records';
+    public const CHECK_CRCS              = 'check.crcs';
 
     /**
      * Returns default configuration for consumer
-     *
-     * @return array
      */
-    public static function getDefaultConfiguration()
+    public static function getDefaultConfiguration(): array
     {
         return self::$consumerConfiguration + parent::$generalConfiguration;
     }

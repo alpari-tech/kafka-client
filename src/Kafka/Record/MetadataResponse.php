@@ -1,16 +1,22 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
-use Protocol\Kafka\Common\Node;
-use Protocol\Kafka\Common\TopicMetadata;
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
+use Alpari\Kafka\Common\Node;
+use Alpari\Kafka\Common\TopicMetadata;
+use Alpari\Kafka\Scheme;
 
 /**
  * Metadata response object
@@ -51,34 +57,17 @@ class MetadataResponse extends AbstractResponse
     public $topics = [];
 
     /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
+     * @inheritdoc
      */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme(): array
     {
-        list(
-            $self->correlationId,
-            $numberOfBrokers
-        ) = array_values($stream->read('NcorrelationId/NnumberOfBrokers'));
+        $header = parent::getScheme();
 
-        for ($broker=0; $broker<$numberOfBrokers; $broker++) {
-            $brokerNode = Node::unpack($stream);
-
-            $self->brokers[$brokerNode->nodeId] = $brokerNode;
-        }
-        $self->clusterId    = $stream->readString();
-        $self->controllerId = $stream->read('NcontrollerId')['controllerId'];
-        $numberOfTopics     = $stream->read('NnumberOfTopics')['numberOfTopics'];
-
-        for ($topic=0; $topic<$numberOfTopics; $topic++) {
-            $topicMetadata = TopicMetadata::unpack($stream);
-
-            $self->topics[$topicMetadata->topic] = $topicMetadata;
-        }
-        return $self;
+        return $header + [
+            'brokers'      => [Node::class],
+            'clusterId'    => Scheme::TYPE_NULLABLE_STRING,
+            'controllerId' => Scheme::TYPE_INT32,
+            'topics'       => ['topic' => TopicMetadata::class],
+        ];
     }
 }

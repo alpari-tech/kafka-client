@@ -1,27 +1,26 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka\DTO\ApiVersionsResponseMetadata;
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka\DTO\ApiVersionsResponseMetadata;
+use Alpari\Kafka\Scheme;
 
 /**
  * Api versions response
  */
 class ApiVersionsResponse extends AbstractResponse
 {
-
-    /**
-     * API versions supported by the broker.
-     *
-     * @var array|ApiVersionsResponseMetadata[]
-     */
-    public $apiVersions = [];
 
     /**
      * Error code.
@@ -31,27 +30,20 @@ class ApiVersionsResponse extends AbstractResponse
     public $errorCode;
 
     /**
-     * Method to unpack the payload for the record
+     * API versions supported by the broker.
      *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
+     * @var ApiVersionsResponseMetadata[]
      */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public $apiVersions = [];
+
+    /**
+     * @inheritdoc
+     */
+    public static function getScheme(): array
     {
-        list(
-            $self->correlationId,
-            $self->errorCode,
-            $versionsNumber
-        ) = array_values($stream->read('NcorrelationId/nerrorCode/NapiVersionsNumber'));
-
-        for ($i=0; $i<$versionsNumber; $i++) {
-            $apiVersionMetadata = ApiVersionsResponseMetadata::unpack($stream);
-
-            $self->apiVersions[$apiVersionMetadata->apiKey] = $apiVersionMetadata;
-        }
-
-        return $self;
+        return parent::getScheme() + [
+            'errorCode'   => Scheme::TYPE_INT16,
+            'apiVersions' => ['apiKey' => ApiVersionsResponseMetadata::class],
+        ];
     }
 }

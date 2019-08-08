@@ -1,41 +1,50 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 02.08.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka;
+declare (strict_types=1);
 
-use Protocol\Kafka;
-use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\Common\Node;
-use Protocol\Kafka\Consumer\Config as ConsumerConfig;
-use Protocol\Kafka\Error\AllBrokersNotAvailable;
-use Protocol\Kafka\Error\KafkaException;
-use Protocol\Kafka\Error\NetworkException;
-use Protocol\Kafka\Error\TopicPartitionRequestException;
-use Protocol\Kafka\Producer\Config as ProducerConfig;
-use Protocol\Kafka\Record\FetchRequest;
-use Protocol\Kafka\Record\FetchResponse;
-use Protocol\Kafka\Record\GroupCoordinatorRequest;
-use Protocol\Kafka\Record\GroupCoordinatorResponse;
-use Protocol\Kafka\Record\HeartbeatRequest;
-use Protocol\Kafka\Record\HeartbeatResponse;
-use Protocol\Kafka\Record\JoinGroupRequest;
-use Protocol\Kafka\Record\JoinGroupResponse;
-use Protocol\Kafka\Record\LeaveGroupRequest;
-use Protocol\Kafka\Record\LeaveGroupResponse;
-use Protocol\Kafka\Record\OffsetCommitRequest;
-use Protocol\Kafka\Record\OffsetCommitResponse;
-use Protocol\Kafka\Record\OffsetFetchRequest;
-use Protocol\Kafka\Record\OffsetFetchResponse;
-use Protocol\Kafka\Record\OffsetsRequest;
-use Protocol\Kafka\Record\OffsetsResponse;
-use Protocol\Kafka\Record\ProduceRequest;
-use Protocol\Kafka\Record\ProduceResponse;
-use Protocol\Kafka\Record\SyncGroupRequest;
-use Protocol\Kafka\Record\SyncGroupResponse;
-use Protocol\Kafka\Stream\SocketStream;
+
+namespace Alpari\Kafka;
+
+use Alpari\Kafka;
+use Alpari\Kafka\Common\Cluster;
+use Alpari\Kafka\Common\Node;
+use Alpari\Kafka\Consumer\Config as ConsumerConfig;
+use Alpari\Kafka\Consumer\MemberAssignment;
+use Alpari\Kafka\DTO\TopicPartitions;
+use Alpari\Kafka\Error\AllBrokersNotAvailable;
+use Alpari\Kafka\Error\KafkaException;
+use Alpari\Kafka\Error\NetworkException;
+use Alpari\Kafka\Error\TopicPartitionRequestException;
+use Alpari\Kafka\Producer\Config as ProducerConfig;
+use Alpari\Kafka\Record\FetchRequest;
+use Alpari\Kafka\Record\FetchResponse;
+use Alpari\Kafka\Record\GroupCoordinatorRequest;
+use Alpari\Kafka\Record\GroupCoordinatorResponse;
+use Alpari\Kafka\Record\HeartbeatRequest;
+use Alpari\Kafka\Record\HeartbeatResponse;
+use Alpari\Kafka\Record\JoinGroupRequest;
+use Alpari\Kafka\Record\JoinGroupResponse;
+use Alpari\Kafka\Record\LeaveGroupRequest;
+use Alpari\Kafka\Record\LeaveGroupResponse;
+use Alpari\Kafka\Record\OffsetCommitRequest;
+use Alpari\Kafka\Record\OffsetCommitResponse;
+use Alpari\Kafka\Record\OffsetFetchRequest;
+use Alpari\Kafka\Record\OffsetFetchResponse;
+use Alpari\Kafka\Record\OffsetsRequest;
+use Alpari\Kafka\Record\OffsetsResponse;
+use Alpari\Kafka\Record\ProduceRequest;
+use Alpari\Kafka\Record\ProduceResponse;
+use Alpari\Kafka\Record\SyncGroupRequest;
+use Alpari\Kafka\Record\SyncGroupResponse;
+use Alpari\Kafka\Stream\SocketStream;
 
 /**
  * Kafka low-level client
@@ -51,8 +60,6 @@ class Client
 
     /**
      * Client configuration
-     *
-     * @var array
      */
     private $configuration;
 
@@ -66,32 +73,46 @@ class Client
      * Produce messages to the specific topic partition
      *
      * @param array $topicPartitionMessages List of messages for each topic and partition
+     * @throws TopicPartitionRequestException If produce was completed partially on specific partitions
      *
-     * @return ProduceResponse
+     * @return Kafka\DTO\ProduceResponsePartition[][]
      */
-    public function produce(array $topicPartitionMessages)
+    public function produce(array $topicPartitionMessages): array
     {
+        $errors = [];
         $result = $this->clusterRequest($topicPartitionMessages, function (array $nodeTopicPartitionMessages) {
             $request = new ProduceRequest(
                 $nodeTopicPartitionMessages,
                 $this->configuration[ProducerConfig::ACKS],
+                $this->configuration[ProducerConfig::TRANSACTIONAL_ID],
                 $this->configuration[ProducerConfig::TIMEOUT_MS],
                 $this->configuration[ProducerConfig::CLIENT_ID]
             );
 
             return $request;
-        }, ProduceResponse::class, function (array $result, ProduceResponse $response) {
+        }, ProduceResponse::class, function (array $result, ProduceResponse $response) use (&$errors) {
             /** @var Kafka\DTO\ProduceResponsePartition[] $partitions */
-            foreach ($response->topics as $topic => $partitions) {
-                foreach ($partitions as $partitionId => $partitionInfo) {
-                    if ($partitionInfo->errorCode !== 0) {
-                        throw KafkaException::fromCode($partitionInfo->errorCode, compact('topic', 'partitionId'));
+            foreach ($response->topics as $topic => $produceResponseTopic) {
+                foreach ($produceResponseTopic->partitions as $partitionId => $partitionInfo) {
+                    $isSucceeded = $partitionInfo->errorCode === 0;
+                    if ($isSucceeded) {
+                        $result[$topic][$partitionId] = $partitionInfo;
+                    } else {
+                        $error = KafkaException::fromCode(
+                            $partitionInfo->errorCode,
+                            compact('topic', 'partitionId')
+                        );
+
+                        $errors[$topic][$partitionId] = $error;
                     }
-                    $result[$topic][$partitionId] = $partitionInfo;
                 }
             }
             return $result;
         });
+
+        if (!empty($errors)) {
+            throw new TopicPartitionRequestException($result, $errors);
+        }
 
         return $result;
     }
@@ -119,13 +140,12 @@ class Client
      */
     public function commitGroupOffsets(
         Node $coordinatorNode,
-        $groupId,
-        $memberId,
-        $generationId,
+        string $groupId,
+        string $memberId,
+        int $generationId,
         array $topicPartitionOffsets,
-        $retentionTimeMs
-    )
-    {
+        int $retentionTimeMs
+    ): void {
         $stream  = $coordinatorNode->getConnection($this->configuration);
         $request = new OffsetCommitRequest(
             $groupId,
@@ -137,10 +157,10 @@ class Client
         );
         $request->writeTo($stream);
         $response = OffsetCommitResponse::unpack($stream);
-        foreach ($response->topics as $topic => $partitions) {
-            foreach ($partitions as $partitionId => $errorCode) {
-                if ($errorCode !== 0) {
-                    throw KafkaException::fromCode($errorCode, compact('topic', 'partitionId'));
+        foreach ($response->topics as $topic => $offsetCommitResponseTopic) {
+            foreach ($offsetCommitResponseTopic->partitions as $partitionId => $partition) {
+                if ($partition->errorCode !== 0) {
+                    throw KafkaException::fromCode($partition->errorCode, compact('topic', 'partitionId'));
                 }
             }
         }
@@ -149,9 +169,9 @@ class Client
     /**
      * Fetches the offsets for topic partition for the concrete consumer group
      *
-     * @param Node   $coordinatorNode Current group coordinator for $groupId
-     * @param string $groupId         Name of the group
-     * @param array $topicPartitions  List of topic => partitions for fetching information
+     * @param Node              $coordinatorNode  Current group coordinator for $groupId
+     * @param string            $groupId          Name of the group
+     * @param TopicPartitions[] $topicPartitions  List of topic => partitions for fetching information or null
      *
      * @return array
      *
@@ -164,7 +184,7 @@ class Client
      * @throws Kafka\Error\TopicAuthorizationFailed
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function fetchGroupOffsets(Node $coordinatorNode, $groupId, array $topicPartitions = [])
+    public function fetchGroupOffsets(Node $coordinatorNode, string $groupId, ?array $topicPartitions = null): array
     {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
@@ -179,9 +199,8 @@ class Client
             throw KafkaException::fromCode($response->errorCode, compact('groupId'));
         }
         $result = [];
-        foreach ($response->topics as $topic => $partitions) {
-            /** @var Kafka\DTO\OffsetFetchPartition[] $partitions */
-            foreach ($partitions as $partitionId => $partition) {
+        foreach ($response->topics as $topic => $offsetFetchResponseTopic) {
+            foreach ($offsetFetchResponseTopic->partitions as $partitionId => $partition) {
                 $isUnknownTopicPartition = $partition->errorCode === KafkaException::UNKNOWN_TOPIC_OR_PARTITION;
                 if ($partition->errorCode !== 0 && !$isUnknownTopicPartition) {
                     throw KafkaException::fromCode($partition->errorCode, compact('topic', 'partitionId'));
@@ -212,8 +231,13 @@ class Client
      * @throws Kafka\Error\InvalidSessionTimeout
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function joinGroup(Node $coordinatorNode, $groupId, $memberId, $protocolType, array $groupProtocols)
-    {
+    public function joinGroup(
+        Node $coordinatorNode,
+        string $groupId,
+        string $memberId,
+        string $protocolType,
+        array $groupProtocols
+    ): JoinGroupResponse {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
         $request = new JoinGroupRequest(
@@ -248,7 +272,7 @@ class Client
      * @throws Kafka\Error\UnknownMemberId
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function leaveGroup(Node $coordinatorNode, $groupId, $memberId)
+    public function leaveGroup(Node $coordinatorNode, string $groupId, string $memberId): void
     {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
@@ -268,11 +292,11 @@ class Client
     /**
      * Synchronizes group member with the group
      *
-     * @param Node    $coordinatorNode  Current group coordinator for $groupId
-     * @param string  $groupId          Name of the group
-     * @param string  $memberId         Name of the group member
-     * @param integer $generationId     Current generation of consumer
-     * @param array   $groupAssignments Group assignments
+     * @param Node               $coordinatorNode  Current group coordinator for $groupId
+     * @param string             $groupId          Name of the group
+     * @param string             $memberId         Name of the group member
+     * @param integer            $generationId     Current generation of consumer
+     * @param MemberAssignment[] $groupAssignments Group assignments
      *
      * @return SyncGroupResponse
      *
@@ -283,8 +307,13 @@ class Client
      * @throws Kafka\Error\RebalanceInProgress
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function syncGroup(Node $coordinatorNode, $groupId, $memberId, $generationId, array $groupAssignments = [])
-    {
+    public function syncGroup(
+        Node $coordinatorNode,
+        string $groupId,
+        string $memberId,
+        int $generationId,
+        array $groupAssignments = []
+    ): SyncGroupResponse {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
         $request = new SyncGroupRequest(
@@ -319,7 +348,7 @@ class Client
      * @throws Kafka\Error\RebalanceInProgress
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function heartbeat(Node $coordinatorNode, $groupId, $memberId, $generationId)
+    public function heartbeat(Node $coordinatorNode, string $groupId, string $memberId, int $generationId): void
     {
         $stream = $coordinatorNode->getConnection($this->configuration);
 
@@ -340,14 +369,10 @@ class Client
     /**
      * Discovers the group coordinator node for the group
      *
-     * @param string $groupId Name of the group
-     *
-     * @return Node
-     *
      * @throws Kafka\Error\GroupCoordinatorNotAvailable
      * @throws Kafka\Error\GroupAuthorizationFailed
      */
-    public function getGroupCoordinator($groupId)
+    public function getGroupCoordinator(string $groupId): Node
     {
         $clusterNodes = $this->cluster->nodes();
         $failures     = [];
@@ -383,7 +408,7 @@ class Client
      * @param array   $topicPartitionOffsets List of topic partition offsets as start point for fetching
      * @param integer $timeout               Timeout in ms to wait for fetching
      *
-     * @return array
+     * @return Kafka\DTO\RecordBatch[][]
      *
      * @throws Kafka\Error\OffsetOutOfRange
      * @throws Kafka\Error\UnknownTopicOrPartition
@@ -391,7 +416,7 @@ class Client
      * @throws Kafka\Error\ReplicaNotAvailable
      * @throws Kafka\Error\UnknownError
      */
-    public function fetch(array $topicPartitionOffsets, $timeout)
+    public function fetch(array $topicPartitionOffsets, int $timeout): array
     {
         $timeout = min($this->configuration[ConsumerConfig::FETCH_MAX_WAIT_MS], $timeout);
         $errors  = [];
@@ -402,18 +427,18 @@ class Client
                 $timeout,
                 $this->configuration[ConsumerConfig::FETCH_MIN_BYTES],
                 $this->configuration[ConsumerConfig::MAX_PARTITION_FETCH_BYTES],
+                $this->configuration[ConsumerConfig::ISOLATION_LEVEL],
                 -1,
                 $this->configuration[ConsumerConfig::CLIENT_ID]
             );
 
             return $request;
         }, FetchResponse::class, function (array $result, FetchResponse $response) use (&$errors) {
-            foreach ($response->topics as $topic => $partitions) {
-                foreach ($partitions as $partitionId => $responsePartition) {
-                    /** @var Kafka\DTO\FetchResponsePartition $responsePartition */
+            foreach ($response->topics as $topic => $fetchResponseTopic) {
+                foreach ($fetchResponseTopic->partitions as $partitionId => $responsePartition) {
                     $isSucceeded = $responsePartition->errorCode === 0;
                     if ($isSucceeded) {
-                        $result[$topic][$partitionId] = $responsePartition->recordBatch;
+                        $result[$topic][$partitionId] = $responsePartition->getRecordBatches();
                     } else {
                         $error = KafkaException::fromCode(
                             $responsePartition->errorCode,
@@ -447,7 +472,7 @@ class Client
      * @throws Kafka\Error\NotLeaderForPartition
      * @throws Kafka\Error\UnknownError
      */
-    public function fetchTopicPartitionOffsets(array $topicPartitions)
+    public function fetchTopicPartitionOffsets(array $topicPartitions): array
     {
         $result = $this->clusterRequest($topicPartitions, function (array $nodeTopicRequest) {
             $request = new OffsetsRequest(
@@ -458,9 +483,8 @@ class Client
 
             return $request;
         }, OffsetsResponse::class, function (array $result, OffsetsResponse $response) {
-            foreach ($response->topics as $topic => $partitions) {
-                /** @var Kafka\DTO\OffsetsPartition[] $partitions */
-                foreach ($partitions as $partitionId => $partitionMetadata) {
+            foreach ($response->topics as $topic => $offsetsResponsePartitions) {
+                foreach ($offsetsResponsePartitions->partitions as $partitionId => $partitionMetadata) {
                     if ($partitionMetadata->errorCode !== 0) {
                         throw KafkaException::fromCode($partitionMetadata->errorCode, compact('topic', 'partitionId'));
                     }
@@ -477,16 +501,21 @@ class Client
     private function clusterRequest(
         array $topicPartitionsRequest,
         \Closure $nodeRequest,
-        $responseClass,
+        string $responseClass,
         \Closure $responseAggregator,
-        $timeout = null
+        ?int $timeout = null
     ) {
         $requestByNode = [];
+        $exceptions    = [];
 
         foreach ($topicPartitionsRequest as $topic => $partitions) {
-            foreach ($partitions as $partition => $partitionData) {
-                $leaderNode = $this->cluster->leaderFor($topic, $partition);
-                $requestByNode[$leaderNode->nodeId][$topic][$partition] = $partitionData;
+            foreach ($partitions as $partitionId => $partitionData) {
+                try {
+                    $leaderNode = $this->cluster->leaderFor($topic, $partitionId);
+                    $requestByNode[$leaderNode->nodeId][$topic][$partitionId] = $partitionData;
+                } catch (\Exception $exception) {
+                    $exceptions[$topic][$partitionId] = $exception;
+                }
             }
         }
 
@@ -503,12 +532,20 @@ class Client
 
         foreach ($requestByNode as $nodeId => $nodeTopicPartitions)
         {
-            /** @var Record $request */
-            $request = $nodeRequest($nodeTopicPartitions);
-            $stream  = $this->cluster->nodeById($nodeId)->getConnection($this->configuration);
+            try {
+                /** @var AbstractRecord $request */
+                $request = $nodeRequest($nodeTopicPartitions);
+                $stream  = $this->cluster->nodeById($nodeId)->getConnection($this->configuration);
 
-            $readNodeSockets[$nodeId] = $socketAccessor($stream);
-            $request->writeTo($stream);
+                $readNodeSockets[$nodeId] = $socketAccessor($stream);
+                $request->writeTo($stream);
+            } catch (\Exception $exception) {
+                foreach ($nodeTopicPartitions as $topic => $partitions) {
+                    foreach (array_keys($partitions) as $partitionId) {
+                        $exceptions[$topic][$partitionId] = $exception;
+                    }
+                }
+            }
         }
 
         $incompleteReads = $readNodeSockets;
@@ -524,9 +561,17 @@ class Client
             $writeSelect = $exceptSelect = null;
             if (stream_select($readSelect, $writeSelect, $exceptSelect, intdiv($timeout, 1000), $timeout % 1000) > 0) {
                 foreach ($readSelect as $resourceToRead) {
-                    $nodeId             = array_search($resourceToRead, $readNodeSockets);
-                    $connection         = $this->cluster->nodeById($nodeId)->getConnection($this->configuration);
-                    $responses[$nodeId] = $responseClass::unpack($connection);
+                    $nodeId = array_search($resourceToRead, $readNodeSockets, true);
+                    try {
+                        $connection         = $this->cluster->nodeById($nodeId)->getConnection($this->configuration);
+                        $responses[$nodeId] = $responseClass::unpack($connection);
+                    } catch (\Exception $exception) {
+                        foreach ($requestByNode[$nodeId] as $topic => $partitions) {
+                            foreach (array_keys($partitions) as $partitionId) {
+                                $exceptions[$topic][$partitionId] = $exception;
+                            }
+                        }
+                    }
                 }
                 $incompleteReads = array_diff($incompleteReads, $readSelect);
             }
@@ -534,6 +579,10 @@ class Client
         }
 
         $result = array_reduce($responses, $responseAggregator, []);
+
+        if (!empty($exceptions)) {
+            throw new TopicPartitionRequestException($result, $exceptions);
+        }
 
         return $result;
     }

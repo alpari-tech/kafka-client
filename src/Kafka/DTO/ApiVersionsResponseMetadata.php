@@ -1,17 +1,25 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\DTO;
+declare (strict_types=1);
 
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\DTO;
+
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
 
 /**
  * ApiVersions response data
  */
-class ApiVersionsResponseMetadata
+class ApiVersionsResponseMetadata implements BinarySchemeInterface
 {
     /**
      * Numerical code of API
@@ -35,21 +43,14 @@ class ApiVersionsResponseMetadata
     public $maxVersion;
 
     /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
+     * @inheritdoc
      */
-    public static function unpack(Stream $stream)
+    public static function getScheme(): array
     {
-        $apiVersionMetadata = new static();
-        list (
-            $apiVersionMetadata->apiKey,
-            $apiVersionMetadata->minVersion,
-            $apiVersionMetadata->maxVersion
-        ) = array_values($stream->read('napiKey/nminVersion/nmaxVersion'));
-
-        return $apiVersionMetadata;
+        return [
+            'apiKey'     => Scheme::TYPE_INT16,
+            'minVersion' => Scheme::TYPE_INT16,
+            'maxVersion' => Scheme::TYPE_INT16,
+        ];
     }
 }

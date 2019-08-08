@@ -1,16 +1,25 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka\Scheme;
 
 /**
  * Leave group response
+ *
+ * LeaveGroup Response (Version: 0) => error_code
+ *   error_code => INT16
  */
 class LeaveGroupResponse extends AbstractResponse
 {
@@ -22,20 +31,14 @@ class LeaveGroupResponse extends AbstractResponse
     public $errorCode;
 
     /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
+     * @inheritdoc
      */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme(): array
     {
-        list(
-            $self->correlationId,
-            $self->errorCode
-        ) = array_values($stream->read('NcorrelationId/nerrorCode'));
+        $header = parent::getScheme();
 
-        return $self;
+        return $header + [
+            'errorCode' => Scheme::TYPE_INT16
+        ];
     }
 }

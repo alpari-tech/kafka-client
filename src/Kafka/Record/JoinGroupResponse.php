@@ -1,16 +1,33 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka\DTO\JoinGroupResponseMember;
+use Alpari\Kafka\Scheme;
 
 /**
  * Join group response
+ *
+ * JoinGroup Response (Version: 0) => error_code generation_id group_protocol leader_id member_id [members]
+ *   error_code => INT16
+ *   generation_id => INT32
+ *   group_protocol => STRING
+ *   leader_id => STRING
+ *   member_id => STRING
+ *   members => member_id member_metadata
+ *     member_id => STRING
+ *     member_metadata => BYTES
  */
 class JoinGroupResponse extends AbstractResponse
 {
@@ -57,42 +74,19 @@ class JoinGroupResponse extends AbstractResponse
     public $members = [];
 
     /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * JoinGroup Response (Version: 0) => error_code generation_id group_protocol leader_id member_id [members]
-     *   error_code => INT16
-     *   generation_id => INT32
-     *   group_protocol => STRING
-     *   leader_id => STRING
-     *   member_id => STRING
-     *   members => member_id member_metadata
-     *     member_id => STRING
-     *     member_metadata => BYTES
-     *
-     * @return Record
+     * @inheritdoc
      */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme(): array
     {
-        list(
-            $self->correlationId,
-            $self->errorCode,
-            $self->generationId
-        ) = array_values($stream->read('NcorrelationId/nerrorCode/NgenerationId'));
+        $header = parent::getScheme();
 
-        $self->groupProtocol = $stream->readString();
-        $self->leaderId      = $stream->readString();
-        $self->memberId      = $stream->readString();
-
-        $membersCount = $stream->read('NmembersCount')['membersCount'];
-        for ($memberIndex = 0; $memberIndex < $membersCount; $memberIndex++) {
-            $memberId   = $stream->readString();
-            $memberData = $stream->readByteArray();
-            $self->members[$memberId] = $memberData;
-        }
-
-        return $self;
+        return $header + [
+            'errorCode'     => Scheme::TYPE_INT16,
+            'generationId'  => Scheme::TYPE_INT32,
+            'groupProtocol' => Scheme::TYPE_STRING,
+            'leaderId'      => Scheme::TYPE_STRING,
+            'memberId'      => Scheme::TYPE_STRING,
+            'members'       => ['memberId' => JoinGroupResponseMember::class]
+        ];
     }
 }

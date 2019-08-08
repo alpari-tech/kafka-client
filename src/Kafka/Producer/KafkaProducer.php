@@ -1,17 +1,28 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date   29.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Producer;
+declare (strict_types=1);
 
-use Protocol\Kafka\Client;
-use Protocol\Kafka\Common\Cluster;
-use Protocol\Kafka\Common\PartitionMetadata;
-use Protocol\Kafka\DTO\Record;
-use Protocol\Kafka\Error\NotLeaderForPartition;
-use Protocol\Kafka\Error\RetriableException;
+
+namespace Alpari\Kafka\Producer;
+
+use Alpari\Kafka\Client;
+use Alpari\Kafka\Common\Cluster;
+use Alpari\Kafka\Common\PartitionMetadata;
+use Alpari\Kafka\DTO\ProduceRequestTopic;
+use Alpari\Kafka\DTO\Record;
+use Alpari\Kafka\Error\NotLeaderForPartition;
+use Alpari\Kafka\Error\RetriableException;
+use Alpari\Kafka\Error\TopicPartitionRequestException;
+use React\Promise\Deferred;
+use React\Promise\Promise;
 
 /**
  * A Kafka client that publishes records to the Kafka cluster.
@@ -44,7 +55,7 @@ class KafkaProducer
      *
      * @var PartitionerInterface
      */
-    private $partitioner = null;
+    private $partitioner;
 
     /**
      * Current iteration of sending data
@@ -63,9 +74,18 @@ class KafkaProducer
     /**
      * Buffer for storing topic-partition-messages
      *
-     * @var array
+     * @var ProduceRequestTopic[]
      */
     private $topicPartitionMessages = [];
+
+    /**
+     * Deferred task to send messages for each topic-partition
+     *
+     * We don't need this per each record because entire record batch is commited to the partition
+     *
+     * @var Deferred[][]
+     */
+    private $deferredTopicPartitionSend = [];
 
     public function __construct(array $configuration = [])
     {
@@ -73,7 +93,7 @@ class KafkaProducer
         $partitioner         = $this->configuration[Config::PARTITIONER_CLASS];
 
         if (!is_subclass_of($partitioner, PartitionerInterface::class)) {
-            throw new \InvalidArgumentException("Partitioner class should implement PartitionInterface");
+            throw new \InvalidArgumentException('Partitioner class should implement PartitionInterface');
         }
         $this->partitioner = new $partitioner;
     }
@@ -82,53 +102,68 @@ class KafkaProducer
      * Invoking this method makes all buffered records immediately available to send and blocks on the completion of
      * the requests associated with these records.
      */
-    public function flush()
+    public function flush(): void
     {
-        $result           = null;
-        $this->currentTry = 0;
-
         $exceptions = [];
+        $this->currentTry  = 0;
+
         while ($this->currentTry <= $this->configuration[Config::RETRIES]) {
+            $produceResult     = [];
+            $produceExceptions = [];
             try {
-                $result = $this->getClient()->produce($this->topicPartitionMessages);
-                // TODO: resolve futures or store result for analysis
-                $this->batchSize = 0;
-
-                $this->topicPartitionMessages = [];
+                $produceResult = $this->getClient()->produce($this->topicPartitionMessages);
                 break;
-            } catch (NotLeaderForPartition $exception) {
-                // We just need to reconfigure the cluster, possible current leader is changed
-                $this->getCluster()->reload();
-            } catch (RetriableException $exception) {
-                $this->getCluster()->reload();
-                $this->currentTry++;
-                $message              = $exception->getMessage();
-                $exceptions[$message] = isset($exceptions[$message]) ? $exceptions[$message] + 1 : 1;
+            } catch (TopicPartitionRequestException $exception) {
+                //TODO: For transaction mode we should just retry the transaction, no partial results
+
+                // We have partial result on one part of topic-partition(s) and error(s) on another
+                $produceResult     = $exception->getPartialResult();
+                $produceExceptions = $exception->getExceptions();
+            } finally {
+                // If we have any result, we can process it
+                foreach ($produceResult as $topic => $partitions) {
+                    foreach ($partitions as $partitionId => $partitionResult) {
+                        // Batch size should be partially decremented
+                        $this->batchSize -= count($this->topicPartitionMessages[$topic][$partitionId]);
+
+                        // Exclude completed partitions from subsequent retries. Unsafe for partial result!
+                        unset(
+                            $this->topicPartitionMessages[$topic][$partitionId],
+                            $exceptions[$topic][$partitionId] // Also clear previous errors if succeeded
+                        );
+
+                        // Resolve deferred promise with partition result
+                        $this->deferredTopicPartitionSend[$topic][$partitionId]->resolve($partitionResult);
+                    }
+                }
+                // If we have any exceptions, then process them
+                foreach ($produceExceptions as $topic => $partitionExceptions) {
+                    $exceptions[$topic] = ($exceptions[$topic] ?? []) + $partitionExceptions;
+                }
+                //TODO: Check retriable exceptions
+                if (!empty($produceExceptions)) {
+                    usleep(1000 * $this->configuration[Config::RETRY_BACKOFF_MS]);
+                    $this->currentTry++;
+                    $this->getCluster()->reload();
+                }
             }
         }
 
-        if ($this->currentTry > $this->configuration[Config::RETRIES]) {
-            $message         = '';
-            $totalExceptions = array_sum($exceptions);
-            $index           = 1;
-            foreach ($exceptions as $msg => $count) {
-                $message .= "$index. $msg ($count / $totalExceptions)\n";
-                $index   += 1;
+        // If we have exceptions after retries then fail promises
+        foreach ($exceptions as $topic => $partitions) {
+            foreach ($partitions as $partitionId => $partitionException) {
+                // Reject deferred promise with partition exception
+                $this->deferredTopicPartitionSend[$topic][$partitionId]->reject($partitionException);
             }
-            throw new \RuntimeException("Can not deliver messages to the broker:\n$message");
         }
-
-        return $result;
     }
 
     /**
      * Gets the partition metadata for the given topic.
      *
-     * @param string $topic
-     *
      * @return PartitionMetadata[]
      */
-    public function partitionsFor($topic)
+    public function partitionsFor(string $topic): array
     {
         return $this->getCluster()->partitionsForTopic($topic);
     }
@@ -136,15 +171,13 @@ class KafkaProducer
     /**
      * Sends a message to the topic
      *
-     * @todo Use futures instead of void result
-     *
      * @param string       $topic             Name of the topic
      * @param Record       $message           Message to send
      * @param integer|null $concretePartition Optional partition for sending message
      *
-     * @return array
+     * @return Promise
      */
-    public function send($topic, Record $message, $concretePartition = null)
+    public function send(string $topic, Record $message, ?int $concretePartition = null): Promise
     {
         if (isset($concretePartition)) {
             $partition = $concretePartition;
@@ -155,12 +188,17 @@ class KafkaProducer
         $this->topicPartitionMessages[$topic][$partition][] = $message;
         $this->batchSize++;
 
-        if ($this->batchSize < $this->configuration[Config::BATCH_SIZE]) {
-            // Return nothing, however it would be nice to return a Promise
-            return [];
+        if (!isset($this->deferredTopicPartitionSend[$topic][$partition])) {
+            $this->deferredTopicPartitionSend[$topic][$partition] = new Deferred();
         }
 
-        return $this->flush();
+        $promise = $this->deferredTopicPartitionSend[$topic][$partition]->promise();
+
+        if ($this->batchSize >= $this->configuration[Config::BATCH_SIZE]) {
+            $this->flush();
+        }
+
+        return $promise;
     }
 
     /**
@@ -175,10 +213,8 @@ class KafkaProducer
 
     /**
      * Cluster lazy-loading
-     *
-     * @return Cluster
      */
-    private function getCluster()
+    private function getCluster(): Cluster
     {
         if (!$this->cluster) {
             $this->cluster = Cluster::bootstrap($this->configuration);
@@ -189,10 +225,8 @@ class KafkaProducer
 
     /**
      * Lazy-loading for kafka client
-     *
-     * @return Client
      */
-    private function getClient()
+    private function getClient(): Client
     {
         if (!$this->client) {
             $this->client = new Client($this->getCluster(), $this->configuration);

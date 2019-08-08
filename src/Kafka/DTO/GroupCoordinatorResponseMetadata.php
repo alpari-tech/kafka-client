@@ -1,17 +1,25 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\DTO;
+declare (strict_types=1);
 
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\DTO;
+
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
 
 /**
  * GroupCoordinator response data
  */
-class GroupCoordinatorResponseMetadata
+class GroupCoordinatorResponseMetadata implements BinarySchemeInterface
 {
     /**
      * The broker id.
@@ -35,25 +43,14 @@ class GroupCoordinatorResponseMetadata
     public $port;
 
     /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
+     * @inheritdoc
      */
-    public static function unpack(Stream $stream)
+    public static function getScheme(): array
     {
-        $coordinatorMetadata = new static();
-        list(
-            $coordinatorMetadata->nodeId,
-            $hostLength
-        ) = array_values($stream->read("NnodeId/nhostLength"));
-
-        list(
-            $coordinatorMetadata->host,
-            $coordinatorMetadata->port
-        ) = array_values($stream->read("a{$hostLength}host/Nport"));
-
-        return $coordinatorMetadata;
+        return [
+            'nodeId' => Scheme::TYPE_INT32,
+            'host'   => Scheme::TYPE_STRING,
+            'port'   => Scheme::TYPE_INT32
+        ];
     }
 }

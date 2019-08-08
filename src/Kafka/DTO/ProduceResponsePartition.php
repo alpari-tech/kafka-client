@@ -1,17 +1,31 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\DTO;
+declare (strict_types=1);
 
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\DTO;
+
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
 
 /**
- * Produce response DTO
+ * Produce response partition DTO
+ *
+ * ProduceResponsePartition => partition error_code base_offset log_append_time
+ *   partition => INT32
+ *   error_code => INT16
+ *   base_offset => INT64
+ *   log_append_time => INT64
  */
-class ProduceResponsePartition
+class ProduceResponsePartition implements BinarySchemeInterface
 {
     /**
      * The partition this response entry corresponds to.
@@ -35,7 +49,7 @@ class ProduceResponsePartition
      *
      * @var integer
      */
-    public $offset;
+    public $baseOffset;
 
     /**
      * If LogAppendTime is used for the topic, this is the timestamp assigned by the broker to the message set.
@@ -49,25 +63,18 @@ class ProduceResponsePartition
      * @var integer
      * @since Version 2 of protocol
      */
-    public $timestamp;
+    public $logAppendTime;
 
     /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
+     * @inheritdoc
      */
-    public static function unpack(Stream $stream)
+    public static function getScheme(): array
     {
-        $partition = new static();
-        list(
-            $partition->partition,
-            $partition->errorCode,
-            $partition->offset,
-            $partition->timestamp
-        ) = array_values($stream->read('Npartition/nerrorCode/Joffset/Jtimestamp'));
-
-        return $partition;
+        return [
+            'partition'     => Scheme::TYPE_INT32,
+            'errorCode'     => Scheme::TYPE_INT16,
+            'baseOffset'    => Scheme::TYPE_INT64,
+            'logAppendTime' => Scheme::TYPE_INT64
+        ];
     }
 }

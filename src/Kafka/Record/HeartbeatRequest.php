@@ -1,12 +1,20 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
+use Alpari\Kafka\Scheme;
 
 /**
  * Heartbeat Request
@@ -14,33 +22,36 @@ use Protocol\Kafka;
  * Once a member has joined and synced, it will begin sending periodic heartbeats to keep itself in the group. If not
  * heartbeat has been received by the coordinator with the configured session timeout, the member will be kicked out of
  * the group.
+ *
+ * Heartbeat Request (Version: 0) => group_id generation_id member_id
+ *   group_id => STRING
+ *   generation_id => INT32
+ *   member_id => STRING
  */
 class HeartbeatRequest extends AbstractRequest
 {
     /**
      * The consumer group id.
-     *
-     * @var string
      */
     private $consumerGroup;
 
     /**
      * The generation of the group.
-     *
-     * @var int
      */
     private $generationId;
 
     /**
      * The member id assigned by the group coordinator.
-     *
-     * @var string
      */
     private $memberId;
 
-
-    public function __construct($consumerGroup, $generationId, $memberId, $clientId = '', $correlationId = 0)
-    {
+    public function __construct(
+        string $consumerGroup,
+        int $generationId,
+        string $memberId,
+        string $clientId = '',
+        int $correlationId = 0
+    ) {
         $this->consumerGroup = $consumerGroup;
         $this->generationId  = $generationId;
         $this->memberId      = $memberId;
@@ -49,23 +60,16 @@ class HeartbeatRequest extends AbstractRequest
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function packPayload()
+    public static function getScheme(): array
     {
-        $payload      = parent::packPayload();
-        $groupLength  = strlen($this->consumerGroup);
-        $memberLength = strlen($this->memberId);
+        $header = parent::getScheme();
 
-        $payload .= pack(
-            "na{$groupLength}Nna{$memberLength}",
-            $groupLength,
-            $this->consumerGroup,
-            $this->generationId,
-            $memberLength,
-            $this->memberId
-        );
-
-        return $payload;
+        return $header + [
+            'consumerGroup' => Scheme::TYPE_STRING,
+            'generationId'  => Scheme::TYPE_INT32,
+            'memberId'      => Scheme::TYPE_STRING
+        ];
     }
 }

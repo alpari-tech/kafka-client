@@ -1,16 +1,29 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 28.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka\DTO\ListGroupResponseProtocol;
+use Alpari\Kafka\Scheme;
 
 /**
  * List groups response
+ *
+ * ListGroups Response (Version: 0) => error_code [groups]
+ *   error_code => INT16
+ *   groups => group_id protocol_type
+ *     group_id => STRING
+ *     protocol_type => STRING
  */
 class ListGroupsResponse extends AbstractResponse
 {
@@ -24,33 +37,20 @@ class ListGroupsResponse extends AbstractResponse
     /**
      * List of groups as keys and current protocols as values
      *
-     * @var array
+     * @var ListGroupResponseProtocol[]
      */
     public $groups = [];
 
     /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
+     * @inheritdoc
      */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme(): array
     {
-        list(
-            $self->correlationId,
-            $self->errorCode,
-            $groupNumber
-        ) = array_values($stream->read('NcorrelationId/nerrorCode/NgroupNumber'));
+        $header = parent::getScheme();
 
-        for ($groupIndex = 0; $groupIndex < $groupNumber; $groupIndex++) {
-            $groupId  = $stream->readString();
-            $protocol = $stream->readString();
-
-            $self->groups[$groupId] = $protocol;
-        }
-
-        return $self;
+        return $header + [
+            'errorCode' => Scheme::TYPE_INT16,
+            'groups'    => ['groupId' => ListGroupResponseProtocol::class]
+        ];
     }
 }

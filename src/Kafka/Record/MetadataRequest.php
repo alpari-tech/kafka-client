@@ -1,12 +1,20 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
+use Alpari\Kafka\Scheme;
 
 /**
  * This API answers the following questions:
@@ -32,16 +40,16 @@ class MetadataRequest extends AbstractRequest
     /**
      * @inheritDoc
      */
-    const VERSION = 2;
+    protected const VERSION = 2;
 
     /**
      * An array of topics to fetch metadata for. If no topics are specified fetch metadata for all topics.
      *
-     * @var string
+     * @var ?array
      */
     protected $topics;
 
-    public function __construct(array $topics = [], $clientId = '', $correlationId = 0)
+    public function __construct(?array $topics = null, string $clientId = '', int $correlationId = 0)
     {
         $this->topics = $topics;
 
@@ -49,30 +57,14 @@ class MetadataRequest extends AbstractRequest
     }
 
     /**
-     * @return array
+     * @inheritdoc
      */
-    public function getTopics()
+    public static function getScheme(): array
     {
-        return explode(' ', $this->topics);
-    }
+        $header = parent::getScheme();
 
-    /**
-     * @inheritDoc
-     */
-    protected function packPayload()
-    {
-        $payload = parent::packPayload();
-
-        $totalTopics = count($this->topics);
-        if ($totalTopics === 0) {
-            $totalTopics = -1; // Since v1 we should use null for special value
-        }
-        $payload .= pack('N', $totalTopics);
-        foreach ($this->topics as $topic) {
-            $length = strlen($topic);
-            $payload .= pack("na{$length}", $length, $topic);
-        }
-
-        return $payload;
+        return $header + [
+            'topics' => [Scheme::TYPE_STRING, Scheme::FLAG_NULLABLE => true]
+        ];
     }
 }

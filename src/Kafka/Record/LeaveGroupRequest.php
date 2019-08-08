@@ -1,12 +1,20 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
+use Alpari\Kafka\Scheme;
 
 /**
  * LeaveGroup Request
@@ -14,24 +22,24 @@ use Protocol\Kafka;
  * To explicitly leave a group, the client can send a leave group request. This is preferred over letting the session
  * timeout expire since it allows the group to rebalance faster, which for the consumer means that less time will
  * elapse before partitions can be reassigned to an active member.
+ *
+ * LeaveGroup Request (Version: 0) => group_id member_id
+ *   group_id => STRING
+ *   member_id => STRING
  */
 class LeaveGroupRequest extends AbstractRequest
 {
     /**
      * The consumer group id.
-     *
-     * @var string
      */
     private $consumerGroup;
 
     /**
      * The member id assigned by the group coordinator.
-     *
-     * @var string
      */
     private $memberId;
 
-    public function __construct($consumerGroup, $memberId, $clientId = '', $correlationId = 0)
+    public function __construct(string $consumerGroup, string $memberId, string $clientId = '', int $correlationId = 0)
     {
         $this->consumerGroup = $consumerGroup;
         $this->memberId      = $memberId;
@@ -40,22 +48,15 @@ class LeaveGroupRequest extends AbstractRequest
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function packPayload()
+    public static function getScheme(): array
     {
-        $payload      = parent::packPayload();
-        $groupLength  = strlen($this->consumerGroup);
-        $memberLength = strlen($this->memberId);
+        $header = parent::getScheme();
 
-        $payload .= pack(
-            "na{$groupLength}na{$memberLength}",
-            $groupLength,
-            $this->consumerGroup,
-            $memberLength,
-            $this->memberId
-        );
-
-        return $payload;
+        return $header + [
+            'consumerGroup' => Scheme::TYPE_STRING,
+            'memberId'      => Scheme::TYPE_STRING
+        ];
     }
 }

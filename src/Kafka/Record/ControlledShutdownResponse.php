@@ -1,16 +1,29 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2014
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka\Record;
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka\DTO\ControlledShutdownResponsePartition;
+use Alpari\Kafka\Scheme;
 
 /**
  * Controlled shutdown response
+ *
+ * ControlledShutdown Response (Version: 0) => error_code [partitions_remaining]
+ *   error_code => INT16
+ *   partitions_remaining => topic partition
+ *     topic => STRING
+ *     partition => INT32
  */
 class ControlledShutdownResponse extends AbstractResponse
 {
@@ -24,33 +37,20 @@ class ControlledShutdownResponse extends AbstractResponse
     /**
      * The topic partitions that the broker still leads.
      *
-     * @var array|string[]
+     * @var ControlledShutdownResponsePartition[]
      */
     public $remainingTopicPartitions = [];
 
     /**
-     * Method to unpack the payload for the record
-     *
-     * @param Record|static $self   Instance of current frame
-     * @param Stream $stream Binary data
-     *
-     * @return Record
+     * @inheritdoc
      */
-    protected static function unpackPayload(Record $self, Stream $stream)
+    public static function getScheme(): array
     {
-        list(
-            $self->correlationId,
-            $self->errorCode,
-            $topicPartitionsNumber
-        ) = array_values($stream->read('NcorrelationId/nerrorCode/NtopicNumber'));
+        $header = parent::getScheme();
 
-        for ($i=0; $i<$topicPartitionsNumber; $i++) {
-            $topic     = $stream->readString();
-            $partition = $stream->read('Npartition')['partition'];
-
-            $self->remainingTopicPartitions[$topic][] = $partition;
-        }
-
-        return $self;
+        return $header + [
+            'errorCode'                => Scheme::TYPE_INT16,
+            'remainingTopicPartitions' => [ControlledShutdownResponsePartition::class]
+        ];
     }
 }

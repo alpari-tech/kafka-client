@@ -1,12 +1,20 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
+use Alpari\Kafka\Scheme;
 
 /**
  * This request queries the supported SASL mechanisms on the broker
@@ -15,12 +23,10 @@ class SaslHandshakeRequest extends AbstractRequest
 {
     /**
      * SASL Mechanism chosen by the client.
-     *
-     * @var string
      */
     private $mechanism;
 
-    public function __construct($mechanism, $clientId = '', $correlationId = 0)
+    public function __construct(string $mechanism, string $clientId = '', int $correlationId = 0)
     {
         $this->mechanism = $mechanism;
 
@@ -28,15 +34,14 @@ class SaslHandshakeRequest extends AbstractRequest
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function packPayload()
+    public static function getScheme(): array
     {
-        $payload         = parent::packPayload();
-        $mechanismLength = strlen($this->mechanism);
+        $header = parent::getScheme();
 
-        $payload .= pack("na{$mechanismLength}", $mechanismLength, $this->mechanism);
-
-        return $payload;
+        return $header + [
+            'mechanism' => Scheme::TYPE_STRING
+        ];
     }
 }

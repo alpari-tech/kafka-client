@@ -1,30 +1,40 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Consumer;
+declare (strict_types=1);
 
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Consumer;
+
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
 
 /**
  * Subscription information that is used for the synchronization between consumers
+ *
+ * ProtocolMetadata => Version Subscription UserData
+ *   Version => int16
+ *   Subscription => [Topic]
+ *     Topic => string
+ *   UserData => bytes
  */
-class Subscription
+class Subscription implements BinarySchemeInterface
 {
 
     /**
      * This is a version id.
-     *
-     * @var integer
      */
     public $version;
 
     /**
      * This property holds all the topics for the consumer.
-     *
-     * @var array
      */
     public $topics;
 
@@ -34,66 +44,32 @@ class Subscription
      * For example, in a sticky partitioning implementation, this field can contain the assignment from the previous
      * generation. In a resource-based assignment strategy, it could include the number of cpus on the machine hosting
      * each consumer instance.
-     *
-     * @var string
      */
     public $userData;
 
-    public static function fromSubscription(array $topics, $version = 0, $userData = '')
+    /**
+     * Subscription constructor.
+     *
+     * @param string[] $topics List of topics
+     */
+    public function __construct(array $topics, int $version = 0, string $userData = '')
     {
-        $message = new static();
-
-        $message->topics   = $topics;
-        $message->version  = $version;
-        $message->userData = $userData;
-
-        return $message;
+        $this->topics   = $topics;
+        $this->version  = $version;
+        $this->userData = $userData;
     }
 
     /**
-     * Unpacks the DTO from the binary buffer
+     * Returns definition of binary packet for the class or object
      *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
+     * @return array
      */
-    public static function unpack(Stream $stream)
+    public static function getScheme(): array
     {
-        $message = new static();
-
-        list(
-            $message->version,
-            $topicNumber
-        ) = array_values($stream->read('nversion/NtopicNumber'));
-
-        for ($topicIndex = 0; $topicIndex < $topicNumber; $topicIndex++) {
-            $message->topics[] = $stream->readString();
-        }
-        $message->userData = $stream->readByteArray();
-
-        return $message;
-    }
-
-    /**
-     * @return string
-     *
-     * ProtocolMetadata => Version Subscription UserData
-     *   Version => int16
-     *   Subscription => [Topic]
-     *     Topic => string
-     *   UserData => bytes
-     */
-    public function __toString()
-    {
-        $payload = pack('nN', $this->version, count($this->topics));
-        foreach ($this->topics as $topic) {
-            $topicLength = strlen($topic);
-            $payload .= pack("na{$topicLength}", $topicLength, $topic);
-        }
-        $userDataLength = strlen($this->userData);
-        $payload .= pack('N', $userDataLength);
-        $payload .= $this->userData;
-
-        return $payload;
+        return [
+            'version'  => Scheme::TYPE_INT16,
+            'topics'   => [Scheme::TYPE_STRING],
+            'userData' => Scheme::TYPE_BYTEARRAY
+        ];
     }
 }

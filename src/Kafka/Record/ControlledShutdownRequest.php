@@ -1,31 +1,40 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 27.07.2014
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
+use Alpari\Kafka\Scheme;
 
 /**
  * This request asks for the controlled shutdown of specific broker
+ *
+ * ControlledShutdown Request (Version: 0) => broker_id
+ *   broker_id => INT32
  */
 class ControlledShutdownRequest extends AbstractRequest
 {
     /**
      * @inheritDoc
      */
-    const VERSION = 1;
+    protected const VERSION = 1;
 
     /**
      * Broker identifier to shutdown
-     *
-     * @var integer
      */
     private $brokerId;
 
-    public function __construct($brokerId, $clientId = '', $correlationId = 0)
+    public function __construct(int $brokerId, string $clientId = '', int $correlationId = 0)
     {
         $this->brokerId = $brokerId;
 
@@ -33,14 +42,14 @@ class ControlledShutdownRequest extends AbstractRequest
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function packPayload()
+    public static function getScheme(): array
     {
-        $payload = parent::packPayload();
+        $header = parent::getScheme();
 
-        $payload .= pack('N', $this->brokerId);
-
-        return $payload;
+        return $header + [
+            'brokerId' => Scheme::TYPE_INT32
+        ];
     }
 }

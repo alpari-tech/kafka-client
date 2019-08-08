@@ -1,12 +1,19 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 28.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
 
 /**
  * ListGroups Request
@@ -19,7 +26,7 @@ class ListGroupsRequest extends AbstractRequest
     /**
      * {@inheritdoc}
      */
-    public function __construct($clientId = '', $correlationId = 0)
+    public function __construct(string $clientId = '', int $correlationId = 0)
     {
         parent::__construct(Kafka::LIST_GROUPS, $clientId, $correlationId);
     }

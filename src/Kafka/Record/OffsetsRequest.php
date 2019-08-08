@@ -1,12 +1,21 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Record;
+declare (strict_types=1);
 
-use Protocol\Kafka;
+
+namespace Alpari\Kafka\Record;
+
+use Alpari\Kafka;
+use Alpari\Kafka\DTO\OffsetsRequestTopic;
+use Alpari\Kafka\Scheme;
 
 /**
  * Offsets API
@@ -17,68 +26,70 @@ use Protocol\Kafka;
  *
  * The response contains the starting offset of each segment for the requested partition as well as the "log end
  * offset" i.e. the offset of the next message that would be appended to the given partition.
+ *
+ * ListOffsets Request (Version: 1) => replica_id [topics]
+ *   replica_id => INT32
+ *   topics => topic [partitions]
+ *     topic => STRING
+ *     partitions => partition timestamp
+ *       partition => INT32
+ *       timestamp => INT64
  */
 class OffsetsRequest extends AbstractRequest
 {
     /**
-     * @inheritDoc
-     */
-    const VERSION = 1;
-
-    /**
      * Special value for the offset of the next coming message
      */
-    const LATEST = -1;
+    public const LATEST = -1;
 
     /**
      * Special value for receiving the earliest available offset
      */
-    const EARLIEST = -2;
+    public const EARLIEST = -2;
+
+    /**
+     * @inheritDoc
+     */
+    protected const VERSION = 1;
 
     /**
      * @var array
      */
     private $topicPartitions;
 
-
     /**
      * The replica id indicates the node id of the replica initiating this request. Normal client consumers should
      * always specify this as -1 as they have no node id. Other brokers set this to be their own node id. The value -2
      * is accepted to allow a non-broker to issue fetch requests as if it were a replica broker for debugging purposes.
-     *
-     * @var int
      */
     private $replicaId;
 
     public function __construct(
         array $topicPartitions,
-        $replicaId = -1,
-        $clientId = '',
-        $correlationId = 0
+        int $replicaId = -1,
+        string $clientId = '',
+        int $correlationId = 0
     ) {
-        $this->topicPartitions = $topicPartitions;
+        $packedTopicPartitions = [];
+        foreach ($topicPartitions as $topic => $partitions) {
+            $packedTopicPartitions[$topic] = new OffsetsRequestTopic($topic, $partitions);
+        }
+        $this->topicPartitions = $packedTopicPartitions;
         $this->replicaId       = $replicaId;
 
         parent::__construct(Kafka::OFFSETS, $clientId, $correlationId);
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
-    protected function packPayload()
+    public static function getScheme(): array
     {
-        $payload     = parent::packPayload();
-        $totalTopics = count($this->topicPartitions);
+        $header = parent::getScheme();
 
-        $payload .= pack('NN', $this->replicaId, $totalTopics);
-        foreach ($this->topicPartitions as $topic => $partitions) {
-            $topicLength = strlen($topic);
-            $payload .= pack("na{$topicLength}N", $topicLength, $topic, count($partitions));
-            foreach ($partitions as $partitionId => $timeOffset) {
-                $payload .= pack('NJ', $partitionId, $timeOffset);
-            }
-        }
-
-        return $payload;
+        return $header + [
+            'replicaId'       => Scheme::TYPE_INT32,
+            'topicPartitions' => ['topic' => OffsetsRequestTopic::class]
+        ];
     }
 }

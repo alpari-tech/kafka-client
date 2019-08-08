@@ -1,17 +1,25 @@
 <?php
-/**
- * @author Alexander.Lisachenko
- * @date 14.07.2016
+/*
+ * This file is part of the Alpari Kafka client.
+ *
+ * (c) Alpari
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-namespace Protocol\Kafka\Common;
+declare (strict_types=1);
 
-use Protocol\Kafka\Stream;
+
+namespace Alpari\Kafka\Common;
+
+use Alpari\Kafka\BinarySchemeInterface;
+use Alpari\Kafka\Scheme;
 
 /**
  * Information about a topic-partition metadata.
  */
-class PartitionMetadata
+class PartitionMetadata implements BinarySchemeInterface
 {
     use RestorableTrait;
 
@@ -39,39 +47,25 @@ class PartitionMetadata
     /**
      * The set of all nodes that host this partition.
      *
-     * @var array|integer[]
+     * @var integer[]
      */
     public $replicas = [];
 
     /**
      * The set of nodes that are in sync with the leader for this partition.
      *
-     * @var array|integer[]
+     * @var integer[]
      */
     public $isr = [];
 
-    /**
-     * Unpacks the DTO from the binary buffer
-     *
-     * @param Stream $stream Binary buffer
-     *
-     * @return static
-     */
-    public static function unpack(Stream $stream)
+    public static function getScheme(): array
     {
-        $partitionMetadata = new static();
-        list(
-            $partitionMetadata->partitionErrorCode,
-            $partitionMetadata->partitionId,
-            $partitionMetadata->leader,
-            $numberOfReplicas
-        ) = array_values($stream->read('npartitionErrorCode/NpartitionId/Nleader/NnumberOfReplicas'));
-
-        $partitionMetadata->replicas = array_values($stream->read("N{$numberOfReplicas}"));
-
-        $numberOfIsr = $stream->read('NnumberOfIsr')['numberOfIsr'];
-        $partitionMetadata->isr = array_values($stream->read("N{$numberOfIsr}"));
-
-        return $partitionMetadata;
+        return [
+            'partitionErrorCode' => Scheme::TYPE_INT16,
+            'partitionId'        => Scheme::TYPE_INT32,
+            'leader'             => Scheme::TYPE_INT32,
+            'replicas'           => [Scheme::TYPE_INT32],
+            'isr'                => [Scheme::TYPE_INT32]
+        ];
     }
 }
